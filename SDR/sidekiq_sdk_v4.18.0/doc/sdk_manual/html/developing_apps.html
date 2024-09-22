@@ -1,0 +1,2143 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Software Development Flow &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Using Libsidekiq Remotely" href="skiq_remote.html" />
+    <link rel="prev" title="Installation Procedure" href="installation_procedure.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="software-development-flow">
+<span id="section-sw-development-flow"></span><h1>Software Development Flow<a class="headerlink" href="#software-development-flow" title="Permalink to this headline">¶</a></h1>
+<p>The software development flow for a Sidekiq system is similar to
+developing software applications for any Linux-based system. The
+general flow is described below.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This development flow assumes that a user is developing software on
+the laptop delivered with the Sidekiq PDK</p>
+</div>
+<ul class="simple">
+<li>Develop the source code for the custom software application on a PC
+such as the Sidekiq PDK laptop, using a text editor of choice
+(<code class="code docutils literal notranslate"><span class="pre">emacs</span></code>, <code class="code docutils literal notranslate"><span class="pre">vi</span></code>, <code class="code docutils literal notranslate"><span class="pre">gedit</span></code>, etc.)</li>
+<li>Compile and link the source code that makes up the custom software
+application using the GCC toolchain. This includes linking the custom
+application against the appropriate libsidekiq userspace library that
+provides the API to access the RF transceiver hardware. For example,
+if a user is developing an application to execute on the Sidekiq PDK
+laptop, which has an Intel x86 CPU and a 64-bit Linux OS installed,
+then the <code class="docutils literal notranslate"><span class="pre">libsidekiq__x86_64.gcc.a</span></code> userspace library would be linked
+against. This process will output a binary executable file that will
+run on Linux on the Sidekiq PDK laptop. For details on compiling
+for alternative host platforms, refer to <a class="reference internal" href="alternative_hosts.html#section-alternative-host"><span class="std std-ref">Developing for Alternative Host Platforms</span></a>.
+For details on developing for Windows, refer to <a class="reference internal" href="windows.html#windows"><span class="std std-ref">Windows Sidekiq Development</span></a>.</li>
+<li>Execute the custom application on the Sidekiq system.</li>
+</ul>
+</div>
+<div class="section" id="tools-libraries-needed-for-linux-application-development">
+<h1>Tools/Libraries Needed for Linux Application Development<a class="headerlink" href="#tools-libraries-needed-for-linux-application-development" title="Permalink to this headline">¶</a></h1>
+<p>The following section provides an outline of all prerequisites needed to
+develop Linux-based software applications that execute on Sidekiq PDK
+laptop. For details on building on a Windows-based system, refer to
+<a class="reference internal" href="windows.html#windows"><span class="std std-ref">Windows Sidekiq Development</span></a>.</p>
+<div class="section" id="gcc-toolchain">
+<h2>GCC Toolchain<a class="headerlink" href="#gcc-toolchain" title="Permalink to this headline">¶</a></h2>
+<p>The GNU Compiler Collection (GCC) toolchain <a class="reference internal" href="references.html#ref3"><span class="std std-ref">[3]</span></a> provides
+a robust and widely used set of tools that can be used for building
+software applications for a variety of different target platforms. The
+GCC toolchain includes many different software components, including the
+appropriate C/C++ pre-processor, C/C++ compiler, linker, and other
+components needed as part of the building process.</p>
+<p>The Sidekiq PDK laptop comes with the appropriate GCC toolchain
+pre-installed.</p>
+</div>
+<div class="section" id="libsidekiq-userspace-library">
+<h2>libsidekiq Userspace Library<a class="headerlink" href="#libsidekiq-userspace-library" title="Permalink to this headline">¶</a></h2>
+<p>The libsidekiq userspace library provides a high-level API for
+configuring the RF transceivers and transferring data between the CPU
+and the FPGA. This library is provided as a static library
+(e.g. <code class="docutils literal notranslate"><span class="pre">libsidekiq__x86_64.gcc.a</span></code>), such that a software application would
+link against this library as part of the software build process.</p>
+<p>The current version of the libsidekiq userspace library
+can be downloaded at <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a> as part of the Sidekiq SDK. The
+complete documentation for the API provided by this library can be
+found as a separate document at <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>.</p>
+</div>
+<div class="section" id="source-code-editor">
+<h2>Source Code Editor<a class="headerlink" href="#source-code-editor" title="Permalink to this headline">¶</a></h2>
+<p>A standard text editor is used for editing the C/C++ source code that
+make up a Sidekiq software application. Most host PC Linux distributions
+ship with a variety of text editors already installed, including
+<code class="code docutils literal notranslate"><span class="pre">emacs</span></code>, <code class="code docutils literal notranslate"><span class="pre">vi</span></code>, <code class="code docutils literal notranslate"><span class="pre">gedit</span></code>, and others;  any text editor can be used for
+developing software applications for Sidekiq.</p>
+</div>
+<div class="section" id="re-building-the-sidekiq-test-applications">
+<h2>Re-Building the Sidekiq Test Applications<a class="headerlink" href="#re-building-the-sidekiq-test-applications" title="Permalink to this headline">¶</a></h2>
+<p>Each Sidekiq system ships with a suite of test applications installed in
+the <code class="docutils literal notranslate"><span class="pre">/home/sidekiq/sidekiq_image_current</span></code> directory
+(by default). These applications provide a means to demonstrate various
+features in the hardware, including receiving I/Q samples from the RF
+receivers, (re)programming the FPGA and reading sensors in the system
+such as the temperature sensor and accelerometer (if present).</p>
+<p>A tarball containing the source code for the latest versions of these
+test applications, as well as the Makefile required to build them, can
+be found at Epiq Solutions’ support website <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>. A
+Windows SDK for development under Windows is also available at Epiq
+Solutions’ support website <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>. Assuming the GCC
+compiler has been downloaded and installed, the steps for re-building
+these applications for Linux are as follows:</p>
+<ol class="arabic simple">
+<li>Download the latest Sidekiq SDK tarball from <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a> to
+the Sidekiq PDK laptop. These tarballs have a version string in their
+filename. For example, version 4.18.x of the Sidekiq SDK tarball will be
+called:</li>
+</ol>
+<pre class="literal-block">
+sidekiq_sdk_v4.18.x.tar.xz
+</pre>
+<ol class="arabic simple" start="2">
+<li>Untar the Sidekiq SDK tarball to a working directory on the Sidekiq
+PDK laptop. For example: if the development directory is located at
+<code class="docutils literal notranslate"><span class="pre">/home/sidekiq/</span></code>, the following command would be used to
+extract its contents:</li>
+</ol>
+<pre class="literal-block">
+$ tar xf /home/sidekiq/sidekiq_sdk_v4.18.x.tar.xz
+</pre>
+<ol class="arabic simple" start="3">
+<li>Once the untar operation has been completed, the tarball’s contents
+are available in the current working directory.</li>
+<li>To re-build the test applications, change directories to the
+<code class="docutils literal notranslate"><span class="pre">test_apps</span></code> directory and run <code class="code docutils literal notranslate"><span class="pre">make</span></code>.</li>
+</ol>
+<pre class="literal-block">
+$ cd /home/sidekiq/sidekiq_sdk_v4.18.x/test_apps
+$ make BUILD_CONFIG=x86_64.gcc clean
+$ make BUILD_CONFIG=x86_64.gcc
+</pre>
+<p>This will cause a complete re-build of all of the Sidekiq test
+applications, with the resultant binary executable files located in
+the <code class="docutils literal notranslate"><span class="pre">.../test_apps/bin/</span></code> directory. The applications built can
+be executed directly on the Sidekiq laptop just like any other Linux
+application. Most test applications can be executed without any
+command line arguments, and will report their expected usage.  A user
+may use the <cite>–help</cite> command line argument to force the display of
+available arguments.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The prebuilt applications and device drivers for alternative host
+systems (non-x86_64) can be obtained from <a class="reference internal" href="references.html#ref8"><span class="std std-ref">[8]</span></a>.</p>
+</div>
+<span id="table2"></span><table border="1" class="longtable docutils align-center" id="id2">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">Linux Sidekiq SDK Tarball Directories</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="100%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z
+|-- arg_parser
+| |-- inc
+| `-- lib
+|-- custom_xport_bare
+| |-- bin
+| |-- src
+| `-- test_apps
+|     `-- src
+|-- doc
+|   |-- api
+|   |   `-- html
+|   |-- manual
+|   `-- sdk_manual
+|       `-- html
+|-- lib
+|-- prebuilt_apps
+|-- sidekiq_core
+| `-- inc
+`-- test_apps
+ |-- bin
+ `-- src
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<span id="table3"></span><table border="1" class="longtable docutils align-center" id="id3">
+<caption><span class="caption-number">Table 3 </span><span class="caption-text">Linux Sidekiq SDK Tarball Files</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="54%" />
+<col width="46%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z/arg_parser/
+|-- inc
+|   `-- arg_parser.h
+`-- lib
+    `-- arg_parser__&lt;BUILD_CONFIGs&gt;.a
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z/custom_xport_bare/
+|-- Makefile
+|-- src
+| `-- my_custom_xport.c
+|-- test_apps
+| `-- src
+|     `-- version_test.c
+`-- tools.mk
+</pre></div>
+</div>
+</td>
+<td><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z/sidekiq_core/
+`-- inc
+ |-- sidekiq_api.h
+ |-- sidekiq_params.h
+ |-- sidekiq_types.h
+ |-- sidekiq_xport_api.h
+ `-- sidekiq_xport_types.h
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="2"><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z/doc/
+|-- api
+|-- manuals
+`-- sdk_manual
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td colspan="2"><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z/lib/
+|-- libsidekiq__&lt;BUILD_CONFIGs&gt;.a
+`-- support
+    `-- &lt;BUILD_CONFIGs&gt;/*
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z/prebuilt_apps/
+`-- x86_64.gcc
+ |-- app_src_file1
+ |-- check_fpga_config
+ |-- fdd_rx_tx_samples
+ |-- multicard_dynamic_enable
+ |-- multicard_rx_samples
+ |-- multicard_tx_samples
+ |-- prog_fpga
+ |-- read_accel
+ |-- read_gpsdo
+ |-- read_modules
+ |-- read_temp
+ |-- ref_clock
+ |-- rx_benchmark
+ |-- rx_samples
+ |-- rx_samples_freq_hopping
+ |-- rx_samples_minimal
+ |-- rx_samples_on_trigger
+ |-- set_rx_LO_freq
+ |-- sidekiq_probe
+ |-- store_user_fpga
+ |-- sweep_receive
+ |-- tdd_rx_tx_samples
+ |-- test_golden_present
+ |-- test_sample_rate
+ |-- tx_benchmark
+ |-- tx_configure
+ |-- tx_samples
+ |-- tx_samples_async
+ |-- tx_samples_from_FPGA_RAM
+ |-- tx_samples_on_1pps
+ |-- user_reg_test
+ |-- version_test
+ `-- xcv_benchmark
+</pre></div>
+</div>
+</td>
+<td><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span>sidekiq_sdk_vX.Y.Z/test_apps/
+|-- Makefile
+|-- src
+|   |-- app_src_file1.c
+|   |-- elapsed.h
+|   |-- fdd_rx_tx_samples.c
+|   |-- multicard_dynamic_enable.c
+|   |-- multicard_rx_samples.c
+|   |-- multicard_tx_samples.c
+|   |-- prog_fpga.c
+|   |-- read_accel.c
+|   |-- read_gpsdo.c
+|   |-- read_imu.c (applicable to Z2 rev C)
+|   |-- read_temp.c
+|   |-- rx_benchmark.c
+|   |-- rx_samples.c
+|   |-- rx_samples_freq_hopping.c
+|   |-- rx_samples_minimal.c
+|   |-- rx_samples_on_trigger.c
+|   |-- set_rx_LO_freq.c
+|   |-- sidekiq_probe.c
+|   |-- store_user_fpga.c
+|   |-- sweep_receive.c
+|   |-- tdd_rx_tx_samples.c
+|   |-- test_golden_present.c
+|   |-- tx_benchmark.c
+|   |-- tx_configure.c
+|   |-- tx_samples_async.c
+|   |-- tx_samples.c
+|   |-- tx_samples_from_FPGA_RAM.c
+|   |-- tx_samples_on_1pps.c
+|   |-- user_reg_test.c
+|   |-- version_test.c
+|   `-- xcv_benchmark.c
+`-- tools.mk
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="developing-custom-applications-with-libsidekiq">
+<span id="section-developing-apps"></span><h1>Developing Custom Applications with libsidekiq<a class="headerlink" href="#developing-custom-applications-with-libsidekiq" title="Permalink to this headline">¶</a></h1>
+<p>The Sidekiq SDK enables a user to develop their own software
+applications that utilizes a Linux userspace library called
+libsidekiq.  This library provides a high-level API for
+configuring the RF transceiver, as well as transferring digitized
+baseband I/Q samples between the CPU and the FPGA.</p>
+<div class="section" id="structure-of-an-application-using-libsidekiq">
+<h2>Structure of an Application using libsidekiq<a class="headerlink" href="#structure-of-an-application-using-libsidekiq" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">.../test_apps/src/</span></code> directory found in the Sidekiq SDK tarball
+(currently <code class="docutils literal notranslate"><span class="pre">sidekiq_sdk_v</span></code><code class="docutils literal notranslate"><span class="pre">4.18.x</span></code><code class="docutils literal notranslate"><span class="pre">.tar.xz</span></code>) contains the source code for several
+example applications that utilize libsidekiq. Applications utilizing
+libsidekiq should generally follow some basic guidelines to ensure they
+operate properly. These guidelines are outlined below.</p>
+<p>The general structure of a custom application should follow the template laid out in the
+<code class="docutils literal notranslate"><span class="pre">.../sidekiq_sdk_v</span></code><code class="docutils literal notranslate"><span class="pre">4.18.x</span></code><code class="docutils literal notranslate"><span class="pre">/test_apps/</span></code> directory. This provides an example of a
+Makefile, as well as a directory to hold source files, header files (<code class="code docutils literal notranslate"><span class="pre">inc</span></code>), and output binary
+executable files (<code class="code docutils literal notranslate"><span class="pre">bin</span></code>). It is certainly possible to use a different directory/file structure
+here, but the included Makefile is set up to support this structure already. In addition, the
+<code class="docutils literal notranslate"><span class="pre">app_src_file1.c</span></code> (located in <code class="docutils literal notranslate"><span class="pre">.../test_apps/src/</span></code>) source file contains the majority of the
+typical structure found in a Sidekiq radio application.</p>
+</div>
+<div class="section" id="proper-header-file-inclusion">
+<h2>Proper Header File Inclusion<a class="headerlink" href="#proper-header-file-inclusion" title="Permalink to this headline">¶</a></h2>
+<p>The entire libsidekiq API is exposed through a single header file called
+<code class="docutils literal notranslate"><span class="pre">sidekiq_api.h</span></code>. This header file can be found at:</p>
+<pre class="literal-block">
+.../sidekiq_sdk_v4.18.x/sidekiq_core/inc/sidekiq_api.h
+</pre>
+<p>Any application that utilizes libsidekiq will need to include the
+<code class="docutils literal notranslate"><span class="pre">sidekiq_api.h</span></code> header file in order to access the provided services.
+This is the only header file that is required to be included.</p>
+<p>There are four support header files, three of which are included
+indirectly by <code class="docutils literal notranslate"><span class="pre">sidekiq_api.h</span></code>. These are <code class="docutils literal notranslate"><span class="pre">sidekiq_types.h</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sidekiq_params.h</span></code>, and <code class="docutils literal notranslate"><span class="pre">sidekiq_xport_types.h</span></code>. The fourth support
+header file is <code class="docutils literal notranslate"><span class="pre">sidekiq_xport_api.h</span></code> and is used by custom transport
+developers when implementing registration of a custom transport. This
+header file is found in the same location as <code class="docutils literal notranslate"><span class="pre">sidekiq_api.h</span></code>:</p>
+<pre class="literal-block">
+.../sidekiq_sdk_v4.18.x/sidekiq_core/inc/sidekiq_xport_api.h
+</pre>
+</div>
+<div class="section" id="initializing-libsidekiq">
+<h2>Initializing libsidekiq<a class="headerlink" href="#initializing-libsidekiq" title="Permalink to this headline">¶</a></h2>
+<p>The libsidekiq library supports use of one or more Sidekiq cards in a
+single host system. Each Sidekiq card can utilize either the PCIe
+interface, the USB interface, or a custom defined interface for
+transport between the host platform and the Sidekiq card. Automatic
+detection of the interface is supported. The <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> function
+is used to initialize the RFIC, initialize the libsidekiq library,
+reserve the resources required for the specified Sidekiq card(s), and
+initialize the communication transport. Inserting the kernel modules are
+required prior to accessing a Sidekiq card when using a PCIe
+transport. This is handled automatically on the PDK laptop and is
+performed by the initialization script described in <a class="reference internal" href="installation_procedure.html#installation-procedure"><span class="std std-ref">Installation Procedure</span></a>.</p>
+<p>If it is desired to query how many Sidekiq cards are detected by the
+host platform and the mapping of Sidekiq card (based on serial number)
+to card number in the system prior to reserving the cards, the following
+sequence of libsidekiq calls may be made:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">uint8_t</span> <span class="n">number_of_cards</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">uint8_t</span> <span class="n">card_list</span><span class="p">[</span><span class="n">SKIQ_MAX_NUM_CARDS</span><span class="p">];</span>
+<span class="kt">uint8_t</span> <span class="n">card_num</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">uint8_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">char</span> <span class="o">*</span><span class="n">serial_str</span><span class="p">;</span>
+
+<span class="cm">/* query the list of all Sidekiq cards on the PCIe interface */</span>
+<span class="n">skiq_get_cards</span><span class="p">(</span> <span class="n">skiq_xport_type_pcie</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">number_of_cards</span><span class="p">,</span> <span class="n">card_list</span> <span class="p">);</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">number_of_cards</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* determine the serial number based on the card number */</span>
+    <span class="n">skiq_read_serial_string</span><span class="p">(</span> <span class="n">card_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">serial_str</span> <span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Sidekiq card number %u has serial number %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">card_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">serial_str</span><span class="p">);</span>
+
+    <span class="cm">/* determine the card number based on the serial number */</span>
+    <span class="n">skiq_get_card_from_serial_string</span><span class="p">(</span> <span class="n">serial_str</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">card_num</span> <span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Sidekiq serial number %s is located at card number %u</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+           <span class="n">serial_str</span><span class="p">,</span> <span class="n">card_num</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A card can only be used by a single application at any point in
+time. To determine a card’s availability, the
+<code class="code docutils literal notranslate"><span class="pre">skiq_is_card_avail()</span></code> API should be used. If the card is
+already in use, the process ID of the application using the card is
+provided. When <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> is called for a specific card, the
+card is reserved for use by that application and other applications
+are denied access to the locked card.</p>
+<p>To perform the initialization of libsidekiq, the <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code>
+function should be called specifying the cards to use and the
+initialization level.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">As of libsidekiq v4.8.0, specification of the transport interface is
+deprecated and that <code class="code docutils literal notranslate"><span class="pre">skiq_xport_type_auto</span></code> is always used regardless of
+what is specified. The example below illustrates how to initialize two cards
+for full RF functionality.</p>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">uint8_t</span> <span class="n">num_cards</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+<span class="kt">uint8_t</span> <span class="n">cards</span><span class="p">[</span><span class="n">num_cards</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">};</span>
+<span class="n">skiq_xport_type_t</span> <span class="n">type</span> <span class="o">=</span> <span class="n">skiq_xport_type_auto</span><span class="p">;</span>
+<span class="n">skiq_xport_init_level_t</span> <span class="n">level</span> <span class="o">=</span> <span class="n">skiq_xport_init_level_full</span><span class="p">;</span>
+
+<span class="cm">/* initialize libsidekiq for card numbers 0 and 1 */</span>
+<span class="n">skiq_init</span><span class="p">(</span> <span class="n">type</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">cards</span><span class="p">,</span> <span class="n">num_cards</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>The initialization level specifies how much initialization should be
+performed for each of the interfaces. Any application interested in
+streaming sample data or configuring the RF radio properties should
+perform a full initialization by specifying the level as
+<code class="code docutils literal notranslate"><span class="pre">skiq_xport_init_level_full</span></code>.</p>
+<p>The <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> function also initializes three mutexes per Sidekiq
+card provided internally by libsidekiq: one mutex is used to control
+access to FPGA registers, another mutex is used to protect access to the
+FPGA → CPU interface used for receiving I/Q samples, and a third mutex is
+used to protect access to the CPU → FPGA interface used for transmitting
+I/Q samples. This allows a multi-threaded host application to access the
+various libsidekiq services, while ensuring that calls to libsidekiq are
+thread-safe.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Running multiple applications that utilize libsidekiq is supported
+as long as each instance of libsidekiq is using a different Sidekiq
+card. Applications using the same Sidekiq card cannot be executed at the same
+time.</p>
+</div>
+<p>Lastly, as part of the initialization process, a signal handler should
+be installed for capturing <code class="code docutils literal notranslate"><span class="pre">SIGINT</span></code> signals that may occur. Graceful
+shutdown should be performed, including stopping any active streaming
+and calling <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code>. Note that the stop streaming and exit
+calls should not be made within the context of the signal handler as
+those calls attempt to lock a mutex which may already be locked if a
+receive or transmit call is in progress prior to the handling of the
+signal. A recommended approach to handle the signal is to set a flag
+which the main application checks to see if it should continue to run.
+Upon the clearing of the “run flag”, the application should cleanup and
+call <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code>. See the <code class="docutils literal notranslate"><span class="pre">tx_samples.c</span></code> test application for an
+example of this.</p>
+<div class="section" id="dynamic-use-of-sidekiq-cards">
+<h3>Dynamic Use of Sidekiq Cards<a class="headerlink" href="#dynamic-use-of-sidekiq-cards" title="Permalink to this headline">¶</a></h3>
+<p>libsidekiq v4.9.0 adds the ability for an application to dynamically
+enable or disable use of Sidekiq cards independent of the library
+initialization performed via the <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> API function. The
+<code class="code docutils literal notranslate"><span class="pre">skiq_init_without_cards()</span></code> API function may be used to initialize
+the library without reserving any card for immediate use; this is the
+equivalent of calling <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> with an empty card list.</p>
+<p>At a later point during the application’s execution, a card can be
+initialized and enabled for use through either the
+<code class="code docutils literal notranslate"><span class="pre">skiq_enable_cards()</span></code> or the
+<code class="code docutils literal notranslate"><span class="pre">skiq_enable_cards_by_serial_str()</span></code> API function. This will
+perform a full initialization of the card and reserve the card’s use to
+the requesting application. At a later point in time, if the card is no
+longer needed by the application, the card can be released using the
+<code class="code docutils literal notranslate"><span class="pre">skiq_disable_card()</span></code> API. This shuts down the card, and this card
+is the considered available for use by either the same or another
+application. Calling <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code> performs a full shutdown of the
+library as well as any card currently reserved by the application. There
+is no need to perform an additional call to <code class="code docutils literal notranslate"><span class="pre">skiq_disable_card()</span></code>
+prior to calling <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code>.</p>
+<p>A simple example (without error checking) of accessing cards dynamically
+could be:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">uint8_t</span> <span class="n">num_cards</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">uint8_t</span> <span class="n">cardList</span><span class="p">[</span><span class="n">SKIQ_MAX_NUM_CARDS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">};</span>
+
+<span class="cm">/* Initialize libsidekiq with no cards - none are needed right now */</span>
+<span class="n">skiq_init_without_cards</span><span class="p">();</span>
+
+<span class="cm">/* Do some tasks */</span>
+<span class="p">...</span>
+
+<span class="cm">/* A Sidekiq card is now needed; dynamically enable card 0 */</span>
+<span class="n">cardList</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">num_cards</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="n">skiq_enable_cards</span><span class="p">(</span><span class="n">cardList</span><span class="p">,</span> <span class="n">num_cards</span><span class="p">,</span> <span class="n">skiq_xport_init_level_full</span><span class="p">);</span>
+
+<span class="cm">/* Perform some radio tasks */</span>
+<span class="p">...</span>
+
+<span class="cm">/* Done with the card; dynamically disable card 0 */</span>
+<span class="n">cardList</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">num_cards</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="n">skiq_disable_cards</span><span class="p">(</span><span class="n">cardList</span><span class="p">,</span> <span class="n">num_cards</span><span class="p">);</span>
+
+<span class="cm">/* Perform some cleanup tasks */</span>
+<span class="p">...</span>
+
+<span class="cm">/* Shutdown libsidekiq */</span>
+<span class="n">skiq_exit</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>The test application <code class="docutils literal notranslate"><span class="pre">multicard_dynamic_enable.c</span></code> provides a basic
+example of dynamically enabling or disabling a card for use by the
+application.</p>
+</div>
+<div class="section" id="logging">
+<h3>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h3>
+<p>By default, libsidekiq executes any logging of the library with syslog.
+The default configuration is to display any logging message to both the
+console as well as within <code class="docutils literal notranslate"><span class="pre">/var/log/syslog</span></code>. A user can utilize their
+own logging function by registering their own logging function pointer
+with the <code class="code docutils literal notranslate"><span class="pre">skiq_register_logging()</span></code> API function. Refer to the
+<code class="docutils literal notranslate"><span class="pre">app_src_file1.c</span></code> test application for an example of this. If the user
+is interested in completely disabling any logging or prints within the
+Sidekiq library, <code class="code docutils literal notranslate"><span class="pre">NULL</span></code> can be provided to
+<code class="code docutils literal notranslate"><span class="pre">skiq_register_logging()</span></code>.</p>
+</div>
+<div class="section" id="transport-layer">
+<h3>Transport Layer<a class="headerlink" href="#transport-layer" title="Permalink to this headline">¶</a></h3>
+<p>Within libsidekiq, there is the concept of a “transport” (or xport)
+layer. This layer facilitates I/O between a Sidekiq card and host,
+such as configuring radio parameters via register transactions and
+streaming I/Q samples. Sidekiq’s hardware by default is configured to
+implement PCIe and requires only that software be initialized in the
+manner as described above. The Sidekiq mPCIe and m.2 radios additionally
+have an available USB transport; making use of this transport
+is only recommended for use in systems where PCIe is not feasible, as
+the USB transport is significantly less performant when streaming
+samples and transacting configuration registers. Both Sidekiq Z2 and
+Matchstiq Z3u utilize a custom transport and the transport-specific
+FPGA bitstream is automatically loaded upon boot for these radios. For
+details on configuring the FPGA, refer to <a class="reference internal" href="fpga_programming.html#fpga-programming"><span class="std std-ref">FPGA Programming</span></a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Sidekiq X2, X4, Stretch, and NV100 do not support the USB transport layer.</p>
+</div>
+</div>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
+<p>Depending on the Sidekiq product and configuration, availability of
+certain hardware peripherals may be limited. Additionally, configuration
+of various RF parameters such as frequency, sample rate, and gain, vary.
+To determine the parameters and ranges of a specific Sidekiq card, the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_parameters()</span></code> API should be used. The parameters
+available to query are defined in <code class="code docutils literal notranslate"><span class="pre">skiq_param_t</span></code>.</p>
+</div>
+</div>
+<div class="section" id="configuring-an-interface-using-a-handle">
+<h2>Configuring an Interface using a Handle<a class="headerlink" href="#configuring-an-interface-using-a-handle" title="Permalink to this headline">¶</a></h2>
+<p>Each of the underlying RF interfaces presents itself as a handle that
+can be used to reference the desired RF interface for purposes of
+configuration and data transfer. The libsidekiq API provides read/write
+access functions for a variety of radio configuration parameters.
+The full listing of these access functions
+can be found in the Sidekiq API documentation
+(<code class="docutils literal notranslate"><span class="pre">sidekiq_sdk_current/doc/api/Sidekiq_API_</span></code><code class="docutils literal notranslate"><span class="pre">4.18</span></code><code class="docutils literal notranslate"><span class="pre">.0.pdf</span></code>) as well
+as in <code class="docutils literal notranslate"><span class="pre">sidekiq_api.h</span></code>.</p>
+<p>Handles sharing the same letter (A1/A2) or (B1/B2) indicates a phase-coherent relationship and shared
+resources, mainly a shared local oscillator (LO) and clocking.  Consequently,
+adjusting the sample rate or center frequency on handle A1 will also impact the sample
+rate on A2, and vice versa.  Despite this dependence, each Rx interface has its own independently
+configurable RF lineup including gain, overload detection, etc.</p>
+<p>Please see the table below containing Sidekiq models, supported handles, and usage restrictions.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Sidekiq Variant</th>
+<th class="head">Supported Rx Handles</th>
+<th class="head">Notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>mPCIe</td>
+<td>A1</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>mPCIe (-001 variant)</td>
+<td>A1, A2</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>m.2</td>
+<td>A1, A2</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>X2</td>
+<td>A1, A2, B1</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>X4</td>
+<td>A1, A2, B1, B2, C1, D1</td>
+<td><div class="first last line-block">
+<div class="line">Neither C1/A2 nor D1/A2 support simultaneous operation.</div>
+<div class="line"><br /></div>
+<div class="line">4 channel phase coherent Rx (A1,A2,B1,B2) is supported.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td>Sidekiq Stretch</td>
+<td>A1</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>NV100</td>
+<td>A1, A2, B1</td>
+<td>A2 and B1 cannot be used simultaneously.</td>
+</tr>
+<tr class="row-odd"><td>Matchstiq Z3u</td>
+<td>A1, A2</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If streaming is attempted for conflicting streams, the start streaming call will fail
+with <code class="code docutils literal notranslate"><span class="pre">-EBUSY</span></code>. To determine conflicting handles, the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_stream_handle_conflict()</span></code> API function can be used.</p>
+</div>
+<p>For additional information and examples on how to use the X4 or the NV100 handles to acquire
+independent or coherent data see section <a class="reference internal" href="example_x4_use_cases.html#example-x4-use-cases-rx"><span class="std std-ref">Example X4 Use Cases: Rx</span></a> or
+<a class="reference internal" href="example_nv100_use_cases.html#example-nv100-use-cases-rx"><span class="std std-ref">Example NV100 Use Cases: Rx</span></a> sections</p>
+<p>A generic example sequence for configuring a sub-set of the available
+parameters for multiple Rx interface handles is shown below.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">skiq_write_rx_sample_rate_and_bandwidth</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a1</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to set sample rate to %u Hz on RxA1</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_write_rx_sample_rate_and_bandwidth</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a2</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to set sample rate to %u Hz on RxA2</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_write_rx_LO_freq</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a1</span><span class="p">,</span> <span class="n">lo_freq</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to set Rx LO freq to %&quot;</span> <span class="n">PRIu64</span> <span class="s">&quot; Hz on RxA1</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">lo_freq</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_write_rx_gain_mode</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a1</span><span class="p">,</span> <span class="n">skiq_rx_gain_manual</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to set Rx gain mode to manual on RxA1</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_write_rx_gain_mode</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a2</span><span class="p">,</span> <span class="n">skiq_rx_gain_manual</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to set Rx gain mode to manual on RxA2</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_read_rx_gain_index_range</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gain_index_min</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gain_index_max</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to read Rx gain index on RxA1</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">rx_a1_gain</span> <span class="o">=</span> <span class="n">gain_index_min</span><span class="p">;</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_read_rx_gain_index_range</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gain_index_min</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gain_index_max</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to read Rx gain index on RxA2</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">rx_a2_gain</span> <span class="o">=</span> <span class="n">gain_index_max</span><span class="p">;</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_write_rx_gain</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a1</span><span class="p">,</span> <span class="n">rx_a1_gain</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to set Rx gain to %u on RxA1</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rx_a1_gain</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_write_rx_gain</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl_a2</span><span class="p">,</span> <span class="n">rx_a2_gain</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: failed to set Rx gain to %u on RxA2</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rx_a2_gain</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>All access functions return an <code class="code docutils literal notranslate"><span class="pre">int32_t</span></code> with a status code, where
+0 = success and any other value indicates an error that occurred.</p>
+</div>
+<div class="section" id="frequency-hopping">
+<h2>Frequency Hopping<a class="headerlink" href="#frequency-hopping" title="Permalink to this headline">¶</a></h2>
+<p>As of libsidekiq v4.10, the ability to rapidly hop amongst a user
+pre-defined frequency list is supported for most products. Examples of
+how to use the frequency hopping APIs are provided in the
+<code class="code docutils literal notranslate"><span class="pre">tx_configure</span></code> and <code class="code docutils literal notranslate"><span class="pre">rx_samples_freq_hopping</span></code> test applications.</p>
+<p>The RFICs used on Sidekiq X4 and libsidekiq impose a restriction on how to perform frequency
+hopping.  A hop index can only be written to a “mailbox” slot on the RFIC.  A hop operation executes
+a retune to the frequency in the “next” slot, then delivers the index from the “mailbox” to the
+“next” slot.  It acts much like a 2 element deep FIFO that must have 1 or 2 indices enqueued and
+cannot go empty.  Even though this approach is only required for Sidekiq X4, libsidekiq presents a
+consistent interface across all radio products.</p>
+<p>The general API flow (without error checking) to configure and utilize frequency hopping are shown
+in the figure below. Details of the API functions related to frequency hopping are outlined in the
+sections that follow.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">skiq_rx_hdl_t</span> <span class="n">hdl</span> <span class="o">=</span> <span class="n">skiq_rx_hdl_A1</span><span class="p">;</span>
+<span class="kt">uint8_t</span> <span class="n">card</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">uint8_t</span> <span class="n">num_hop_freqs</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+<span class="kt">uint8_t</span> <span class="n">initial_hop_idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">uint64_t</span> <span class="n">freq_list</span><span class="p">[</span><span class="n">num_hop_freqs</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">100000000</span><span class="p">,</span> <span class="mi">200000000</span><span class="p">,</span> <span class="mi">300000000</span><span class="p">,</span> <span class="mi">400000000</span><span class="p">,</span> <span class="mi">500000000</span> <span class="p">};</span>
+
+<span class="cm">/* an RF timestamp of 0 indicates an &quot;immediate&quot; hop since 0 is always in the past */</span>
+<span class="kt">uint64_t</span> <span class="n">rf_timestamp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="cm">/* configure frequency tune mode for &quot;immediate&quot; */</span>
+<span class="n">skiq_write_rx_freq_tune_mode</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="n">hdl</span><span class="p">,</span> <span class="n">skiq_freq_tune_mode_hop_immediate</span> <span class="p">);</span>
+
+<span class="cm">/* configure the hopping frequency list and the initial hop index */</span>
+<span class="n">skiq_write_rx_freq_hop_list</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="n">hdl</span><span class="p">,</span> <span class="n">num_hop_freqs</span><span class="p">,</span> <span class="n">freq_list</span><span class="p">,</span> <span class="n">initial_hop_idx</span> <span class="p">);</span>
+
+<span class="cm">/* prepare the next hop to follow the initial hop index to be at freq_list[3] */</span>
+<span class="n">skiq_write_next_rx_freq_hop</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="n">hdl</span><span class="p">,</span> <span class="mi">3</span> <span class="p">);</span>
+
+<span class="cm">/* immediately execute the hop to the initial frequency (i.e. freq_list[initial_hop_idx]) */</span>
+<span class="n">skiq_perform_rx_freq_hop</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="n">hdl</span><span class="p">,</span> <span class="n">rf_timestamp</span> <span class="p">);</span>
+
+<span class="cm">/* prepare the next hop to follow the freq_list[3] to be at freq_list[1] */</span>
+<span class="n">skiq_write_next_rx_freq_hop</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="n">hdl</span><span class="p">,</span> <span class="mi">1</span> <span class="p">);</span>
+
+<span class="cm">/* immediately execute the hop to the second frequency (i.e. freq_list[3]) */</span>
+<span class="n">skiq_perform_rx_freq_hop</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="n">hdl</span><span class="p">,</span> <span class="n">rf_timestamp</span> <span class="p">);</span>
+
+<span class="cm">/* at this point, there is one hop left in the RFIC&#39;s hop FIFO: freq_list[1].  In order to hop to</span>
+<span class="cm">   that frequency, however, a frequency index *must* first be written to the &quot;mailbox&quot; slot using</span>
+<span class="cm">   skiq_write_next_rx_freq_hop() or the FIFO will go empty (which is not allowed) */</span>
+</pre></div>
+</div>
+<div class="section" id="configuring-tune-mode">
+<h3>Configuring Tune Mode<a class="headerlink" href="#configuring-tune-mode" title="Permalink to this headline">¶</a></h3>
+<p>The tune mode can be configured to hop on timestamp
+(<code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_hop_on_timestamp</span></code>), hop immediately
+(<code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_hop_immediate</span></code>), or to use the default of the
+“standard” tuning (<code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_standard</span></code>).</p>
+<p>The mode can be configured with <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_freq_tune_mode()</span></code>
+/ <code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_freq_tune_mode()</span></code>. Additionally, the current
+mode can be queried with <code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_freq_tune_mode()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_freq_tune_mode()</span></code>.  Note that while Sidekiq X2’s
+RFIC does not support fast frequency hopping, the API to perform the
+LO tuning is supported when using <code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_hop_immediate</span></code>
+(as of libsidekiq v4.12.0).</p>
+<p>When retuning with the frequency hopping API in either the
+<code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_hop_on_timestamp</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_hop_immediate</span></code> tuning mode, the RFIC’s calibration algorithms
+are not performed to support faster tuning. If rapid tuning is desired
+at the cost of reduced RF performance, the frequency hopping tune mode
+is recommended. However, if maximum reduction of DC offset or image is
+desired, then the standard tuning mode is recommended.</p>
+</div>
+<div class="section" id="frequency-list-definition">
+<h3>Frequency List Definition<a class="headerlink" href="#frequency-list-definition" title="Permalink to this headline">¶</a></h3>
+<p>When using frequency hopping, a list of frequencies must be specified
+prior to executing a hop to a specific frequency. The maximum number of
+frequencies that can be specified is limited to
+<code class="code docutils literal notranslate"><span class="pre">SKIQ_MAX_NUM_FREQ_HOPS</span></code>.</p>
+<p>The frequency list can be defined with
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_freq_hop_list()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_freq_hop_list()</span></code>. A previously specified frequency
+list can be queried with <code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_freq_hop_list()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_freq_hop_list()</span></code>.</p>
+</div>
+<div class="section" id="prepare-next-frequency-hop">
+<h3>Prepare Next Frequency Hop<a class="headerlink" href="#prepare-next-frequency-hop" title="Permalink to this headline">¶</a></h3>
+<p>The next frequency to hop to <strong>must</strong> be configured prior to executing the
+frequency hop using either the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_next_tx_freq_hop()</span></code> API calls. To determine the details
+of the previously configured “next hop”, the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_next_rx_freq_hop()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_next_tx_freq_hop()</span></code> API calls can be used.  When a hop is
+executed with <code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop()</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_perform_tx_freq_hop()</span></code>,
+this will be the frequency that is configured.</p>
+</div>
+<div class="section" id="execute-frequency-hop">
+<h3>Execute Frequency Hop<a class="headerlink" href="#execute-frequency-hop" title="Permalink to this headline">¶</a></h3>
+<p>As long as there was a previously configured “next hop”, the “perform
+hop” APIs can be used to execute the frequency hop. In the case of
+<code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_hop_immediate</span></code>, the frequency hop is executed
+immediately. In the case of <code class="code docutils literal notranslate"><span class="pre">skiq_tune_mode_hop_on_timestamp</span></code>, the
+frequency hop is not initiated until the specified timestamp has been
+reached; if a timestamp in the past is specified, then the frequency hop
+occurs immediately. The API to complete the frequency hop is
+<code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop()</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_perform_tx_freq_hop()</span></code>.
+The <code class="code docutils literal notranslate"><span class="pre">skiq_read_curr_rx_freq_hop()</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_read_curr_tx_freq_hop()</span></code> API functions can be
+used to query the details of the currently configured frequency.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Hopping on timestamp uses GPIO pins between the FPGA and RFIC to
+execute the frequency hop. If these pins are already in use with a custom
+FPGA design, unexpected behavior may occur.</p>
+</div>
+</div>
+</div>
+<div class="section" id="operation-modes">
+<h2>Operation Modes<a class="headerlink" href="#operation-modes" title="Permalink to this headline">¶</a></h2>
+<p>Sidekiq can support 3 different modes of operation: single channel
+receiver (Rx A/B/C/D 1 only), dual channel receiver (both Rx A/B1 and
+Rx A/B2), or single channel transceiver (Rx A1 / Tx A1).  With the Sidekiq-002,
+Sidekiq Z2 products, and Sidekiq m.2 2280 only a single channel transceiver
+is available. For Matchstiq Z3u, either a single channel transceiver is supported
+or a dual channel receiver mode can be used.  The operation mode is specified by
+configuring the channel mode:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* configure mode for both Rx A/B1 and Rx A/B2 */</span>
+<span class="n">skiq_write_chan_mode</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">skiq_chan_mode_dual</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>If only Rx A1/B1/C1/D1 is needed for receiving or if transmitting, the mode
+should be set to <code class="code docutils literal notranslate"><span class="pre">skiq_chan_mode_single</span></code>. This mode should be
+configured prior to starting an interface or undefined behavior may
+occur.</p>
+<p>The Sidekiq m.2, Sidekiq X2, Sidekiq X4, and Sidekiq NV100 products
+additionally support a dual channel transceiver (Rx A/B 1/2 and Tx A/B
+1/2). The <code class="code docutils literal notranslate"><span class="pre">skiq_write_chan_mode()</span></code> API call may be used as well to
+configure the channel mode.</p>
+<p>Finally, both Sidekiq X4 and Sidekiq NV100 are each based on different RFICs found on the other
+Sidekiq products. These RFICs are designed primarily for TDD usage. This means that Rx and Tx cannot
+be streaming at the same time for the A* or B* handles. Note that streaming TX for an A* handle can
+happen simultaneously while receiving on a B* handle.  Additionally, the LO frequency is shared
+across Rx and Tx frequencies.  In the case of Sidekiq X4, <code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_A1</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_A2</span></code> share the LO frequency with <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_A1</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_A2</span></code>
+and <code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_B1</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_B2</span></code> share the LO frequency with
+<code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_B1</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_B2</span></code> for the Sidekiq X4 product. In the case of Sidekiq
+NV100, <code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_A1</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_A2</span></code> share an LO with
+<code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_A1</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_A2</span></code>; <code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_B1</span></code> share an LO with
+<code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_B1</span></code>. The current RF LO mapping for Sidekiq NV100 Tx/Rx handles is:</p>
+<span id="table-rf-handles-lo-mapping"></span><table border="1" class="docutils align-center" id="id4">
+<caption><span class="caption-number">Table 4 </span><span class="caption-text">RF LO mapping for Sidekiq NV100</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="44%" />
+<col width="56%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">RF Handle</th>
+<th class="head">LO Selection</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>RxA1</td>
+<td>LO1</td>
+</tr>
+<tr class="row-odd"><td>RxA2</td>
+<td>LO1</td>
+</tr>
+<tr class="row-even"><td>RxB1</td>
+<td>LO2</td>
+</tr>
+<tr class="row-odd"><td>TxA1</td>
+<td>LO1</td>
+</tr>
+<tr class="row-even"><td>TxA2</td>
+<td>LO1</td>
+</tr>
+<tr class="row-odd"><td>TxB1</td>
+<td>LO2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="rf-port-configuration">
+<h2>RF Port Configuration<a class="headerlink" href="#rf-port-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Certain versions of the Sidekiq product support configuration of the RF
+port mode to perform either transmission or reception of sample data
+(referred to as TRx operation). Alternatively, the Sidekiq card operates
+in fixed mode, where the RF ports cannot be switched between receive and
+transmit. A detailed table outlining options and configurations per
+Sidekiq is captured in <a class="reference internal" href="rf_port_config.html#rf-port-config"><span class="std std-ref">Detailed RF Port Configuration</span></a>.</p>
+<p>Certain versions of the Sidekiq card also support configuration of the
+RF port to RF handle mapping. Note that only specific RF ports are
+available in the fixed or TRx mode. To determine RF ports available for
+a specific handle, the following API can be used:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* read the RX ports available for Rx A1 */</span>
+<span class="n">skiq_read_rx_rf_ports_avail_for_hdl</span><span class="p">(</span><span class="n">card</span><span class="p">,</span>
+                                 <span class="n">skiq_rx_hdl_A1</span><span class="p">,</span>
+                                 <span class="o">&amp;</span><span class="n">num_fixed_rf_ports</span><span class="p">,</span>
+                                 <span class="n">fixed_rf_ports</span><span class="p">,</span>
+                                 <span class="o">&amp;</span><span class="n">num_trx_rf_ports</span><span class="p">,</span>
+                                 <span class="n">trx_rf_ports</span> <span class="p">);</span>
+
+<span class="cm">/* read the TX ports available for Tx A1 */</span>
+<span class="n">skiq_read_tx_rf_ports_avail_for_hdl</span><span class="p">(</span><span class="n">card</span><span class="p">,</span>
+                                 <span class="n">skiq_tx_hdl_A1</span><span class="p">,</span>
+                                 <span class="o">&amp;</span><span class="n">num_fixed_rf_ports</span><span class="p">,</span>
+                                 <span class="n">fixed_rf_ports</span><span class="p">,</span>
+                                 <span class="o">&amp;</span><span class="n">num_trx_rf_ports</span><span class="p">,</span>
+                                 <span class="n">trx_rf_ports</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>The currently configured RF port can be queried and optionally
+configured, as shown below.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* read the configured RF port for Rx A1 */</span>
+<span class="n">skiq_read_rx_rf_port_for_hdl</span><span class="p">(</span><span class="n">card</span><span class="p">,</span>
+                          <span class="n">skiq_rx_hdl_A1</span><span class="p">,</span>
+                          <span class="o">&amp;</span><span class="n">rf_port</span> <span class="p">);</span>
+
+<span class="cm">/* read the configured RF port for Tx A1 */</span>
+<span class="n">skiq_read_tx_rf_port_for_hdl</span><span class="p">(</span><span class="n">card</span><span class="p">,</span>
+                          <span class="n">skiq_tx_hdl_A1</span><span class="p">,</span>
+                          <span class="o">&amp;</span><span class="n">rf_port</span> <span class="p">);</span>
+
+<span class="cm">/* write the configured RF port for Rx A1 */</span>
+<span class="n">skiq_write_rx_rf_port_for_hdl</span><span class="p">(</span><span class="n">card</span><span class="p">,</span>
+                               <span class="n">skiq_rx_hdl_A1</span><span class="p">,</span>
+                               <span class="n">skiq_rf_port_J2</span> <span class="p">);</span>
+
+<span class="cm">/* write the configured RF port for Tx A1 */</span>
+<span class="n">skiq_write_tx_rf_port_for_hdl</span><span class="p">(</span><span class="n">card</span><span class="p">,</span>
+                              <span class="n">skiq_tx_hdl_A1</span><span class="p">,</span>
+                              <span class="n">skiq_rf_port_J1</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>The RF port modes available for a specific Sidekiq can be queried
+directly as shown below, or accessed via the <code class="code docutils literal notranslate"><span class="pre">skiq_params_t</span></code>.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* determine the RF port configuration available */</span>
+<span class="n">skiq_read_rf_port_config_avail</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fixed_mode</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">trx_mode</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>Additionally, some variants of Sidekiq support updating the RF port
+configuration dynamically. The current RF port configuration can be read
+by:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* determine the current RF port configuration */</span>
+<span class="n">skiq_read_rf_port_config</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">rf_port_config</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>Finally, when operating with the RF configuration of
+<code class="code docutils literal notranslate"><span class="pre">skiq_rf_port_config_trx</span></code>, the mode of RF port can switch between
+receive and transmit with the following API.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* switch the operation of the RF port to transmit */</span>
+<span class="n">skiq_write_rf_port_operation</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="nb">true</span> <span class="p">);</span>
+
+<span class="cm">/* switch the operation of the RF port to receive */</span>
+<span class="n">skiq_write_rf_port_operation</span><span class="p">(</span> <span class="n">card</span><span class="p">,</span> <span class="nb">false</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>For more details on the modes available for a specific hardware variant
+of Sidekiq, please contact Epiq Solutions support <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>.
+For an example of switching between receive and transmit modes, refer to
+the <code class="docutils literal notranslate"><span class="pre">tdd_rx_tx_samples.c</span></code> test application.</p>
+</div>
+<div class="section" id="i-q-ordering-mode">
+<h2>I/Q Ordering Mode<a class="headerlink" href="#i-q-ordering-mode" title="Permalink to this headline">¶</a></h2>
+<p>The order in which complex samples are received or transmitted by
+Sidekiq is a configurable option. Ordering can be adjusted by the user
+at run-time <em>before</em> streaming is started by means of the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_iq_order_mode()</span></code> function and the <code class="code docutils literal notranslate"><span class="pre">skiq_iq_order_t</span></code>
+type. If not specified, Sidekiq will operate with <code class="code docutils literal notranslate"><span class="pre">skiq_iq_order_qi</span></code>,
+as depicted in the <a class="reference internal" href="#table-rx-packet-structure"><span class="std std-ref">Rx I/Q Packet Structure</span></a> and
+<a class="reference internal" href="#figure-tx-packet-structure"><span class="std std-ref">Tx Packet Structure</span></a> figures. In this mode, Q0 is data[0],
+I0 is data[1], Q1 is data[2], I1 is data[3], and so on.</p>
+<p>Alternatively in the case of <code class="code docutils literal notranslate"><span class="pre">skiq_iq_order_iq</span></code>, the order will be
+swapped: I0 is data[0], Q0 is data[1], I1 is data[2], Q1 is data[3], and
+so on. For an example of adjusting the ordering mode, please refer to
+the test application <code class="docutils literal notranslate"><span class="pre">rx_samples.c</span></code> or <code class="docutils literal notranslate"><span class="pre">tx_samples.c</span></code>.</p>
+</div>
+<div class="section" id="packed-mode-sidekiq-mpcie-m-2-and-stretch-m-2-2280-only">
+<h2>Packed Mode (Sidekiq mPCIe, m.2, and Stretch / m.2-2280 only)<a class="headerlink" href="#packed-mode-sidekiq-mpcie-m-2-and-stretch-m-2-2280-only" title="Permalink to this headline">¶</a></h2>
+<p>By default, Sidekiq radios operate in ‘unpacked’ mode where each I or Q sample
+is stored in its own 16-bit value. However, not all radios use all 16-bits for
+sample data - see below table for more information. To query the supported I/Q
+sample size (resolution) using the libsidekiq API, use
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_iq_resolution()</span></code> and <code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_iq_resolution()</span></code>.</p>
+<span id="table-unpacked-size"></span><table border="1" class="docutils align-center" id="id5">
+<caption><span class="caption-number">Table 5 </span><span class="caption-text">Unpacked sample sizes per radio</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="24%" />
+<col width="38%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Radio</th>
+<th class="head">RX sample size
+(in bits)</th>
+<th class="head">TX sample size
+(in bits)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Sidekiq mPCIe</td>
+<td>12 <sup>*</sup></td>
+<td>12 <sup>*</sup></td>
+</tr>
+<tr class="row-odd"><td>Sidekiq m.2</td>
+<td>12 <sup>*</sup></td>
+<td>12 <sup>*</sup></td>
+</tr>
+<tr class="row-even"><td>Sidekiq Stretch</td>
+<td>12 <sup>*</sup></td>
+<td>12 <sup>*</sup></td>
+</tr>
+<tr class="row-odd"><td>Sidekiq Z2</td>
+<td>12 <sup>*</sup></td>
+<td>12 <sup>*</sup></td>
+</tr>
+<tr class="row-even"><td>Matchstiq Z3u</td>
+<td>12 <sup>*</sup></td>
+<td>12 <sup>*</sup></td>
+</tr>
+<tr class="row-odd"><td>Sidekiq X2</td>
+<td>16</td>
+<td>14 (upper)</td>
+</tr>
+<tr class="row-even"><td>Sidekiq X4</td>
+<td>16</td>
+<td>14 (upper)</td>
+</tr>
+<tr class="row-odd"><td>Sidekiq NV100</td>
+<td>16</td>
+<td>16</td>
+</tr>
+</tbody>
+</table>
+<p><sup>*</sup> – sample is sign extended to 16 bits</p>
+<p>Additionally, Sidekiq mPCIe, Sidekiq m.2, and Sidekiq Stretch also support a
+mode of operation that compacts the I/Q samples to use 12-bits instead of
+16-bits per I and Q sample. This mode is referred to as packed mode. Packed
+mode is useful when it is desired to operate at a sample rate higher than the
+rate at which the transport interface can reliably transfer data. This allows
+for more samples to be transferred within a given time period at the cost of
+requiring unpacking of the samples prior to consumption when receiving or
+packing of the samples while transmitting. Packed mode can be enabled or
+disabled by calling the <code class="code docutils literal notranslate"><span class="pre">skiq_write_iq_pack_mode()</span></code> function. The mode
+applies to both transmitting and receiving samples. When packed mode is
+enabled, the sample data should be formatted as shown in
+<a class="reference internal" href="#figure-packed-iq-structure"><span class="std std-ref">Sidekiq Packed Sample Structure</span></a>. The format of the metadata remains the same
+regardless of whether packed mode is enabled or not.</p>
+<div class="figure align-center" id="id6">
+<span id="figure-packed-iq-structure"></span><a class="reference internal image-reference" href="_images/packed_iq_structure.png"><img alt="Sidekiq Packed Sample Structure" src="_images/packed_iq_structure.png" style="width: 5.11930in; height: 1.39290in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 9 </span><span class="caption-text">Sidekiq Packed Sample Structure</span></p>
+</div>
+</div>
+<div class="section" id="starting-an-rx-interface">
+<h2>Starting an Rx Interface<a class="headerlink" href="#starting-an-rx-interface" title="Permalink to this headline">¶</a></h2>
+<p>Once an Rx interface has been properly configured for operation, the
+interface can then be started to begin data flowing between the CPU and
+FPGA. The process of starting an Rx interface allows a user to specify
+the Rx interface handle to start. An example of starting an Rx interface
+is shown below.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* begin streaming on the Rx interface */</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">skiq_start_rx_streaming</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">hdl</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="section" id="reading-i-q-samples-from-an-rx-interface">
+<h3>Reading I/Q Samples from an Rx Interface<a class="headerlink" href="#reading-i-q-samples-from-an-rx-interface" title="Permalink to this headline">¶</a></h3>
+<p>Once an Rx interface has started streaming, a block of contiguous I/Q
+samples can be read from the Rx interface using the <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code>
+function. This function accepts a pointer to a <code class="code docutils literal notranslate"><span class="pre">skiq_rx_block_t</span></code>
+pointer that will then be populated with the address of where the
+metadata and I/Q data block is stored in the DMA engine provided by
+libsidekiq. No memory copy operation is performed here when using the PCIe
+transport, just an update of the passed in pointer, to maximize
+efficiency of accessing the data. Note that this memory is controlled by
+the DMA interface and is not reserved for the application. Thus, if the
+data is not copied or processed prior to the DMA interface requiring
+that memory for new sample data, there is the potential for the sample
+data to be overwritten. The sample rate of each of the active interfaces
+will determine how quickly the DMA engine fills up the and overwrites
+previous sample data. To check for an overflow condition, the RF pair
+timestamp should be monitored (as discussed in the below paragraphs and
+shown in the code example).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Each successful call to <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> will only return a
+single packet.</p>
+</div>
+<p>The default behavior of <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> function is non-blocking.
+If there is no new data available, the function will return immediately
+with a status of <code class="code docutils literal notranslate"><span class="pre">skiq_rx_status_no_data</span></code>. For details on how to
+configure and use the blocking receive capabilities, refer to
+<a class="reference internal" href="#developing-custom-applications-with-libsidekiq"><span class="std std-ref">Developing Custom Applications with libsidekiq</span></a>. In the default case
+of non-blocking receive,the application is responsible for polling the
+receive interface for packets. There is some overhead associated with calling
+<code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> when no new data is available, so it is recommended
+to throttle the calls based on when sample data is expected to be
+available or utilize the blocking receive capability. Additionally, when
+multiple Rx handles are enabled, the packets of sample data from each of
+the handles may be interleaved, and the <code class="code docutils literal notranslate"><span class="pre">p_hdl</span></code> parameter of the
+<code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> function is populated with the source handle from
+which the packet was received. The contents of <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code>
+arguments are valid only when <code class="code docutils literal notranslate"><span class="pre">skiq_rx_status_success</span></code> is returned.</p>
+<p>The <code class="code docutils literal notranslate"><span class="pre">skiq_rx_block_t</span></code> structure has fields for the I/Q data and
+elements of the metadata in the header. Note: future versions of
+libsidekiq may adjust this header size, so there is a <code class="docutils literal notranslate"><span class="pre">#define</span></code> called
+<code class="code docutils literal notranslate"><span class="pre">SKIQ_RX_HEADER_SIZE_IN_WORDS</span></code> which specifies the size of the
+header. The metadata contains a timestamp which is incremented at the
+same rate as the sample rate of that Rx interface. This field is called
+<code class="code docutils literal notranslate"><span class="pre">rf_timestamp</span></code> in the <code class="code docutils literal notranslate"><span class="pre">skiq_rx_block_t</span></code> struct. Additionally, the
+phase coherent RF pair (Rx A1/2 or Rx B1/2) uses the same timestamp
+reference, or in the case of Sidekiq X4, all 4 phase coherent receivers
+use the same timestamp reference. This allows the samples from Rx A1 to
+be phase aligned with samples from Rx A2 (or in the case of Sidekiq X4,
+Rx A1/A2/B1/B2 are all phase aligned). The metadata also contains the
+system timestamp associated with the packet (named <code class="code docutils literal notranslate"><span class="pre">sys_timestamp</span></code>).
+The system timestamp is maintained independent of the sample rate and is
+used across all of the Rx interfaces. The system metadata (currently
+available only with PCI transport) comprises of the RF IC control output
+bits, the Rx overload status (not available with all products), and the
+data source (handle). The data source correlates to the
+<code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_t</span></code> definition. The Rx overload bit is set if the Rx
+overload detection was active for that packet (not available with all
+products). The RF IC control output bits are defined by both the RF IC
+control output mode and enable; configured by the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rfic_control_output_config()</span></code> API. For details on the
+modes available, please refer to the “Control Output” section of
+<a class="reference internal" href="references.html#ref9"><span class="std std-ref">[9]</span></a> (for Sidekiq mPCIe / m.2 / m.2-2280 / Z2 / Z3u), “Monitor Output”
+section of <a class="reference internal" href="references.html#ref10"><span class="std std-ref">[10]</span></a> (for Sidekiq X2), or “GPIO Monitor
+Mode” of <a class="reference internal" href="references.html#ref11"><span class="std std-ref">[11]</span></a> (for Sidekiq X4). Note that the
+<code class="docutils literal notranslate"><span class="pre">rx_samples.c</span></code> test application provides an example of configuring the
+mode such that the gain of RxA1 is present in the metadata. The user
+metadata is a 32-bit field available for custom FPGA applications to use
+if desired. The ‘<code class="code docutils literal notranslate"><span class="pre">data</span></code>’ field of the <code class="code docutils literal notranslate"><span class="pre">skiq_rx_block_t</span></code> struct
+consists of I/Q sample data. The fields of the example I/Q packet is shown
+below. In some applications it may be desirable to change the ordering
+of the complex (I/Q) samples. For details on how to do so, please refer
+to <a class="reference internal" href="#i-q-ordering-mode"><span class="std std-ref">I/Q Ordering Mode</span></a></p>
+<table border="1" class="colwidths-given docutils align-center" id="table-rx-packet-structure">
+<caption><span class="caption-number">Table 6 </span><span class="caption-text">Rx I/Q Packet Structure</span><a class="headerlink" href="#table-rx-packet-structure" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="20%" />
+<col width="10%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field</th>
+<th class="head">Width (bits)</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">rf_timestamp</span></code></td>
+<td>64</td>
+<td>RF timestamp associated with the received sample block</td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal notranslate"><span class="pre">sys_timestamp</span></code></td>
+<td>64</td>
+<td>System timestamp associated with the received sample block</td>
+</tr>
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">hdl</span></code></td>
+<td>6</td>
+<td>Receive handle indicating the receive handle associated with the received sample block</td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal notranslate"><span class="pre">overload</span></code></td>
+<td>1</td>
+<td>RF Overload indicating whether or not the RF input was overloaded for the received sample block</td>
+</tr>
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">rfic_control</span></code></td>
+<td>8</td>
+<td>RFIC control word carries metadata from the RFIC, typically the receive gain index</td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal notranslate"><span class="pre">id</span></code></td>
+<td>8</td>
+<td>Channel ID used by channelizer (currently unused)</td>
+</tr>
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">system_meta</span></code></td>
+<td>6</td>
+<td>System metadata (unused / reserved)</td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal notranslate"><span class="pre">version</span></code></td>
+<td>3</td>
+<td>Packet version field</td>
+</tr>
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">user_meta</span></code></td>
+<td>32</td>
+<td>User metadata typically populated by a custom FPGA build</td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal notranslate"><span class="pre">int16_t</span> <span class="pre">data[]</span></code></td>
+<td>16</td>
+<td>array of unpacked I/Q samples (16 bits per I or Q sample).
+Q<sub>0</sub> is data[0], I<sub>0</sub> is data[1], Q<sub>1</sub> is data[2], I<sub>1</sub> is data[3], and so on.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If a sufficiently high sample rate is selected (typically in the range
+of ~50 Msamples/sec - equivalent to 200 MB/sec - for Sidekiq mPCIe, dependent
+on the capabilities of the host platform), gaps in the timestamps may occur
+due to either:</p>
+<blockquote class="last">
+<div><ol class="upperalpha simple">
+<li>the libsidekiq software ring buffer filling up, or</li>
+<li>the throughput rate of the FPGA → CPU interface being exceeded.</li>
+</ol>
+<p>For applications that require continuous data flow, it is
+imperative to confirm that the timestamp is monotonically increasing at
+the expected rate to ensure no data is dropped. For recommendations on
+how to evaluate the Rx throughput performance for a particular host
+system, refer to <a class="reference internal" href="throughput.html#receive-performance"><span class="std std-ref">Receive Performance</span></a>.</p>
+</div></blockquote>
+</div>
+<p>An example loop that does nothing but read blocks of I/Q data and
+verifies the timestamps (to ensure that no gaps exist in the data stream) is shown below.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* loop through and acquire the requested # of i/q sample blocks, verifying</span>
+<span class="cm">    that the timestamp (ts) increments as expected */</span>
+<span class="k">while</span><span class="p">(</span> <span class="n">num_blocks</span> <span class="o">&lt;</span> <span class="n">tot_num_blocks</span> <span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">status</span> <span class="o">=</span> <span class="n">skiq_receive</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">hdl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">p_rx_block</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">len</span><span class="p">);</span>
+  <span class="k">if</span><span class="p">(</span> <span class="n">status</span> <span class="o">==</span> <span class="n">skiq_rx_status_success</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">p_rx_block</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">curr_ts</span> <span class="o">=</span> <span class="n">p_rx_block</span><span class="o">-&gt;</span><span class="n">rf_timestamp</span><span class="p">;</span>
+
+      <span class="k">if</span><span class="p">(</span> <span class="n">first_block</span> <span class="o">==</span> <span class="nb">true</span> <span class="p">)</span>
+      <span class="p">{</span>
+        <span class="n">first_block</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="n">next_ts</span> <span class="o">=</span> <span class="n">curr_ts</span><span class="p">;</span>
+        <span class="n">next_ts</span> <span class="o">+=</span> <span class="p">((</span><span class="n">len</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="n">SKIQ_RX_HEADER_SIZE_IN_WORDS</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">curr_ts</span> <span class="o">!=</span> <span class="n">next_ts</span> <span class="p">)</span>
+      <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error: timestamp error expected 0x%016&quot;</span> <span class="n">PRIx64</span> <span class="s">&quot; but got 0x%016&quot;</span> <span class="n">PRIx64</span>
+               <span class="s">&quot;.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">next_ts</span><span class="p">,</span> <span class="n">curr_ts</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="k">else</span>
+      <span class="p">{</span>
+        <span class="n">next_ts</span> <span class="o">+=</span> <span class="p">((</span><span class="n">len</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="n">SKIQ_RX_HEADER_SIZE_IN_WORDS</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">num_blocks</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Lastly, most parameters associated with a given Rx interface can be
+updated after the interface has been started. It is not necessary to
+stop the interface to re-configure an interface. The only exceptions
+here are that changes to the channel mode, packed mode, I/Q order mode, and data source
+mode must be configured prior to starting the interface. Also, a change
+to sample rate will result in the data flow being automatically stopped and restarted
+once the sample rate has been applied.</p>
+</div>
+<div class="section" id="counter-mode-with-rx-interface">
+<h3>Counter Mode with Rx Interface<a class="headerlink" href="#counter-mode-with-rx-interface" title="Permalink to this headline">¶</a></h3>
+<p>An Rx interface can be configured to either provide I/Q sample data or
+counter data. The normal mode of operation is using the I/Q sample mode.
+However, counter mode can be useful in various test scenarios. The type
+of data provided can be configured with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_data_src()</span></code> function. The data source can be
+updated at any time but is only applied when streaming is started. When
+in counter mode, each sample is a 12-bit value for Sidekiq mPCIe, m.2,
+m.2-2280, Z2 and Matchstiq Z3u and 16-bit for Sidekiq X2, X4, and NV100. When running in counter
+mode on the Sidekiq, the I sample is odd while the Q sample is an even
+number. For details on how to validate the counter data, refer to the
+<code class="code docutils literal notranslate"><span class="pre">verify_data()</span></code> function in the <code class="docutils literal notranslate"><span class="pre">rx_samples.c</span></code> test application.</p>
+</div>
+<div class="section" id="making-skiq-receive-a-blocking-call">
+<h3>Making <code class="code docutils literal notranslate"><span class="pre">skiq_receive</span></code> a blocking call<a class="headerlink" href="#making-skiq-receive-a-blocking-call" title="Permalink to this headline">¶</a></h3>
+<p>As of libsidekiq v3.3.0, a call to <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> can be configured
+to block until an I/Q sample block is available instead of returning
+immediately. Using a blocking infrastructure can save CPU cycles and
+provide other processes with time to execute. The addition of a blocking
+receive call also provides flexibility in how libsidekiq may be
+leveraged for different use cases.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not all transports support blocking receive.</p>
+</div>
+<p>The arguments to <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> stay the same and libsidekiq
+continues to default to non-blocking for <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code>. The
+<code class="code docutils literal notranslate"><span class="pre">skiq_set_rx_transfer_timeout()</span></code> API function allows a developer
+to specify how <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> behaves when samples are not
+available. For example, if the developer specifies
+<code class="code docutils literal notranslate"><span class="pre">RX_TRANSFER_NO_WAIT</span></code> to <code class="code docutils literal notranslate"><span class="pre">skiq_set_rx_transfer_timeout()</span></code>, a
+call to <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> returns immediately if samples are not
+available (this is the default behavior). A developer may specify a
+timeout between 20uS and 1000000uS to
+<code class="code docutils literal notranslate"><span class="pre">skiq_set_rx_transfer_timeout()</span></code>. In this configuration, a call to
+<code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> will return after the specified timeout has elapsed
+if samples are not available. If the developer specifies
+<code class="code docutils literal notranslate"><span class="pre">RX_TRANSFER_WAIT_FOREVER</span></code> as the timeout, a call to <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code>
+will block indefinitely until samples are available. In both the timeout
+and <code class="code docutils literal notranslate"><span class="pre">RX_TRANSFER_WAIT_FOREVER</span></code> configurations, <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code>
+returns once samples are available at the next opportunity the kernel
+provides to the associated process.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For improved CPU usage and efficiency in receiving, a non-zero timeout
+is recommended.  Additionally, a timeout that is greater than the
+inter-sample-block timing at the configured Rx sample rate is also
+recommended. In most cases, a timeout of 25000uS is sufficient to reap the
+benefits of a blocking receive.</p>
+</div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">when using a non-zero timeout, calling
+<code class="code docutils literal notranslate"><span class="pre">skiq_stop_rx_streaming()</span></code> or <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code> from
+another thread can cause <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> to return without a
+packet. Be sure to handle that case.</p>
+</div>
+<p>If desired to configure a timeout for the receive call, the API
+<code class="code docutils literal notranslate"><span class="pre">skiq_get_rx_transfer_timeout()</span></code> provides the timeout value or a
+pre-processor define (<code class="code docutils literal notranslate"><span class="pre">RX_TRANSFER_NO_WAIT</span></code>,
+<code class="code docutils literal notranslate"><span class="pre">RX_TRANSFER_WAIT_FOREVER</span></code>, or <code class="code docutils literal notranslate"><span class="pre">RX_TRANSFER_WAIT_NOT_SUPPORTED</span></code>).
+The value <code class="code docutils literal notranslate"><span class="pre">RX_TRANSFER_WAIT_NOT_SUPPORTED</span></code> is provided in cases
+where the transport layer (currently custom or USB) does not support a
+blocking receive infrastructure.</p>
+<p>For an example application that optionally makes use of the blocking
+receive capabilities, refer to the <code class="docutils literal notranslate"><span class="pre">rx_samples.c</span></code> test application.</p>
+</div>
+<div class="section" id="using-receive-calibration-offsets">
+<h3>Using receive calibration offsets<a class="headerlink" href="#using-receive-calibration-offsets" title="Permalink to this headline">¶</a></h3>
+<p>With the introduction of libsidekiq v4.4.0, Sidekiq units leaving the
+factory have a per-unit receiver calibration data stored in non-volatile
+memory. There are several API functions (introduced in libsidekiq
+v4.0.0) that provide a receive calibration offset based on the RF
+configuration that may be applied by the user to calculate the
+calibrated RF energy present in a block of I/Q samples. If a unit does
+not have stored calibration data, the API functions will fall back to a
+default data set that represents a given product line (miniPCIe vs m.2
+vs Z2, etc), receive handle (<code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_t</span></code>), and RF port
+(<code class="code docutils literal notranslate"><span class="pre">skiq_rf_port_t</span></code>). The four API functions that provide a calibration
+offset are as follows.</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_cal_offset()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_cal_offset_by_gain_index()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_cal_offset_by_LO_freq()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_cal_offset_by_LO_freq_and_gain_index()</span></code></li>
+</ul>
+<p>These functions provide varying degrees of control when querying for a
+receive calibration offset. If a parameter is not specifiable, it is
+taken from the present RF configuration.</p>
+<p>In order to use the receive calibration offset <span class="math notranslate">\(G_{radio}\)</span>, a user should
+first calculate the baseband power in dB (<span class="math notranslate">\(P_{bb}\)</span>), then subtract the calibration
+offset (returned in units of dB) to calculate the RF power (<span class="math notranslate">\(P_{rf}\)</span>) of the signal
+in dBm. The equations below further describe how to apply <span class="math notranslate">\(G_{radio}\)</span>:</p>
+<div class="math notranslate" id="receive-calibration-math">
+\begin{gather*}
+P_{bb} = 10\ log_{10}\left(\frac{1}{N}\ \displaystyle \sum_{k=0}^{N} i_k^2 + q_k^2\right)\\
+P_{rf} = P_{bb} - G_{radio}
+\end{gather*}</div></div>
+<div class="section" id="using-i-q-phase-and-amplitude-calibration">
+<h3>Using I/Q phase and amplitude calibration<a class="headerlink" href="#using-i-q-phase-and-amplitude-calibration" title="Permalink to this headline">¶</a></h3>
+<p>With the introduction of libsidekiq v4.7.0, the Sidekiq X4 FPGA design
+provides in-line complex multipliers for each receiver handle (Rx A1, Rx
+A2, Rx B1, and Rx B2; not available with Rx C1/D1) to allow a user to
+reduce phase and amplitude differences among the receivers. At this
+release, the Sidekiq X4 units leaving the factory have per-unit I/Q
+phase and amplitude calibration data stored in non-volatile memory.
+There exist several API functions that read the calibration settings for
+a given LO frequency as well as allow a user to either override or
+supplement the adjustment values. At this time, if a unit does not have
+stored calibration data, there is no default data set. The API functions
+that provide access to this feature are as follows. Refer to the API
+documentation for additional details on this interface.</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_iq_complex_multiplier()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_iq_cal_complex_multiplier()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_iq_cal_complex_multiplier_by_LO_freq()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_write_iq_complex_multiplier_absolute()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_write_iq_complex_multiplier_user()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_iq_complex_cal_data_present()</span></code></li>
+</ul>
+<p>Note that <code class="code docutils literal notranslate"><span class="pre">skiq_read_iq_complex_multiplier()</span></code> returns the complex
+multiplication factor currently in use, while
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_iq_cal_complex_multiplier()</span></code> (note the extra <cite>cal</cite> in
+the function name), returns the complex multiplication factor as determined
+by the unit’s factory calibration. These two factors may differ if a user
+has overwritten (<code class="code docutils literal notranslate"><span class="pre">skiq_write_iq_complex_multiplier_absolute()</span></code>) or
+supplemented (<code class="code docutils literal notranslate"><span class="pre">skiq_write_iq_complex_multiplier_user()</span></code>) the factor
+for a given receiver handle.</p>
+<p>The factor is automatically updated (or reset) whenever the receive LO
+frequency is configured. Any user modifications to the multiplication
+factor must be reapplied after a frequency configuration.</p>
+<p>In libsidekiq v4.7.0, these multipliers are always in effect on Sidekiq
+X4. If a user wishes to disable them, setting an absolute factor of 1+0j
+is recommended.</p>
+</div>
+</div>
+<div class="section" id="configuring-a-tx-interface">
+<h2>Configuring a Tx Interface<a class="headerlink" href="#configuring-a-tx-interface" title="Permalink to this headline">¶</a></h2>
+<p>There are various aspects of the transmit interface which must be
+configured prior to starting streaming. These control the behavior of
+<code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code> and are described in detail in the following
+sections. For recommendations on how to evaluate the Tx throughput
+performance for a particular host system and the various Tx
+configuration parameters, refer to <a class="reference internal" href="throughput.html#transmit-performance"><span class="std std-ref">Transmit Performance</span></a>.</p>
+<div class="section" id="block-size-configuration">
+<span id="id1"></span><h3>Block Size Configuration<a class="headerlink" href="#block-size-configuration" title="Permalink to this headline">¶</a></h3>
+<p>The block size is the number of samples included in each transmit
+packet. A transmit packet consists of the transmit header data as well
+as the block, which contains the transmit samples (refer to
+<a class="reference internal" href="#figure-tx-packet-structure"><span class="std std-ref">Tx Packet Structure</span></a> for the structure of a transmit packet).
+While in packed mode, the block size refers to the number of words
+contained in the packet not including the header data.</p>
+<p>The block size is adjustable and in general, a larger block size results
+in higher throughput without underruns or late timestamps. The trade-off
+of using a larger block size is an increase in latency in the transfer
+of the transmit packet.</p>
+<p>A block size + Tx header size (as defined by
+<code class="code docutils literal notranslate"><span class="pre">SKIQ_TX_HEADER_SIZE_IN_WORDS</span></code>) must be a multiple of 256 words.
+The block size can be configured with
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_block_size()</span></code>. If an invalid block size is
+configured, <code class="code docutils literal notranslate"><span class="pre">skiq_start_tx_streaming()</span></code> will result in a failure. A
+few examples of valid block sizes when running in single channel mode
+are: 1020 (packet size=1020+4=1024), 2044 (packet size=2044+4=2048), and
+16380 (packet size=16380+4=16384).</p>
+<p>When running in dual channel mode, the block size refers to the number
+of words contained for each channel. Also, when in dual channel mode,
+the maximum block size is limited by the FPGA Tx FIFO size. Note: dual
+channel transmit is supported only with Sidekiq m.2, X2, X4, and NV100. Dual channel transmit can be
+with A1/A2 or A1/B1 handle pairs.  The secondary handle is used in calls to start streaming and
+<code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code>.  When
+running in dual channel, a few example valid packet sizes are: 1022
+(packet size=1022 TxA1 samples + 1022 TxA2 samples + 4 header=2048),
+2046 (packet size=2046 TxA1 samples + 2046 TxA2 samples + 4
+header=4096), and 8190 (8190 TxA1 samples + 8190 TxA2 samples + 4
+header=16384)</p>
+<p>When running in packed mode (Sidekiq mPCIe, m.2, and m.2-2280 only),
+care must be used to ensure that the block size contains an integer number
+of samples and that the block size + header size remains a multiple of 256
+words. In packed mode, the block size refers to the number of words contained,
+not the number of samples. For example, a block size of 252 results in
+336 packed samples (252 * <code class="code docutils literal notranslate"><span class="pre">SKIQ_PACKED_SAMPLE_RATIO</span></code> = 336), which
+is a valid packed mode configuration. However, a block size of 508
+results in 677.3 samples (508 * <code class="code docutils literal notranslate"><span class="pre">SKIQ_PACKED_SAMPLE_RATIO</span></code> = 677.3),
+which is invalid.</p>
+</div>
+<div class="section" id="data-flow-mode">
+<h3>Data Flow Mode<a class="headerlink" href="#data-flow-mode" title="Permalink to this headline">¶</a></h3>
+<p>The Tx interface can operate in one of several “data flow modes”, as
+configured by the user application. The default data flow mode is
+“immediate”. In this mode, timestamps are ignored and the data is
+buffered up and transmitted out as soon as possible. This is useful for
+applications that do not have a requirement for precise timing.</p>
+<p>For applications that require fine grained control of the timing of the
+transmitted samples, the “with_timestamps” data flow mode should be
+utilized. Each block of I/Q samples sent down to the Tx interface will
+need to have a 64-bit timestamp located at
+<code class="code docutils literal notranslate"><span class="pre">SKIQ_TX_TIMESTAMP_OFFSET_IN_WORDS</span></code> into the beginning of the block
+of data by the application (see <code class="docutils literal notranslate"><span class="pre">tx_samples.c</span></code> in the <code class="docutils literal notranslate"><span class="pre">test_apps</span></code>
+directory for an example). This timestamp corresponds to the time when
+the very first sample of the block will be transferred from the FPGA’s
+I/Q sample FIFO to the D/A converters. Each subsequent complex sample in
+the block will then be transferred to the D/A converters one at a time
+as the timestamp increments. This continues until the entire data block
+has been transmitted out. If continuous transmission of I/Q samples is
+required, it is up to the user application to ensure that this pipeline
+of data between the user application and the FPGA transmit FIFO is kept
+filled, thus preventing an underflow. In this mode, the FPGA will not
+transmit any samples that specify a timestamp that is in the past; the
+samples will be discarded, the Tx FIFO will be flushed, and the late
+timestamp counter is incremented (which can be read with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_num_late_timestamps()</span></code> function call).</p>
+<p>As of libsidekiq v4.6.0, certain bitstreams support an additional mode:
+“with_timestamps_allow_late_data”. Selecting this mode will result
+in a return value of <code class="code docutils literal notranslate"><span class="pre">-ENOTSUP</span></code> if not supported. In this mode, the FPGA
+will transmit samples as described in the above “with_timestamps”
+section, but will also transmit samples that have a timestamp that’s
+already past. Please note that in this mode, the late timestamp counter
+will not be updated, even if samples with late timestamps are
+transmitted.</p>
+</div>
+<div class="section" id="tx-timestamp-clock-source-selection">
+<h3>Tx Timestamp Clock Source selection<a class="headerlink" href="#tx-timestamp-clock-source-selection" title="Permalink to this headline">¶</a></h3>
+<p>The timestamp source can be configured to either the system or RF (default)
+clock, when used in conjunction with a timestamp data flow mode.  Using a system
+timestamp may be preferred if an application frequently changes sample rates
+(which causes the RF timestamp to pause).  One caveat for using system timestamps
+is that it requires a data flow mode of “allow late timestamps mode” due to the
+implementation.</p>
+<p>Configuring the Tx timestamp clock source is supported on systems using FPGA
+bitstream v3.15.1 and above.</p>
+</div>
+<div class="section" id="transfer-mode">
+<h3>Transfer Mode<a class="headerlink" href="#transfer-mode" title="Permalink to this headline">¶</a></h3>
+<p>The transfer mode of the transmit interface can be configured to operate
+either synchronously or asynchronously. The transfer mode can be
+configured with the <code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_transfer_mode()</span></code> function.</p>
+<p>When running in <code class="code docutils literal notranslate"><span class="pre">skiq_tx_transfer_mode_sync</span></code> mode,
+<code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code> blocks if the FPGA transmit FIFO is full until
+there is space for the next packet of data. The FPGA FIFO is relatively
+small (as defined by <code class="code docutils literal notranslate"><span class="pre">skiq_fpga_tx_fifo_size_t</span></code>), so it may be
+necessary for users to implement their own external buffering of sample
+data prior to calling the <code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code> call. This mode can be
+simpler to interface with in that once the <code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code> function
+returns, the data has been transferred to the FPGA and can immediately
+be freed or reused by the application. However, it only allows for a
+single packet at a time to be in flight to the FPGA. This results in a
+potential decrease of throughput efficiency. The <code class="docutils literal notranslate"><span class="pre">tx_samples.c</span></code>
+application provides an example of how to use the synchronous transfer
+mode.</p>
+<p>An alternative to the synchronous transfer mode is to run in
+<code class="code docutils literal notranslate"><span class="pre">skiq_tx_transfer_mode_async</span></code>, which results in an increased
+throughput. When running in <code class="code docutils literal notranslate"><span class="pre">skiq_tx_transfer_mode_async</span></code> mode,
+<code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code> returns immediately with a status of either <code class="code docutils literal notranslate"><span class="pre">0</span></code>
+or <code class="code docutils literal notranslate"><span class="pre">SKIQ_TX_ASYNC_SEND_QUEUE_FULL</span></code>. A maximum of
+<code class="code docutils literal notranslate"><span class="pre">SKIQ_MAX_NUM_TX_QUEUED_PACKETS</span></code> can be queued at given point in
+time. If a status of <code class="code docutils literal notranslate"><span class="pre">0</span></code> is returned, this indicates that the packet was
+successfully queued for transmission but not necessarily transferred to
+the FPGA yet. A status of <code class="code docutils literal notranslate"><span class="pre">SKIQ_TX_ASYNC_SEND_QUEUE_FULL</span></code> indicates
+that the software buffer is full and the packet was not queued
+successfully. The <code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code> call must be repeated with this
+data buffer to transmit it. In order for the application to be notified
+when the asynchronous transmit operation has been completed by the
+Sidekiq library, a function pointer must be registered with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_register_tx_complete_callback()</span></code> prior to starting streaming
+on the Tx interface. Once the buffer has been successfully transferred
+to the FPGA, the callback function is called and the status of the
+transmission, a pointer to the data of the completed transmission, and
+optional user defined data associated specified when initiating the
+transmission is provided. At this point, it is safe to either reuse or
+free the buffer. Prior to the callback, the buffered should be
+considered in use by the Sidekiq library. The <code class="docutils literal notranslate"><span class="pre">tx_samples_async.c</span></code>
+application provides an example of how to use the asynchronous transfer
+mode. The <code class="code docutils literal notranslate"><span class="pre">tx_benchmark</span></code> application can be used to help assess the
+performance tradeoffs with the different transfer modes and block sizes
+on the target host platform, as described in <a class="reference internal" href="throughput.html#receive-performance"><span class="std std-ref">Receive Performance</span></a>.</p>
+</div>
+</div>
+<div class="section" id="starting-the-tx-interface">
+<h2>Starting the Tx Interface<a class="headerlink" href="#starting-the-tx-interface" title="Permalink to this headline">¶</a></h2>
+<p>Once a Tx interface has been properly configured for operation, the
+interface can then be started to begin data flowing between the CPU and
+FPGA.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the Sidekiq card is configured for dual channel mode, both TxA1
+and TxA2 interfaces are enabled when <code class="code docutils literal notranslate"><span class="pre">skiq_start_tx_streaming()</span></code> is
+called with <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_A2</span></code> as the <code class="code docutils literal notranslate"><span class="pre">hdl</span></code> argument.  As of
+libsidekiq v4.13.0 and FPGA bitstream v3.13.0, the Sidekiq X4 can also
+transmit using TxA1 and TxB1 to provide the user two independently tunable
+interfaces.  As of libsidekiq v4.18.0, Sidekiq NV100
+also supports transmit using TxA1, TxA2 and TxB1.  In single channel mode,
+the <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_A1</span></code> handle needs to be specified as
+the <code class="code docutils literal notranslate"><span class="pre">hdl</span></code> argument to <code class="code docutils literal notranslate"><span class="pre">skiq_start_tx_streaming()</span></code>. In dual channel mode,
+the <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_B1</span></code> / <code class="code docutils literal notranslate"><span class="pre">skiq_tx_hdl_A2</span></code> handle needs to be specified as
+the <code class="code docutils literal notranslate"><span class="pre">hdl</span></code> argument to <code class="code docutils literal notranslate"><span class="pre">skiq_start_tx_streaming()</span></code>.</p>
+</div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">In a dual channel mode transmit configuration, the user must
+<strong>only</strong> specify the second handle to <code class="code docutils literal notranslate"><span class="pre">skiq_start_tx_streaming()</span></code> and
+<code class="code docutils literal notranslate"><span class="pre">skiq_stop_tx_streaming()</span></code> variants.  Both Tx interfaces are enabled
+within each function call whenever the second handle is specified.</p>
+</div>
+<p>An update to the data flow mode / transfer mode / block size is allowed
+at any time, but is only applied when starting the Tx interface. An
+example of configuring and starting the interface is shown below.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* configure the data flow mode to use timestamps */</span>
+<span class="n">skiq_write_tx_data_flow_mode</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">skiq_tx_hdl_A1</span><span class="p">,</span>
+                            <span class="n">skiq_tx_with_timestamps_data_flow_mode</span><span class="p">);</span>
+
+<span class="cm">/* configure the transfer mode to synchronous */</span>
+<span class="n">skiq_write_tx_transfer_mode</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">skiq_tx_hdl_A1</span><span class="p">,</span>
+                            <span class="n">skiq_tx_transfer_mode_sync</span><span class="p">);</span>
+
+<span class="cm">/* configure the size of the block to send */</span>
+<span class="n">skiq_write_tx_block_size</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">skiq_tx_hdl_A1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">);</span>
+
+<span class="cm">/* begin streaming on the Tx A1 interface */</span>
+<span class="n">skiq_start_tx_streaming</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">skiq_tx_hdl_A1</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="section" id="writing-i-q-samples-to-a-tx-interface">
+<h3>Writing I/Q Samples to a Tx Interface<a class="headerlink" href="#writing-i-q-samples-to-a-tx-interface" title="Permalink to this headline">¶</a></h3>
+<p>Once the Tx interface has been started, it is up to the user application
+to provide the I/Q data to libsidekiq for transmission. The I/Q data is
+provided to libsidekiq by calling <code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code>. The
+<code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code> can block if running in the synchronous transfer
+mode or return immediately if running the asynchronous transfer mode.
+For details on the transfer mode, refer to <a class="reference internal" href="#transfer-mode"><span class="std std-ref">Transfer Mode</span></a>.</p>
+<p>The user application is responsible for populating the sample data prior
+to calling <code class="code docutils literal notranslate"><span class="pre">skiq_transmit()</span></code>. The format of each user-provided
+transmit packet is shown in <a class="reference internal" href="#figure-tx-packet-structure"><span class="std std-ref">Tx Packet Structure</span></a>.
+The <code class="code docutils literal notranslate"><span class="pre">skiq_tx_block_t</span></code> struct type definition has fields that allow
+for easy access to the header and I/Q data. The <code class="code docutils literal notranslate"><span class="pre">miscHigh</span></code> and
+<code class="code docutils literal notranslate"><span class="pre">miscLow</span></code> fields are reserved for future use. The <code class="code docutils literal notranslate"><span class="pre">timestamp</span></code> field
+is reserved for the transmit timestamp. In the “with_timestamps” data
+flow mode, the <code class="code docutils literal notranslate"><span class="pre">timestamp</span></code> field is used to determine when the FPGA
+will actually send the data to the D/As. If the FPGA detects that the
+timestamp specified by software has already passed, the entire FPGA FIFO
+will be flushed and an error count is incremented. The number of
+“late timestamps” detected by the FPGA can be queried with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_num_late_timestamps()</span></code> API. On certain bitstreams,
+the “with_timestamps_allow_late” data flow is available that acts
+much like “with_timestamps” mode, though the FPGA will transmit any
+samples with a timestamp that has already passed and not increment the
+“late timestamp” count. The API function
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_last_tx_timestamp()</span></code> provides the caller with the last
+timestamp the FPGA is acting upon and is useful for debugging
+applications.</p>
+<p>In the “immediate” data flow mode, this timestamp value is ignored and
+can be set to zero by user applications. It is the user’s responsibility
+to ensure that the FPGA has enough data to transmit. If the FPGA
+encounters a case where its FIFO is empty and there is no data to
+transmit while streaming, it will increment an underrun error count.
+This count can be queried with the <code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_num_underruns()</span></code>
+API.</p>
+<p>The sample data (the <code class="code docutils literal notranslate"><span class="pre">data</span></code> field of the <code class="code docutils literal notranslate"><span class="pre">skiq_tx_block_t</span></code> struct)
+are 32-bit values, where the most significant 16-bits contains the “I”
+data, and the least significant 16-bits contain “Q” data. Each “I” and
+“Q” data word is represented in little endian form as a twos-complement
+number, sign-extended from the actual width of the D/A converters used
+in Sidekiq to 16-bits. For the Sidekiq mPCI, m.2, Z2, m.2-2280 and Matchstiq Z3u
+there are 12 data bits in each sample; for both Sidekiq X2 and Sidekiq X4, there
+are 14 data bits in each sample; and for Sidekiq NV100, there are 16 data bits
+in each sample.</p>
+<p>The number of samples contained within a single block of data is
+variable and is configured with the <code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_block_size()</span></code>
+API, as described in <a class="reference internal" href="#block-size-configuration"><span class="std std-ref">Block Size Configuration</span></a>. The format of the
+structure of the transmit packet is shown in <a class="reference internal" href="#figure-tx-packet-structure"><span class="std std-ref">Tx Packet Structure</span></a>.</p>
+<div class="figure align-center" id="id7">
+<span id="figure-tx-packet-structure"></span><a class="reference internal image-reference" href="_images/tx_packet_structure.png"><img alt="Tx Packet Structure" src="_images/tx_packet_structure.png" style="width: 6.92520in; height: 5.21180in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">Tx Packet Structure</span></p>
+</div>
+<p>See the <code class="docutils literal notranslate"><span class="pre">tx_samples.c</span></code> and <code class="docutils literal notranslate"><span class="pre">tx_samples_async.c</span></code> example applications
+in the <code class="docutils literal notranslate"><span class="pre">test_apps/</span></code> directory for details of how a real-world
+application uses this interface in both synchronous and asynchronous
+transfer modes.</p>
+</div>
+</div>
+<div class="section" id="simultaneous-use-of-tx-and-rx-interfaces">
+<h2>Simultaneous use of Tx and Rx Interfaces<a class="headerlink" href="#simultaneous-use-of-tx-and-rx-interfaces" title="Permalink to this headline">¶</a></h2>
+<p>Most Sidekiq products support running the Tx and Rx interfaces
+simultaneously, with the exception of Sidekiq X4; these products support
+both FDD and TDD applications. Specifically, for an FDD application, the
+Rx interface can be tuned to one RF frequency, and the Tx interface is
+tuned to a different RF frequency.  Note that Sidekiq X4 does allow for
+a A* handle to be configured for TX simultaneously to a B* handle configured
+for RX.</p>
+<p>From a software application perspective, a multi-threading library
+(such as pthreads) can be used to manage the Rx/Tx interfaces in separate
+threads. See the <code class="docutils literal notranslate"><span class="pre">fdd_rx_tx_samples.c</span></code> test application for an example
+of performing simultaneous FDD operation.</p>
+<p>In the case of TDD operation, the Tx and Rx interfaces can be configured
+separately, and then proceed through a sequence of starting and stopping
+the Tx and Rx interfaces as each transmit or receive operation is
+performed. An example of typical TDD operation can be found in the
+<code class="docutils literal notranslate"><span class="pre">tdd_rx_tx_samples.c</span></code> test application. Note: the transmit and
+receive FIFOs are flushed upon restarting the interface, so if the
+interface is stopped prior to the sample data completing reception or
+transmission, the data will be flushed.</p>
+<p>Both the Rx and Tx interfaces share a common sample rate clock and
+timestamp, with the exception of certain configurations of the Sidekiq
+X2 resulting in a configuration where the Tx interface sample rate is
+twice the Rx sample rate. As a result, it is only necessary to configure
+the sample rate and reset the timestamp (if desired) for either the Rx
+or Tx interface.</p>
+</div>
+<div class="section" id="stopping-and-releasing-an-interface">
+<h2>Stopping and Releasing an Interface<a class="headerlink" href="#stopping-and-releasing-an-interface" title="Permalink to this headline">¶</a></h2>
+<p>When an application no longer needs to transfer data with a previously
+started interface, the interface can be stopped which will prevent
+future data transfers until the next “start” function is executed.
+Stopping an Rx interface takes place when the
+<code class="code docutils literal notranslate"><span class="pre">skiq_stop_rx_streaming()</span></code> function is called. Stopping a Tx
+interface takes place when the <code class="code docutils literal notranslate"><span class="pre">skiq_stop_tx_streaming()</span></code> function
+is called. Both the system timestamp and RF pair timestamp continues to
+increment regardless of whether the system is currently streaming.</p>
+<div class="section" id="starting-and-stopping-on-1pps">
+<h3>Starting and Stopping on 1PPS<a class="headerlink" href="#starting-and-stopping-on-1pps" title="Permalink to this headline">¶</a></h3>
+<p>Sidekiq can be configured to start and stop streaming on a future 1PPS
+edge. To start Rx streaming on a 1PPS edge, the function
+<code class="code docutils literal notranslate"><span class="pre">skiq_start_rx_streaming_on_1pps()</span></code> is called by the user
+application. To stop Rx streaming on a 1PPS edge, the function
+<code class="code docutils literal notranslate"><span class="pre">skiq_stop_rx_streaming_on_1pps()</span></code> is called by the user
+application. A similar function exists for controlling the streaming
+operation on Tx (i.e., <code class="code docutils literal notranslate"><span class="pre">skiq_start_tx_streaming_on_1pps()</span></code> and
+<code class="code docutils literal notranslate"><span class="pre">skiq_stop_tx_streaming_on_1pps()</span></code>). All of the
+<code class="code docutils literal notranslate"><span class="pre">skiq_*_streaming_on_1pps()</span></code> functions block until the 1PPS occurs.</p>
+<p>To ensure that data begins to flow when the 1PPS occurs without any
+dropout, it is highly recommended that one thread is used to
+receive/transmit the data, and a separate thread is used to call the
+<code class="code docutils literal notranslate"><span class="pre">skiq_start_*_streaming_on_1pps</span></code> function. Additionally, the thread
+performing the receiving/transmitting of data should be started prior to
+the call to start streaming. To ensure that the first packet queued to
+transmit is the first desired samples, it is recommended to register a
+callback for when the FPGA is ready to accept samples prior to the 1PPS
+occurring. The callback can be registered via the
+<code class="code docutils literal notranslate"><span class="pre">skiq_register_tx_enabled()</span></code> API.</p>
+<p>In the case of stopping the Rx streaming on a 1PPS, the
+<code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> function needs to continue to be called after
+<code class="code docutils literal notranslate"><span class="pre">skiq_stop_rx_streaming_on_1pps()</span></code> returns. This stop streaming
+function stops the data from being generated by the FPGA. However, there
+will be data remaining in the internal FIFOs, so <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code>
+should be called until no data remains. Once there is no data returned
+from the <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> call, the <code class="code docutils literal notranslate"><span class="pre">skiq_stop_rx_streaming()</span></code>
+function should be called to finalize the disabling of the data flow.</p>
+<div class="section" id="pps-source">
+<h4>1PPS Source<a class="headerlink" href="#pps-source" title="Permalink to this headline">¶</a></h4>
+<p>As of libsidekiq v4.7.0, certain Sidekiq products and revisions allow
+for configuration of the 1PPS source. Specifically, the source of the
+1PPS can be configured to be detected from an alternate pin. This
+configuration can be updated while running with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_1pps_source()</span></code> API. Additionally, the current
+configuration can be queried with the <code class="code docutils literal notranslate"><span class="pre">skiq_read_1pps_source()</span></code>
+API.</p>
+</div>
+</div>
+<div class="section" id="working-with-multiple-receive-handles">
+<h3>Working with multiple receive handles<a class="headerlink" href="#working-with-multiple-receive-handles" title="Permalink to this headline">¶</a></h3>
+<p>As of libsidekiq v4.6.0, the following API functions are available to
+synchronize or coordinate the starting and stopping of receive
+streaming. Each of these functions accepts an array of receive handles
+to start / stop together. It is important to understand that the
+“multi_immediate” variant does NOT currently synchronize the receive
+handles, but does offer a convenient way to start and/or stop multiple handles in
+a single call. As of libsidekiq v4.9.0, the “synchronized trigger”
+source was introduced that allows for multiple receive handles on a
+given card to start and/or stop with their RF timestamps synchronized.</p>
+<p>Refer to the Sidekiq API documentation for more details on these
+functions.</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_start_rx_streaming_multi_immediate()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_start_rx_streaming_multi_on_trigger()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_stop_rx_streaming_multi_immediate()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_stop_rx_streaming_multi_on_trigger()</span></code></li>
+</ul>
+<p>For detailed examples on starting/stopping on a 1PPS (receive and/or
+transmit) or a synchronized trigger (receive only), refer to the test
+applications <code class="docutils literal notranslate"><span class="pre">rx_samples_on_trigger.c</span></code> and <code class="docutils literal notranslate"><span class="pre">tx_samples_on_1pps.c</span></code>.</p>
+<p>Some applications may also require a user calibration to account for sample
+shifts between coherent channels. The sample shifts can be calibrated out
+by measuring the offset between channels then applying a sample shift to a buffer
+in the FPGA for the respective channel. As of libsidekiq v4.18.0 sample shift functions
+are available on the NV100 to assist with this calibration.</p>
+<p>Refer to the Sidekiq API documentation for more details on these
+functions.</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_shift()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_sample_shift()</span></code></li>
+</ul>
+<p>Contact customer support for an example application that demonstrates how to use the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_shift()</span></code> function to align multiple channels on the NV100.</p>
+</div>
+</div>
+<div class="section" id="pin-control-enable-of-rfic-signal-paths-sidekiq-x4-only">
+<h2>Pin Control enable of RFIC signal paths (Sidekiq X4 only)<a class="headerlink" href="#pin-control-enable-of-rfic-signal-paths-sidekiq-x4-only" title="Permalink to this headline">¶</a></h2>
+<p>Since libsidekiq v4.14.0, the Tx/Rx signal paths on X4 can be controlled
+either through the libsidekiq API or by pins asserted by the FPGA user_app.
+For minimal latency when switching between receive and transmit, pin control
+is recommended.</p>
+<p>Please consult the Sidekiq API documentation for more details on these
+functions.</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_rfic_pin_ctrl_mode()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_rfic_pin_ctrl_mode()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_rfic_pin_ctrl_mode()</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_rfic_pin_ctrl_mode()</span></code></li>
+</ul>
+</div>
+<div class="section" id="clock-and-time-management-resources">
+<h2>Clock and Time Management Resources<a class="headerlink" href="#clock-and-time-management-resources" title="Permalink to this headline">¶</a></h2>
+<p>Sidekiq uses a common reference clock to drive all of the RF/baseband
+hardware. This reference clock can come from other an on-board
+temperature compensated voltage controlled oscillator (TCVCXO) or an
+external reference clock (refer to Hardware User’s Manual for specific
+Sidekiq type). By default, Sidekiq uses the on-board TCVCXO for its
+reference clock. This on-board TCVCXO has a stability of ±1 PPM over
+the temperature range from -30 deg C to +85 deg C. For applications that
+need to dial in the accuracy of this timing reference even further,
+libsidekiq provides an API call to warp the timing reference by
+generating an analog control voltage using an on-board D/A converter
+(DAC)  dedicated to this purpose. The <code class="code docutils literal notranslate"><span class="pre">skiq_write_tcvcxo_warp_voltage()</span></code>
+function is used to warp the control voltage of the oscillator. The
+reference clock can be adjusted by -1 to +6 ppm by adjusting the DAC
+voltage. Valid warp voltage ranges are 0.75-2.25V, which corresponds to
+DAC values between 0 and 1023 for Sidekiq mPCIe / Sidekiq m.2 / Sidekiq
+Z2. On Sidekiq X2 rev C (unsupported in rev B), Sidekiq X4, Sidekiq Stretch,
+and Matchstiq Z3u the warp voltage ranges are 0.4-2.4V, or values of 7944-47662. For
+details on providing an external reference clock, refer to <a class="reference internal" href="references.html#ref6"><span class="std std-ref">[6]</span></a>.</p>
+<p>In revision C of the mPCIe hardware and all revisions of the m.2, X2, and
+X4 hardware, the reference clock source is configurable via software.
+The configuration of the reference clock is a persistent setting. The
+current source can be queried via the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_ref_clock_select()</span></code> API. As of libsidekiq v4.7.0, an
+additional reference clock source of a host, <code class="code docutils literal notranslate"><span class="pre">skiq_ref_clock_host</span></code>,
+can also be configured for specific Sidekiq products. The host reference
+clock configuration utilizes an alternate clock frequency and input. For
+details on how to update this configuration, contact Epiq Solutions
+<a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>.</p>
+<p>The reference clock source for a card can be temporarily changed on-the-fly,
+allowing applications to choose the clock source as needed. The source can
+be changed via the <code class="code docutils literal notranslate"><span class="pre">skiq_write_ref_clock_select()</span></code> function. This
+function will update the current source, however this change will not be
+stored in memory nor maintained between applications. This is not
+supported for all Sidekiq products. Products that do not support changing
+the reference clock source are Sidekiq M.2 and Sidekiq mPCIe cards.</p>
+<p>The reference clock frequency for a card can also be temporarily changed on-the-fly,
+allowing applications to switch between external reference frequencies as needed.
+The frequency can be changed via the <code class="code docutils literal notranslate"><span class="pre">skiq_write_ext_ref_clock_freq()</span></code> function
+and must be a supported external reference clock frequency per the card specification.
+This function will update the expected clock frequency, however this configuration is
+runtime only and is not stored on the card nor permanent.  Please note, this function
+will also automatically update the reference clock selection to an external reference
+clock source.  The reference clock selection is also not stored on the card nor
+permanent.  Changing the reference clock frequency using <code class="code docutils literal notranslate"><span class="pre">skiq_write_ext_ref_clock_freq()</span></code>
+will stop any ongoing receiving or transmitting.  Runtime reference clock frequency
+switching is only supported on Sidekiq Stretch and Sidekiq NV100 as of libsidekiq
+v4.17.0.</p>
+<div class="section" id="gpsdo">
+<h3>GPSDO<a class="headerlink" href="#gpsdo" title="Permalink to this headline">¶</a></h3>
+<p>As of libsidekiq v4.15.0, the GPS Disciplined Oscillator (GPSDO) is available on
+Sidekiq Stretch when using FPGA bitstream v3.14.1 or later.  GPSDO is available
+for Matchstiq Z3u as of libsidekiq v4.16.0.  GPSDO is available
+for Sidekiq NV100 as of libsidekiq v4.17.0. Its functionality can be enabled
+with <code class="code docutils literal notranslate"><span class="pre">skiq_gpsdo_enable()</span></code> (see <a class="reference internal" href="sidekiq_api.html#sidekiq-api"><span class="std std-ref">Sidekiq API</span></a> for API functions related
+to the GPSDO).  When a GPS fix has been obtained by the Sidekiq’s on-board GPS,
+the FPGA uses the GPS unit’s 1PPS signal to increase the accuracy of the Sidekiq’s
+on-board oscillator by automatically adjusting the DAC warp voltage. If no GPS fix
+can be obtained or is lost, the DAC warp voltage is kept at its current value; if
+no GPS fix is available on startup, the warp voltage is kept at its factory
+calibrated default value. As the FPGA is now in control of the warp voltage, this
+prevents its manual adjustment through the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_tcvcxo_warp_voltage()</span></code> API function.  Additionally, there are
+some sensor peripherals that share a bus with the DAC warp voltage.  As such,
+access to those sensors through API functions may, in some cases, indicate that
+data is not available (<code class="code docutils literal notranslate"><span class="pre">-EAGAIN</span></code>). For example, in the case of Sidekiq
+Stretch, the temperature sensor measurement may not be available for up to one
+second after a call to <code class="code docutils literal notranslate"><span class="pre">skiq_gpsdo_enable()</span></code> and a call to
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_temp()</span></code> will return <code class="code docutils literal notranslate"><span class="pre">-EAGAIN</span></code> if called in that time
+period. The <code class="code docutils literal notranslate"><span class="pre">skiq_gpsdo_is_locked()</span></code> function (available as of libsidekiq
+v4.17.0) queries the GPSDO control algorithm on the FPGA to check for a lock
+between the 1PPS signal and the disciplined oscillator.</p>
+<p>Starting with FPGA bitstream v3.15.1, the GPSDO algorithm can use one
+of a few different 1PPS sources for disciplining for on-board reference clock.
+The GPSDO 1PPS source configuration matches the card’s 1PPS source configuration
+and can be accessed or modified by calling <code class="code docutils literal notranslate"><span class="pre">skiq_read_1pps_source()</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_1pps_source()</span></code> respectively.  Please note that when
+<code class="code docutils literal notranslate"><span class="pre">skiq_1pps_source_host</span></code> is selected, the GPSDO algorithm only uses the
+1PPS when the GPS module additionally indicates a timing fix.  If
+<code class="code docutils literal notranslate"><span class="pre">skiq_1pps_source_external</span></code> is selected as the 1PPS source, then GPSDO
+algorithm uses the 1PPS unconditionally.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The GPSDO algorithm is unique since its execution may persist after a
+libsidekiq application exits.  Support for persistent execution was
+added to the Matchstiq Z3u and Sidekiq Stretch and Sidekiq NV100 as
+of libsidekiq v4.17.5. The algorithm resides in the FPGA and does
+not require software intervention to continue working.  The side
+effect to this behavior is that previous libsidekiq releases (prior
+to v4.15.0) will not be able to read or write the DAC warp voltage
+nor, in the case of Sidekiq Stretch, read the temperature sensor
+measurements at all.  However, applications linked against
+libsidekiq v4.15.0 or later will have alternate access to the DAC
+warp voltage and temperature sensors as described above.</p>
+</div>
+</div>
+</div>
+<div class="section" id="timestamp-details">
+<h2>Timestamp Details<a class="headerlink" href="#timestamp-details" title="Permalink to this headline">¶</a></h2>
+<p>There is both an RF timestamp and System timestamp maintained by the
+Sidekiq card. The RF timestamp for both receive and transmit are
+identical and increment at the rate of the sample rate. For each tick of
+the sample rate clock, the RF timestamp increments by one. For Sidekiq
+mPCIe, m.2, m.2-2280, Z2, NV100, and Matchstiq Z3u, the System timestamp
+increments independent of the sample rate. For Sidekiq X2 and Sidekiq
+X4, the System timestamp increments at a rate relative to the sample rate
+and continues to increment regardless of any radio configuration changes
+(with the exception of sample rate). The System timestamp frequency can be
+queried with the <code class="code docutils literal notranslate"><span class="pre">skiq_read_parameters()</span></code> function, and the current
+frequency value is located in <code class="code docutils literal notranslate"><span class="pre">sys_timestamp_freq</span></code> variable of the
+<code class="code docutils literal notranslate"><span class="pre">skiq_fpga_param_t</span></code> data structure.</p>
+<p>The timestamps can be reset to zero asynchronously via the
+<code class="code docutils literal notranslate"><span class="pre">skiq_reset_timestamp()</span></code> function. This will reset both the RF and
+System timestamps. Additionally, if it is desired to set the timestamps
+to a specific value, the <code class="code docutils literal notranslate"><span class="pre">skiq_update_timestamps()</span></code> function can be
+used. Finally, if it is desired to reset or update the timestamps on a
+1PPS edge, then the <code class="code docutils literal notranslate"><span class="pre">skiq_write_timestamp_reset_on_1pps()</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_timestamp_update_on_1pps()</span></code> functions can be used.
+This is useful if it is necessary for the application to have the
+timestamps synchronized to a 1PPS source.</p>
+</div>
+<div class="section" id="automatic-calibration">
+<h2>Automatic Calibration<a class="headerlink" href="#automatic-calibration" title="Permalink to this headline">¶</a></h2>
+<p>Automatic calibration may be enabled and performed by Sidekiq by
+default. Automatic calibration algorithms include DC offset reduction as
+well as quadrature error correction for both receive and transmit.
+Depending on the processing being performed by the user radio
+application, automatic calibration may not be desired.</p>
+<p>As of libsidekiq v4.6.0, the ability to disable automatic transmit
+quadrature calibration algorithm is supported. Additionally, the ability
+to manually run the Tx quadrature calibration algorithm is supported.
+The Tx quadrature algorithm may take time to converge and may not be
+desired to leave in automatic mode. Additionally, execution of the Tx
+quadrature algorithm results in the appearance of erroneous
+transmissions in the spectrum while running. To configure the Tx
+quadrature calibration algorithm mode to run either manually or
+automatically, the <code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_quadcal_mode()</span></code> API can be used.
+The currently configured mode can be queried with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_quadcal_mode()</span></code>. To manually initiate the
+calibration algorithm to run, the <code class="code docutils literal notranslate"><span class="pre">skiq_run_tx_quadcal()</span></code> API can
+be used. Refer to the <code class="docutils literal notranslate"><span class="pre">tx_samples.c</span></code> application for the APIs
+associated with this.</p>
+<p>As of libsidekiq v4.13.0, the ability to disable automatic receive
+calibration algorithms is supported with <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_cal_mode()</span></code>.
+Additionally, the specific calibration types ran can be configured with
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_cal_type_mask()</span></code>.  The available calibrations that
+can be enabled can be queried with <code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_cal_types_avail()</span></code>.
+Finally, if it is desired to manually run the RX calibration, the
+<code class="code docutils literal notranslate"><span class="pre">skiq_run_rx_cal()</span></code> API can be used.  Refer to the <code class="docutils literal notranslate"><span class="pre">rx_samples.c</span></code>
+application for an example use of these APIs.</p>
+</div>
+<div class="section" id="receive-stream-mode">
+<h2>Receive Stream Mode<a class="headerlink" href="#receive-stream-mode" title="Permalink to this headline">¶</a></h2>
+<p>A typical use case for the Sidekiq line of products is to receive a
+great deal of I/Q data as efficiently as possible. This high throughput
+use case would historically receive 4,096 bytes per block.</p>
+<p>As of libsidekiq v4.6.0, the low latency receive stream mode
+(<code class="code docutils literal notranslate"><span class="pre">skiq_rx_stream_mode_low_latency</span></code>) provides a smaller block of I/Q
+samples from <code class="code docutils literal notranslate"><span class="pre">skiq_receive()</span></code> more often and effectively lowers the
+latency from RF reception to host CPU. This is especially useful when
+using lower sample rates that would historically take a relative long
+time to fill up a 4kB I/Q block before delivering the samples to the
+host CPU and software application.</p>
+<p>As of libsidekiq v4.7.0, the balanced stream mode
+(<code class="code docutils literal notranslate"><span class="pre">skiq_rx_stream_mode_balanced</span></code>) is also available. The balanced
+stream mode is a compromise between the high throughput and low latency
+stream modes. It results in a reduced throughput relative to the
+optimized high throughput mode, but produces a larger number of samples
+per packet than the low latency mode, thus achieving a higher throughput
+than the low latency mode. Most applications interested in achieving the
+maximum throughput should use the default high throughput mode, which
+applications interested in having a minimal latency should use the low
+latency mode. The balanced mode offers a compromise between the low
+latency and high throughput options.</p>
+<p>Refer to the Sidekiq API for additional details on the receive stream
+modes available. The API type and functions follow:</p>
+<ul class="simple">
+<li>Type: <code class="code docutils literal notranslate"><span class="pre">skiq_rx_stream_mode_t</span></code></li>
+<li>Function: <code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_stream_mode()</span></code></li>
+<li>Function: <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_stream_mode()</span></code></li>
+<li>Function: <code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_block_size()</span></code></li>
+</ul>
+</div>
+<div class="section" id="hotplug">
+<h2>Hotplug<a class="headerlink" href="#hotplug" title="Permalink to this headline">¶</a></h2>
+<p>As of libsidekiq v4.14.0, card hotplugging is now supported. Hotplug
+support will allow the user to connect and remove cards, both physically
+and logically, during an application’s execution. Removing a card that is
+in use by the application will result in adverse outcomes. New cards will
+be listed in calls to the <code class="code docutils literal notranslate"><span class="pre">skiq_get_cards()</span></code> function. Cards can then
+be initialized using <code class="code docutils literal notranslate"><span class="pre">skiq_enable_cards()</span></code>.</p>
+</div>
+<div class="section" id="exiting">
+<h2>Exiting<a class="headerlink" href="#exiting" title="Permalink to this headline">¶</a></h2>
+<p>When an application is ready to exit, the <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code> function
+should be called. This function ensures that libsidekiq shuts down
+gracefully. Any libsidekiq function should not be called within a signal
+handler, as there are various mutexes utilized to control access to
+libsidekiq and these mutexes may already be locked prior to being
+attempted to be called from within the context of the signal handler,
+which may result in deadlock. It is instead recommended to clear a
+“running” flag within the signal handler and perform the appropriate
+Sidekiq shutdown within the context of the main application. Refer to
+the <code class="docutils literal notranslate"><span class="pre">tx_samples.c</span></code> test application for an example of this.</p>
+<p>Once <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code> has been called, all follow-up calls to libsidekiq
+will fail with the exception of <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">skiq_get_cards()</span></code>. Calling <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> will re-initialize the
+library and prepare it for usage by a host application.</p>
+<p>As of libsidekiq v4.14.0, <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code> is called automatically when the
+application using the library shuts down; this is meant as a safety precaution
+to ensure that libsidekiq is properly cleaned up. If for some reason this
+is not desired, the exit handler can be disabled using the
+<code class="code docutils literal notranslate"><span class="pre">skiq_set_exit_handler_state()</span></code> function.  This function must be called
+before libsidekiq is initialized (for example, through <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code>).
+Despite the presence of this exit handler, <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code> should still be
+explicitly called in libsidekiq applications to ensure that initialized
+radios (and the library) are cleaned up and powered down when no longer needed.</p>
+</div>
+<div class="section" id="critical-errors">
+<h2>Critical Errors<a class="headerlink" href="#critical-errors" title="Permalink to this headline">¶</a></h2>
+<p>It is possible that within libsidekiq, a critical error may be
+encountered. Once a critical error condition is detected in libsidekiq,
+it is no longer safe to continue accessing libsidekiq. The application
+should be shutdown and the cause of the error should be resolved.
+Continued operation on the Sidekiq may result in unpredictable /
+incorrect behavior. The default behavior of libsidekiq when encountering
+a critical error is to exit. If an application wishes to override the
+default behavior, a callback function can be registered via the
+<code class="code docutils literal notranslate"><span class="pre">skiq_register_critical_error_callback()</span></code> API. The function
+registered is then called if libsidekiq encounters a critical error.
+Note that continued access of libsidekiq after a critical error has
+occurred can result in undefined behavior and should not be done.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Software Development Flow</a></li>
+<li><a class="reference internal" href="#tools-libraries-needed-for-linux-application-development">Tools/Libraries Needed for Linux Application Development</a><ul>
+<li><a class="reference internal" href="#gcc-toolchain">GCC Toolchain</a></li>
+<li><a class="reference internal" href="#libsidekiq-userspace-library">libsidekiq Userspace Library</a></li>
+<li><a class="reference internal" href="#source-code-editor">Source Code Editor</a></li>
+<li><a class="reference internal" href="#re-building-the-sidekiq-test-applications">Re-Building the Sidekiq Test Applications</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#developing-custom-applications-with-libsidekiq">Developing Custom Applications with libsidekiq</a><ul>
+<li><a class="reference internal" href="#structure-of-an-application-using-libsidekiq">Structure of an Application using libsidekiq</a></li>
+<li><a class="reference internal" href="#proper-header-file-inclusion">Proper Header File Inclusion</a></li>
+<li><a class="reference internal" href="#initializing-libsidekiq">Initializing libsidekiq</a><ul>
+<li><a class="reference internal" href="#dynamic-use-of-sidekiq-cards">Dynamic Use of Sidekiq Cards</a></li>
+<li><a class="reference internal" href="#logging">Logging</a></li>
+<li><a class="reference internal" href="#transport-layer">Transport Layer</a></li>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuring-an-interface-using-a-handle">Configuring an Interface using a Handle</a></li>
+<li><a class="reference internal" href="#frequency-hopping">Frequency Hopping</a><ul>
+<li><a class="reference internal" href="#configuring-tune-mode">Configuring Tune Mode</a></li>
+<li><a class="reference internal" href="#frequency-list-definition">Frequency List Definition</a></li>
+<li><a class="reference internal" href="#prepare-next-frequency-hop">Prepare Next Frequency Hop</a></li>
+<li><a class="reference internal" href="#execute-frequency-hop">Execute Frequency Hop</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#operation-modes">Operation Modes</a></li>
+<li><a class="reference internal" href="#rf-port-configuration">RF Port Configuration</a></li>
+<li><a class="reference internal" href="#i-q-ordering-mode">I/Q Ordering Mode</a></li>
+<li><a class="reference internal" href="#packed-mode-sidekiq-mpcie-m-2-and-stretch-m-2-2280-only">Packed Mode (Sidekiq mPCIe, m.2, and Stretch / m.2-2280 only)</a></li>
+<li><a class="reference internal" href="#starting-an-rx-interface">Starting an Rx Interface</a><ul>
+<li><a class="reference internal" href="#reading-i-q-samples-from-an-rx-interface">Reading I/Q Samples from an Rx Interface</a></li>
+<li><a class="reference internal" href="#counter-mode-with-rx-interface">Counter Mode with Rx Interface</a></li>
+<li><a class="reference internal" href="#making-skiq-receive-a-blocking-call">Making <code class="code docutils literal notranslate"><span class="pre">skiq_receive</span></code> a blocking call</a></li>
+<li><a class="reference internal" href="#using-receive-calibration-offsets">Using receive calibration offsets</a></li>
+<li><a class="reference internal" href="#using-i-q-phase-and-amplitude-calibration">Using I/Q phase and amplitude calibration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuring-a-tx-interface">Configuring a Tx Interface</a><ul>
+<li><a class="reference internal" href="#block-size-configuration">Block Size Configuration</a></li>
+<li><a class="reference internal" href="#data-flow-mode">Data Flow Mode</a></li>
+<li><a class="reference internal" href="#tx-timestamp-clock-source-selection">Tx Timestamp Clock Source selection</a></li>
+<li><a class="reference internal" href="#transfer-mode">Transfer Mode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#starting-the-tx-interface">Starting the Tx Interface</a><ul>
+<li><a class="reference internal" href="#writing-i-q-samples-to-a-tx-interface">Writing I/Q Samples to a Tx Interface</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#simultaneous-use-of-tx-and-rx-interfaces">Simultaneous use of Tx and Rx Interfaces</a></li>
+<li><a class="reference internal" href="#stopping-and-releasing-an-interface">Stopping and Releasing an Interface</a><ul>
+<li><a class="reference internal" href="#starting-and-stopping-on-1pps">Starting and Stopping on 1PPS</a><ul>
+<li><a class="reference internal" href="#pps-source">1PPS Source</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#working-with-multiple-receive-handles">Working with multiple receive handles</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pin-control-enable-of-rfic-signal-paths-sidekiq-x4-only">Pin Control enable of RFIC signal paths (Sidekiq X4 only)</a></li>
+<li><a class="reference internal" href="#clock-and-time-management-resources">Clock and Time Management Resources</a><ul>
+<li><a class="reference internal" href="#gpsdo">GPSDO</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#timestamp-details">Timestamp Details</a></li>
+<li><a class="reference internal" href="#automatic-calibration">Automatic Calibration</a></li>
+<li><a class="reference internal" href="#receive-stream-mode">Receive Stream Mode</a></li>
+<li><a class="reference internal" href="#hotplug">Hotplug</a></li>
+<li><a class="reference internal" href="#exiting">Exiting</a></li>
+<li><a class="reference internal" href="#critical-errors">Critical Errors</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation_procedure.html" title="previous chapter">Installation Procedure</a></li>
+      <li>Next: <a href="skiq_remote.html" title="next chapter">Using Libsidekiq Remotely</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/developing_apps.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/developing_apps.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

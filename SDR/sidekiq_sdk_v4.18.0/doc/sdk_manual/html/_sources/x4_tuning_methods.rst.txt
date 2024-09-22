@@ -1,0 +1,186 @@
+.. include:: replacements.rst
+
+.. _x4_tuning_methods:
+
+Sidekiq X4 - Methods of LO frequency tuning
+===========================================
+
+There are three methods of tuning the LO frequency on the Sidekiq X4, with each method having
+advantages and disadvantages that need to be considered based on the user's system requirements.
+Each mode is described below with respect to configuration, re-tuning, and differences from other
+modes.  At the end, some real-world tuning duration measurements are shown to help demonstrate what
+can typically be expected in a given Sidekiq X4 system.  Please note that the timing tests were
+performed with a Sidekiq X4 installed on a HiTech Global HTG-K800 PCIe carrier card, and housed in a
+PCIe-to-Thunderbolt 3 chassis. An Intel NUC7 was connected to the PCIe-to-Thunderbolt 3 chassis over
+Thunderbolt 3. The test utilities were based upon the libsidekiq v4.13.0 release.
+
+:code:`hop_on_timestamp` (FPGA triggered)
+-----------------------------------------
+
+The :code:`skiq_freq_tune_mode_hop_on_timestamp` mode provides the fastest LO tuning times, using
+the FPGA to pulse a GPIO connected to the ADRV9009 RFIC at a user-defined timestamp in order to tune
+the LO frequency at a precise time.  Once configured, the entire LO tuning operation is performed
+automatically by the FPGA without any additional software intervention.
+
+Configuration for hopping on timestamp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Configure the frequency tune mode to :code:`skiq_freq_tune_mode_hop_on_timestamp` using :code:`skiq_write_rx_freq_tune_mode()`
+2. Configure the frequency hop list and initial hop index using :code:`skiq_write_rx_freq_hop_list([freqA, freqB, freqC], freqA_idx)`
+
+Perform frequency retune at a specified RF timestamp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The RFICs used on Sidekiq X4 and libsidekiq impose a restriction on how to perform frequency
+hopping.  A hop index can only be written to a "mailbox" slot on the RFIC.  A hop operation executes
+a retune to the frequency in the "next" slot, then delivers the index from the "mailbox" to the
+"next" slot.  It acts much like a 2 element deep FIFO that must have 1 or 2 indices enqueued and
+cannot go empty.  Even though this approach is only required for Sidekiq X4, |libsidekiq| presents a
+consistent interface across all radio products.
+
+In this example, note that :code:`freqA` is the first tuned frequency since :code:`freqA_idx` is
+configured as the initial index in Configuration step 2 from above.
+
+1. Prepare the next hop index using :code:`skiq_write_next_rx_freq_hop(<card>, <hdl>, freqB_idx)`
+2. Perform the re-tune to :code:`freqA` using :code:`skiq_perform_rx_freq_hop(<card>, <hdl>, <rf_timestamp>)`
+3. Once :code:`<rf_timestamp>` has passed, tuning to :code:`freqA` has completed
+4. Prepare the next hop index using :code:`skiq_write_next_rx_freq_hop(<card>, <hdl>, freqC_idx)`
+5. Perform the re-tune to :code:`freqB` using :code:`skiq_perform_rx_freq_hop(<card>, <hdl>, <rf_timestamp>)`
+6. Once :code:`<rf_timestamp>` has passed, tuning to :code:`freqB` has completed
+
+Caveats
+^^^^^^^
+
+During standard LO tuning operations, software is in control of the entire process (including proper
+selection of the RF preselect filter).  When frequency hopping on a timestamp, the FPGA is in
+control, and doesn't currently coordinate selection of the RF preselect filter as part of the
+process.  Thus, if the user-defined frequency hopping list spans more than one of the preselect
+filter bands (shown below), then libsidekiq automatically chooses the "bypass" filter path, where no
+preselect filtering is applied.  This way the tuning speed is optimized for speed.  Here are the
+preselect bands on Sidekiq X4 for convenience:
+
+- :code:`skiq_filt_390_to_620MHz`
+- :code:`skiq_filt_540_to_850MHz`
+- :code:`skiq_filt_770_to_1210MHz`
+- :code:`skiq_filt_1130_to_1760MHz`
+- :code:`skiq_filt_1680_to_2580MHz`
+- :code:`skiq_filt_2500_to_3880MHz`
+- :code:`skiq_filt_3800_to_6000MHz`
+
+
+:code:`hop_immediate` (software triggered)
+------------------------------------------
+
+The :code:`skiq_freq_tune_mode_hop_immediate` mode provides the second fastest LO tuning speed on
+Sidekiq X4.  This mode uses software to tell the ADRV9009 RFIC to perform the LO frequency hop
+operation immediately upon reception of a SPI command initiated by libsidekiq.  This method is not
+as deterministic as the hop-on-timestamp mode, since the host's CPU load and transport layer between
+the CPU and FPGA (typically PCIe) affects communication latency.
+
+Configuration for hopping immediately
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Configure the frequency tune mode to :code:`skiq_freq_tune_mode_hop_immediate` using :code:`skiq_write_rx_freq_tune_mode()`
+2. Configure the frequency hop list and initial hop index using :code:`skiq_write_rx_freq_hop_list([freqA, freqB, freqC], freqA_idx)`
+
+Perform frequency retune immediately
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The RFICs used on Sidekiq X4 and libsidekiq impose a restriction on how to perform frequency
+hopping.  A hop index can only be written to a "mailbox" slot on the RFIC.  A hop operation executes
+a retune to the frequency in the "next" slot, then delivers the index from the "mailbox" to the
+"next" slot.  It acts much like a 2 element deep FIFO that must have 1 or 2 indices enqueued and
+cannot go empty.  Even though this approach is only required for Sidekiq X4, |libsidekiq| presents a
+consistent interface across all radio products.
+
+In this example, note that :code:`freqA` is the first tuned frequency since :code:`freqA_idx` is
+configured as the initial index in Configuration step 2 from above.
+
+1. Prepare the next hop index using :code:`skiq_write_next_rx_freq_hop(<card>, <hdl>, freqB_idx)`
+2. Perform the re-tune to :code:`freqA` using :code:`skiq_perform_rx_freq_hop(<card>, <hdl>, 0)` -- specifying :code:`0` as the timestamp means "immediate"
+3. Prepare the next hop index using :code:`skiq_write_next_rx_freq_hop(<card>, <hdl>, freqC_idx)`
+4. Perform the re-tune to :code:`freqB` using :code:`skiq_perform_rx_freq_hop(<card>, <hdl>, 0)` -- specifying :code:`0` as the timestamp means "immediate"
+
+Differences from :code:`hop_on_timestamp`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the "hop immediate" mode, the RF frontend is controlled by software so the preselect filters are
+used _even if the hop list spans more than one frequency band.  This is different from "hop on
+timestamp" where the preselect filters are configured only _once_ whenever the hop list is written.
+This also means that the "hop immediate" mode performance is limited by the speed of the SPI
+transactions to configure the RF frontend.
+
+
+Standard tune
+-------------
+
+The standard tune mode is the default LO tuning mode for libsidekiq, and is implemented for all
+Sidekiq products.  Compared to the previously described hopping modes, this is the slowest LO tuning
+mode on Sidekiq X4, but also provides the most flexibility in terms of RF performance since the user
+can control the type(s) of receive calibration and choose between automatic (re-tune initiated) or
+manual calibration (user-initiated).  The standard tune mode requires no special configuration to
+start using it: the user simply calls :code:`skiq_write_rx_LO_freq()` as needed.  Similar to the
+"hop-immediate" mode, the standard tune mode engages the appropriate RF frontend preselect filter
+configuration during the retune automatically based on the requested LO frequency.
+
+1. Configure the frequency tune mode to :code:`skiq_freq_tune_mode_standard` using :code:`skiq_write_rx_freq_tune_mode()` (Note: this is only needed if a different tune mode was previously set by the user)
+2. Use :code:`skiq_write_rx_LO_freq()` as needed
+
+Differences from :code:`hop_immediate`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The standard tune mode performs receive calibration steps on the ADRV9009 RFIC as recommended by
+Analog Devices which can take upwards of one second to complete.  These calibration steps ensure
+optimal quadrature error correction (thus minimizing image/sideband artifacts), as well as
+minimizing any DC offset in the received signal.  The calibration operation is performed whenever
+the LO frequency is tuned more than 100MHz away from the current LO frequency, which is also based
+on recommendations from Analog Devices.  The operation is also performed when the LO frequency
+crosses an RF PLL resolution boundary (see Talise User Guide for details).  There are multiple
+calibration knobs (refer to :code:`skiq_rx_cal_type_t` starting with libsidekiq v4.13.0) that can be
+independently enabled/disabled through the libsidekiq API, thus allowing a user to strike the
+appropriate balance of performance and tuning speed.
+
+Comparisons between tuning modes
+--------------------------------
+
+The API call duration varies depending on which tuning mode is being used.  The next table provides
+ranges of performance based on the specific configuration described in the introduction.
+
+Typical API call duration (Sidekiq X4 only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++-----------------------------------------------------------+-------------------------------+
+| Tuning Mode                                               | :code:`skiq_write_rx_LO_freq` |
++===========================================================+===============================+
+| :code:`skiq_freq_tune_mode_standard` (> 3GHz)             | 7 - 8 ms [#1]_                |
++-----------------------------------------------------------+-------------------------------+
+| :code:`skiq_freq_tune_mode_standard` (:math:`\leq` 3GHz)  | 9 - 17 ms [#1]_               |
++-----------------------------------------------------------+-------------------------------+
+
+.. [#1] Only when retuning less than 100MHz from current LO frequency, otherwise calibration is
+        performed and takes time to complete.
+
+In the :code:`skiq_freq_tune_mode_hop_immediate` tuning mode, the two API calls
+:code:`skiq_write_next_rx_freq_hop()` and :code:`skiq_perform_freq_hop()` are typically performed
+back-to-back so the total duration is shown below.
+
+.. |br| raw:: html
+
+        <br>
+
++-----------------------------------------------+--------------------------------------+
+| Tuning Mode                                   | :code:`skiq_write_next_rx_freq_hop`  |
+|                                               | and :code:`skiq_perform_rx_freq_hop` |
++===============================================+======================================+
+| :code:`skiq_freq_tune_mode_hop_immediate`     | 400 - 500 us                         |
++-----------------------------------------------+--------------------------------------+
+
+In the :code:`skiq_freq_tune_mode_hop_on_timestamp` tuning mode, the two API calls
+:code:`skiq_write_next_rx_freq_hop()` and :code:`skiq_perform_freq_hop()` can be separated in time
+so each call's duration is shown below.
+
++-----------------------------------------------+-------------------------------------+----------------------------------+
+| Tuning Mode                                   | :code:`skiq_write_next_rx_freq_hop` | :code:`skiq_perform_rx_freq_hop` |
++===============================================+=====================================+==================================+
+| :code:`skiq_freq_tune_mode_hop_on_timestamp`  | ~250 us                             | ~40 us                           |
++-----------------------------------------------+-------------------------------------+----------------------------------+

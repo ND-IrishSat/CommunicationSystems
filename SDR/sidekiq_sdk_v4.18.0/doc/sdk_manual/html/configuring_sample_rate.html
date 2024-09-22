@@ -1,0 +1,967 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Configuring Sample Rate / Channel Bandwidth &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Example X4 Use Cases: Rx" href="example_x4_use_cases.html" />
+    <link rel="prev" title="Using Libsidekiq Remotely" href="skiq_remote.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="configuring-sample-rate-channel-bandwidth">
+<span id="configuring-sample-rate"></span><h1>Configuring Sample Rate / Channel Bandwidth<a class="headerlink" href="#configuring-sample-rate-channel-bandwidth" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="api-ordering-dependency">
+<h2>API Ordering Dependency<a class="headerlink" href="#api-ordering-dependency" title="Permalink to this headline">¶</a></h2>
+<p>For all platforms, it’s recommended to configure the sample rate before
+tuning the carrier or LO frequency.  Failure to do so may result in
+an invalid request for LO tuning due to the relationship between LO tune range
+and sample rate.  For example, tuning the LO frequency to 50MHz and then
+requesting a sample rate of 100Msps would result in error:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Info: configured Rx LO freq to 50000000 Hz
+Error: failed to set Rx sample rate or bandwidth(using default from last config file)...status is -22
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuring-sample-rate-channel-bandwidth-on-multiple-handles">
+<h2>Configuring Sample Rate / Channel Bandwidth on Multiple Handles<a class="headerlink" href="#configuring-sample-rate-channel-bandwidth-on-multiple-handles" title="Permalink to this headline">¶</a></h2>
+<p>Libsidekiq offers multiple API functions to configure the receive sample rate and
+bandwidth, such as <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_rate_and_bandwidth()</span></code> and
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_rate_and_bandwidth_multi()</span></code>. When configuring
+multiple receive handles, the <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_rate_and_bandwidth_multi()</span></code>
+function is preferred as it is more performant than calling
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_rate_and_bandwidth()</span></code> multiple times.</p>
+</div>
+<div class="section" id="sidekiq-mpcie-m-2-stretch-m-2-2280-z2-and-matchstiq-z3u-only">
+<h2>Sidekiq mPCIe, m.2, Stretch (m.2-2280), Z2, and Matchstiq Z3u only<a class="headerlink" href="#sidekiq-mpcie-m-2-stretch-m-2-2280-z2-and-matchstiq-z3u-only" title="Permalink to this headline">¶</a></h2>
+<p>This section describes the process of configuring the channel bandwidth
+in the Analog Devices AD9361/4 RFIC using predefined FIR filter
+coefficients, the dependency of sample rate on bandwidth, and the
+additional filter configuration settings used for a specific sample
+rate. It does not cover how the FIR is programmed but rather captures
+the selection criteria and characteristics of the FIR coefficients. The
+same procedure is for both configuration the receive channel bandwidth
+as well as the transmit channel bandwidth. The receive and transmit
+channel bandwidths can be configured independently, but the sample rate
+can not.</p>
+<p>The requested channel bandwidth along with the sample rate is used to
+select and configure the digital FIR coefficients. The ratio of
+requested channel bandwidth to sample rate is used to calculate the
+desired passband percentage of the FIR filter. If the desired passband
+percentage does not match any of the passband percentages of the
+precomputed FIR filters, the precomputed FIR filter with the next
+incremented step in the passband percentage is selected. In other words,
+if precomputed FIR coefficients in increments of 10% are available and
+a passband percentage of 65% is desired, then the FIR coefficients
+resulting in a passband of 70% would be selected.</p>
+<div class="section" id="sample-rate-and-fir-selection">
+<h3>Sample Rate and FIR Selection<a class="headerlink" href="#sample-rate-and-fir-selection" title="Permalink to this headline">¶</a></h3>
+<p>As mentioned in the overview, the selection of the FIR filter
+coefficients on the percentage of requested channel bandwidth to sample
+rate. Specifically, the passband percentage is computed as</p>
+<div class="math notranslate">
+\[passband\_percent = (bandwidth / sample\_rate) * 100\]</div>
+<hr class="docutils" />
+<p>In addition to the calculation of the passband percentage, the sample
+rate also impacts decimation (or interpolation) factor built in to the
+FIR filter stage. The specific decimation / interpolation factor of the
+FIR as it relates to sample rate is shown in <a class="reference internal" href="#table9"><span class="std std-ref">Decimation / Interpolation Factor</span></a>.</p>
+<span id="table9"></span><table border="1" class="longtable colwidths-given docutils align-center" id="id3">
+<caption><span class="caption-number">Table 7 </span><span class="caption-text">Decimation / Interpolation Factor</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="30%" />
+<col width="20%" />
+<col width="30%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Sample Rate (in samples/sec)</th>
+<th class="head">FIR Decimation / Interpolation</th>
+<th class="head">Filter Lineup</th>
+<th class="head">Total Decimation/Interpolation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>233000-13300000</td>
+<td>4*</td>
+<td><p class="first">RX/TX DEC3/INT3 enabled</p>
+<p>RX/TX HB2 enabled</p>
+<p class="last">RX HB1 enabled</p>
+</td>
+<td>RX 48, TX 24</td>
+</tr>
+<tr class="row-odd"><td>13300000-23000000</td>
+<td>2</td>
+<td><p class="first">RX/TX DEC3/INT3 enabled</p>
+<p>RX/TX HB2 enabled</p>
+<p class="last">RX HB1 enabled</p>
+</td>
+<td>RX 24, TX 12</td>
+</tr>
+<tr class="row-even"><td>23000000-40000000</td>
+<td>2</td>
+<td><p class="first">RX/TX HB3 enabled</p>
+<p>RX/TX HB2 enabled</p>
+<p class="last">RX HB1 enabled</p>
+</td>
+<td>RX 16, TX 8</td>
+</tr>
+<tr class="row-odd"><td>40000000-46000000</td>
+<td>2</td>
+<td><p class="first">RX/TX DEC3/INT3 enabled</p>
+<p class="last">RX HB2 enabled</p>
+</td>
+<td>RX 12, TX 6</td>
+</tr>
+<tr class="row-even"><td>46000000-61440000</td>
+<td>2</td>
+<td><p class="first">RX/TX HB3 enabled</p>
+<p class="last">RX HB2 enabled</p>
+</td>
+<td>RX 8, TX 4</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When the TX FIR interpolation is configured to a value of 4,
+the TX FIR coefficients are automatically double relative to
+other settings.  This ensures a consistent output power
+level when moving from interpolation settings of 4 to 2
+(ex. changing sample rates from &lt;13.3Msps to &gt;13.3Msps).</p>
+</div>
+<p>Since the decimation factor is part of the FIR filter configuration, the
+actual passband percentage is impacted by the decimation factor.
+Specifically, the actual passband percentage of a specific filter is</p>
+<div class="math notranslate">
+\[actual\_passband = filter\_passband * decimation\_factor\]</div>
+<p>The impact of the decimation factor is accounted for when selecting the
+predefined FIR filter based on the desired channel bandwidth.</p>
+</div>
+<div class="section" id="number-of-filter-taps">
+<h3>Number of Filter Taps<a class="headerlink" href="#number-of-filter-taps" title="Permalink to this headline">¶</a></h3>
+<p>The number of taps available is limited by the RF IC and the configured
+sample rate. The RF IC can calculate 16 taps per clock cycle, and
+depending on the sample rate, the resulting number of taps available for
+the FIR is either 64, 96, or 128. The number of taps used for specific
+sample rates are shown in <a class="reference internal" href="#table10"><span class="std std-ref">Number of Filter Taps</span></a>.</p>
+<span id="table10"></span><table border="1" class="longtable docutils align-center" id="id4">
+<caption><span class="caption-number">Table 8 </span><span class="caption-text">Number of Filter Taps</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="42%" />
+<col width="29%" />
+<col width="29%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Sample Rate (in samples/sec)</th>
+<th class="head"># of RX Filter Taps</th>
+<th class="head"># of TX Filter Taps</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>233000 – 40000000</td>
+<td>128</td>
+<td>128</td>
+</tr>
+<tr class="row-odd"><td>40000000 – 46000000</td>
+<td>96</td>
+<td>96</td>
+</tr>
+<tr class="row-even"><td>46000000 – 61440000</td>
+<td>64</td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="filter-selection-example">
+<h3>Filter Selection Example<a class="headerlink" href="#filter-selection-example" title="Permalink to this headline">¶</a></h3>
+<p>Suppose a sample rate of 10Msps and a channel bandwidth of 6.5MHz is
+requested.</p>
+<div class="math notranslate">
+\[passband\_percent = (6500000 / 10000000) * 100 = 65\]</div>
+<p>With a sample rate of 10Msps, the decimation factor is 4. In order to
+achieve an actual passband of 6.5MHz, the FIR filter passband is
+calculated as</p>
+<div class="math notranslate">
+\[\begin{split}filter\_passband &amp;= passband\_percent / decimation\_factor \\
+                 &amp;= 65 / 4 \\
+                 &amp;= 16.25\end{split}\]</div>
+<p>However, there is not a FIR filter with a passband of 16.25. As a
+result, the filter selected is the next one available, greater than the
+requested passband. In this case, a filter passband of 16.5 is selected.</p>
+<p>Additionally, since the sample rate is &lt;40Msps, the maximum of 128
+filter taps can be used. Therefore, the filter used in this case is
+<code class="code docutils literal notranslate"><span class="pre">fir_128_tap_165_passband</span></code>. The actual resulting bandwidth is
+calculated as follows</p>
+<div class="math notranslate">
+\[\begin{split}actual\_passband &amp;= filter\_passband * decimation\_factor * sample\_rate \\
+                 &amp;= 16.5 * 4 * 10000000 \\
+                 &amp;= 6.6 \text{MHz}\end{split}\]</div>
+</div>
+<div class="section" id="custom-filter-coefficients">
+<h3>Custom Filter Coefficients<a class="headerlink" href="#custom-filter-coefficients" title="Permalink to this headline">¶</a></h3>
+<p>The ability to load custom FIR coefficients is supported through the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rfic_rx_fir_coeffs()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rfic_tx_fir_coeffs()</span></code> API functions. The decimation
+(interpolation) factor of the FIR and the number of taps available is
+determined by the sample rate and cannot be changed. Therefore, the
+sample rate must be configured prior to the custom FIR configuration.
+The FIR configuration parameters can be queried via the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_rfic_rx_fir_config()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_rfic_tx_fir_config()</span></code> APIs. If custom FIR
+coefficients are used, the bandwidth reported via
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_rx_sample_rate_and_bandwidth()</span></code> /
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_tx_sample_rate_and_bandwidth()</span></code> are no longer
+valid.</p>
+</div>
+<div class="section" id="filter-passband-available">
+<h3>Filter Passband Available<a class="headerlink" href="#filter-passband-available" title="Permalink to this headline">¶</a></h3>
+<p>The FIR filter passbands currently available are summarized in <a class="reference internal" href="#table11"><span class="std std-ref">Available Filters</span></a>.
+Note the FIR passband listed is for a decimation factor of 1.</p>
+<span id="table11"></span><table border="1" class="docutils align-center" id="id5">
+<caption><span class="caption-number">Table 9 </span><span class="caption-text">Available Filters</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="27%" />
+<col width="23%" />
+<col width="18%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Start Passband</th>
+<th class="head">End Passband</th>
+<th class="head">Step Size</th>
+<th class="head">Number of Filters</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0.1%</td>
+<td>0.1%</td>
+<td>N/A</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>0.5%</td>
+<td>50%</td>
+<td>0.5%</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="analog-filtering">
+<h3>Analog Filtering<a class="headerlink" href="#analog-filtering" title="Permalink to this headline">¶</a></h3>
+<p>In addition to the filtering described above, Sidekiqs based on the
+AD9361/4 RFIC allow users to configure analog filters present on the
+Rx/Tx paths.  These low pass filters are located right before the ADC for
+the Rx path and after the DAC for the Tx path.  By default, the analog filter
+bandwidth is automatically configured via <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_rate_and_bandwidth()</span></code>,
+or <code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_sample_rate_and_bandwidth()</span></code>, but users may override
+the configuration by calling <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_analog_filter_bandwidth()</span></code>,
+or <code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_analog_filter_bandwidth()</span></code> API functions after configuring
+the sample rate and bandwidth.</p>
+</div>
+<div class="section" id="sidekiq-mpcie-and-matchstiq-z3u">
+<h3>Sidekiq mPCIe and Matchstiq Z3u<a class="headerlink" href="#sidekiq-mpcie-and-matchstiq-z3u" title="Permalink to this headline">¶</a></h3>
+<p>When operating in dual channel mode, the maximum supported sample rate of Sidekiq
+mPCIe and Matchstiq Z3u is limited to 30.72 Msps.  In single channel mode, the full
+maximum sample rate of 61.44 Msps is supported.</p>
+</div>
+</div>
+<div class="section" id="sidekiq-x2-and-x4">
+<h2>Sidekiq X2 and X4<a class="headerlink" href="#sidekiq-x2-and-x4" title="Permalink to this headline">¶</a></h2>
+<p>The Sidekiq X2 and X4 RF transceivers support a wide variety of sample
+rate and bandwidth combinations out of the box with libsidekiq.  The
+following tables list the rates that are directly achievable and can
+be configured with the libsidekiq API.  In addition to the provided
+rates, both decimation and user generated profiles can be utilized to meet
+specific application needs.  Please contact Epiq Solutions via the
+support forums <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a> if there is more information required regarding
+capability and configuration of sample rates / bandwidth.</p>
+<div class="section" id="built-in-profiles">
+<h3>Built-in Profiles<a class="headerlink" href="#built-in-profiles" title="Permalink to this headline">¶</a></h3>
+<p>The next subsections capture the sample rate and bandwidth settings supported as of libsidekiq
+v4.12.0. These profiles and configuration parameters were generated using Analog Devices’
+AD9371/AD9379 Filter Wizard.</p>
+<div class="section" id="sidekiq-x2-built-in-profiles">
+<h4>Sidekiq X2 Built-in Profiles<a class="headerlink" href="#sidekiq-x2-built-in-profiles" title="Permalink to this headline">¶</a></h4>
+<p>The following two tables show the full list of available receive and transmit sample rates available
+in libsidekiq v4.12.0 for a Sidekiq X2.  Some sample rates have been available in previous releases
+and are noted as such.</p>
+<table border="1" class="colwidths-auto docutils" id="id6">
+<caption><span class="caption-number">Table 10 </span><span class="caption-text">Sidekiq X2 Receive Sample Rates</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">RX Input Rate (Msps)</th>
+<th class="head">RF Bandwidth (MHz)</th>
+<th class="head">Supported Handle(s)</th>
+<th class="head">Since</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>245.76</td>
+<td>200</td>
+<td>B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>245.76</td>
+<td>100</td>
+<td>B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-even"><td>153.6</td>
+<td>100</td>
+<td>A1/A2/B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>122.88</td>
+<td>100</td>
+<td>A1/A2/B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-even"><td>100</td>
+<td>82</td>
+<td>A1/A2/B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>73.728</td>
+<td>60.456 / 30.228</td>
+<td>A1/A2/B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-even"><td>61.44</td>
+<td>50</td>
+<td>A1/A2/B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>61.44</td>
+<td>25</td>
+<td>A1/A2/B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-even"><td>50</td>
+<td>41</td>
+<td>A1/A2/B1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>36.864</td>
+<td>30.228</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-even"><td>30.72</td>
+<td>25 / 20 / 18</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<table border="1" class="colwidths-auto docutils" id="id7">
+<caption><span class="caption-number">Table 11 </span><span class="caption-text">Sidekiq X2 Transmit Sample Rates</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Tx Output Rate (Msps)</th>
+<th class="head">RF Bandwidth (MHz)</th>
+<th class="head">Supported Handle(s)</th>
+<th class="head">Since</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>153.6</td>
+<td>100</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>122.88</td>
+<td>100</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-even"><td>100</td>
+<td>82</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>73.728</td>
+<td>60.456</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-even"><td>61.44</td>
+<td>50</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>50</td>
+<td>41</td>
+<td>A1/A2</td>
+<td>v4.10.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="sidekiq-x4-built-in-profiles">
+<h4>Sidekiq X4 Built-in Profiles<a class="headerlink" href="#sidekiq-x4-built-in-profiles" title="Permalink to this headline">¶</a></h4>
+<p>The following two tables show the full list of available receive and transmit sample rates available
+in libsidekiq v4.12.0 for a Sidekiq X4.  Some sample rates have been available in previous releases
+and are noted as such.</p>
+<table border="1" class="colwidths-auto docutils" id="id8">
+<caption><span class="caption-number">Table 12 </span><span class="caption-text">Sidekiq X4 Receive Sample Rates</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Rx Input Rate (Msps)</th>
+<th class="head">RF Bandwidth (MHz)</th>
+<th class="head">Supported Handle(s)</th>
+<th class="head">Since</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>500</td>
+<td>450 / 400</td>
+<td>C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-odd"><td>491.52</td>
+<td>450 / 400</td>
+<td>C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>250</td>
+<td>200</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>250</td>
+<td>100</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>245.76</td>
+<td>200</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-odd"><td>245.76</td>
+<td>100</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>200</td>
+<td>164</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.12.0</td>
+</tr>
+<tr class="row-odd"><td>153.6</td>
+<td>100</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>122.88</td>
+<td>100</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-odd"><td>122.88</td>
+<td>72 / 64 / 61.44</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>100</td>
+<td>82</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-odd"><td>76.8</td>
+<td>30.72</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>73.728</td>
+<td>60.456 / 30.228</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-odd"><td>61.44</td>
+<td>50</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-even"><td>61.44</td>
+<td>25</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-odd"><td>50</td>
+<td>41</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.10.1</td>
+</tr>
+<tr class="row-even"><td>50</td>
+<td>20</td>
+<td>A1/A2/B1/B2/C1/D1</td>
+<td>v4.11.1</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<table border="1" class="colwidths-auto docutils" id="id9">
+<caption><span class="caption-number">Table 13 </span><span class="caption-text">Sidekiq X4 Transmit Sample Rates</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Tx Output Rate (Msps)</th>
+<th class="head">RF Bandwidth (MHz)</th>
+<th class="head">Supported Handle(s) <a class="footnote-reference" href="#id2" id="id1">[1]</a></th>
+<th class="head">Since</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>500</td>
+<td>450 / 400</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.12.0</td>
+</tr>
+<tr class="row-odd"><td>491.52</td>
+<td>450 / 400</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.12.0</td>
+</tr>
+<tr class="row-even"><td>250</td>
+<td>200</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.10.0</td>
+</tr>
+<tr class="row-odd"><td>250</td>
+<td>100</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>245.76</td>
+<td>200</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-odd"><td>245.76</td>
+<td>100</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>200</td>
+<td>164</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.12.0</td>
+</tr>
+<tr class="row-odd"><td>153.6</td>
+<td>100</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>122.88</td>
+<td>100</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-odd"><td>122.88</td>
+<td>72 / 64 / 61.44</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>100</td>
+<td>82</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-odd"><td>76.8</td>
+<td>30.72</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-even"><td>73.728</td>
+<td>60.456 / 30.228</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-odd"><td>61.44</td>
+<td>50</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.9.0</td>
+</tr>
+<tr class="row-even"><td>61.44</td>
+<td>25</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+<tr class="row-odd"><td>50</td>
+<td>41</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.10.1</td>
+</tr>
+<tr class="row-even"><td>50</td>
+<td>20</td>
+<td>A1/A2/B1/B2</td>
+<td>v4.11.1</td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Streaming transmit samples over PCIe is only available for handle A1 or handle pairs
+A1/A2 and A1/B1</td></tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Transmit only applications at rates &gt;= 250Msps additionally requires
+configuring RxC1 or RxD1 to the desired sample rate.</p>
+</div>
+</div>
+<div class="section" id="options-for-sample-decimation">
+<h4>Options for Sample Decimation<a class="headerlink" href="#options-for-sample-decimation" title="Permalink to this headline">¶</a></h4>
+<p>Starting with libsidekiq <strong>v4.10.0</strong> and FPGA bitstream <strong>v3.12.0</strong>,
+both Sidekiq X2 and Sidekiq X4 have build options that allow the use of
+sample decimation. The build options are defined in more detail in each
+product’s respective PDK documentation. The use of the decimator happens
+automatically when a receive sample rate is configured by the user. The
+sample rate selection algorithm attempts to find the best profile and
+decimation settings to meet the requested sample rate and RF bandwidth.
+The equivalent RF bandwidth after the decimation stage is the minimum of
+the RF bandwidth before the stage and the decimated sample rate. So an
+RF bandwidth of 40MHz for a signal sampled at 50Msps, will have an
+equivalent RF bandwidth of 25MHz after one stage of decimation since (50
+/ 2 &lt; 40).</p>
+<p>The default build configuration for the decimation offers the
+functionality on RxA1 and RxA2 with up to 6 stages (i.e. decimate
+by 64) available. For example, if 50 Msamples/sec is available and the
+receive handle supports decimation of <span class="math notranslate">\(\frac{1}{2}\)</span>,
+<span class="math notranslate">\(\frac{1}{4}\)</span>, <span class="math notranslate">\(\frac{1}{8}\)</span>, <span class="math notranslate">\(\frac{1}{16}\)</span>,
+<span class="math notranslate">\(\frac{1}{32}\)</span>, and <span class="math notranslate">\(\frac{1}{64}\)</span>, then 25, 12.5, 6.25,
+3.125, 1.5625, and 0.78125 Msps are also available.</p>
+</div>
+</div>
+<div class="section" id="runtime-loaded-user-generated-profiles">
+<h3>Runtime Loaded User Generated Profiles<a class="headerlink" href="#runtime-loaded-user-generated-profiles" title="Permalink to this headline">¶</a></h3>
+<p>In addition to the built-in profiles, X2 and X4 users can create custom profiles using the Analog
+Devices profile generation tool.  At the time of the libsidekiq v4.17.0 release, there is no
+support for generating or using custom profiles with Sidekiq NV100.  The following sections outline
+the procedure for creating and importing a user-generated profile at runtime.</p>
+<div class="section" id="determine-dev-clock-settings-for-adi-profile-tool">
+<h4>Determine Dev Clock Settings for ADI Profile Tool<a class="headerlink" href="#determine-dev-clock-settings-for-adi-profile-tool" title="Permalink to this headline">¶</a></h4>
+<p>Use the Sidekiq sample rate utility <code class="docutils literal notranslate"><span class="pre">test_sample_rate</span></code> test
+application (as shown below) to determine the device clock settings.
+Below is an example of running the application with a desired
+sample rate of 73.728 MHz.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ /tmp/test_sample_rate -c 1 -r 73728000
+Info: initializing card 1...
+SKIQ[32448]: &lt;INFO&gt; libsidekiq 4.8.255-dev (g684832db)
+test_sample_rate[32448]: &lt;INFO&gt; Sidekiq card 1 is serial number=7T25, hardware reserved (rev 1), product reserved (X2) (part ES020201-B2-00)
+test_sample_rate[32448]: &lt;INFO&gt; Sidekiq card 1 FPGA v3.11.0, (date 18121917, FIFO size 64k)
+test_sample_rate[32448]: &lt;INFO&gt; Sidekiq card 1 is configured for host reference clock
+test_sample_rate[32448]: &lt;INFO&gt; Loading calibration data for Sidekiq X2, card 1
+Info: exact sample rate requested (73728000 Hz) is possible!
+Debug: VCXO 153600000 FPGA div 2
+
+Info: Use dev clock frequency 147456000 with a divider of 2
+
+test_sample_rate[32448]: &lt;INFO&gt; unlocking card 1
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-new-profile">
+<h4>Create New Profile<a class="headerlink" href="#create-new-profile" title="Permalink to this headline">¶</a></h4>
+<p>Once the appropriate Dev Clock for Sidekiq has been determined, the AD9371 (Sidekiq X2)
+or ADRV9009 (Sidekiq X4) Filter Wizard can be used to generate a profile that can be
+loaded as outlined below.</p>
+<ol class="arabic simple">
+<li>Launch the Filter Wizard tool (note: v1.10 is the currently
+supported version for X2, v2.4 for X4).</li>
+<li>If using Sidekiq X4, set the <code class="docutils literal notranslate"><span class="pre">Part</span> <span class="pre">Number</span></code> field to ADRV9009 (n/a for X2).</li>
+<li>Configure the <code class="docutils literal notranslate"><span class="pre">Tx</span> <span class="pre">Profile</span></code>, <code class="docutils literal notranslate"><span class="pre">ORx</span> <span class="pre">Profile</span></code> (<code class="code docutils literal notranslate"><span class="pre">skiq_rx_hdl_B1</span></code> for X2),
+<code class="docutils literal notranslate"><span class="pre">Rx</span> <span class="pre">Profile</span></code>, and <code class="docutils literal notranslate"><span class="pre">SnRx</span> <span class="pre">Profile</span></code> fields to the desired sample rate and
+filter characteristics. Currently, RX / ORx / TX sample rates must
+match. The below example uses a sample rate of 73.728 Msps.</li>
+<li>Press the <code class="docutils literal notranslate"><span class="pre">Generate</span> <span class="pre">Profiles</span></code> button and ensure that the
+profiles are valid as indicated by the status bar.</li>
+<li>Configure the <code class="docutils literal notranslate"><span class="pre">Ref</span> <span class="pre">Clock</span> <span class="pre">Divider</span></code> and <code class="docutils literal notranslate"><span class="pre">Device</span> <span class="pre">Clock</span> <span class="pre">(MHz)</span></code> settings
+to the values generated by the <code class="docutils literal notranslate"><span class="pre">test_sample_rate</span></code> application.
+These fields are located in the bottom left hand side of the main
+screen. In our example, the <code class="docutils literal notranslate"><span class="pre">Ref</span> <span class="pre">Clock</span> <span class="pre">Divider</span></code> is set to <code class="docutils literal notranslate"><span class="pre">2</span></code> and
+the <code class="docutils literal notranslate"><span class="pre">Device</span> <span class="pre">Clock</span></code> is set to <code class="docutils literal notranslate"><span class="pre">147.456</span> <span class="pre">MHz</span></code>.</li>
+<li>Generate the profile file with the <em>Output Profiles to File</em> button.</li>
+</ol>
+<div class="figure" id="id10">
+<a class="reference internal image-reference" href="_images/adi_profile_generator.png"><img alt="_images/adi_profile_generator.png" src="_images/adi_profile_generator.png" style="width: 6.92520in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 13 </span><span class="caption-text">Analog Devices Profile Generator (Sidekiq X2)</span></p>
+</div>
+<div class="figure" id="id11">
+<a class="reference internal image-reference" href="_images/adi_profile_generator_x4.png"><img alt="_images/adi_profile_generator_x4.png" src="_images/adi_profile_generator_x4.png" style="width: 6.92520in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 14 </span><span class="caption-text">Analog Devices Profile Generator (Sidekiq X4)</span></p>
+</div>
+</div>
+<div class="section" id="configure-sidekiq-with-profile">
+<h4>Configure Sidekiq with Profile<a class="headerlink" href="#configure-sidekiq-with-profile" title="Permalink to this headline">¶</a></h4>
+<p>To configure the radio with the profile created, after performing the
+initialization and default configuration with the <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> API, the
+<code class="code docutils literal notranslate"><span class="pre">skiq_prog_rfic_from_file()</span></code> API. This configures the radio with the sample
+rate defined in the profile as well as configuring the various filter settings.
+This process results in a full reset and re-initialization of the radio, so any
+previous radio configuration (outside of the sample rate and bandwidth) must be
+applied after configuring from the profile. It is recommended to perform the
+programming from the file immediately after initialization, prior to any
+radio configuration. Note that modifying the sample rate and/or
+bandwidth settings with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_sample_rate_and_bandwidth()</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_sample_rate_and_bandwidth()</span></code> will result
+any previously loaded profile to be overwritten.</p>
+</div>
+</div>
+</div>
+<div class="section" id="sidekiq-nv100">
+<h2>Sidekiq NV100<a class="headerlink" href="#sidekiq-nv100" title="Permalink to this headline">¶</a></h2>
+<p>The Sidekiq NV100 RF transceivers support a wide variety of sample rate and bandwidth combinations
+out of the box with libsidekiq.  The following table lists the rates that are directly achievable
+and can be configured with the libsidekiq API.  Even though the NV100 has two receivers and two
+transmitters, there are clocking constraints between handles that restrict sample rate
+configuration.  As of libsidekiq v4.17.0, both receivers must be configured to the same sample
+rate.  The same restriction applies to both transmitters.</p>
+<p>Due to limitations of the interpolation/decimation rate supported in the datapath, the Sidekiq NV100
+(using the ADRV9004 RFIC) has a list of “dead” zones in which certain sample rates cannot be configured.
+Please see the “Dead Zone Frequency Ranges” table of the ADRV9001 User Guide <a class="reference internal" href="references.html#ref15"><span class="std std-ref">[15]</span></a> for
+more information.  Please contact Epiq Solutions via the support forums <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a> if there
+are questions regarding capability and configuration of sample rates and RF bandwidths.  Users may
+also request additional sample rates via the support forums.</p>
+<div class="section" id="sidekiq-nv100-built-in-profiles">
+<h3>Sidekiq NV100 Built-in Profiles<a class="headerlink" href="#sidekiq-nv100-built-in-profiles" title="Permalink to this headline">¶</a></h3>
+<p>The following table shows the full list of available receive and transmit sample rates available in
+libsidekiq v4.17.0 for a Sidekiq NV100.  If a sample rate is listed here, it is available for both
+receive and transmit paths.  At this time, all receivers and transmitters are configured for the
+same sample rate (unless the user is configuring from the list of disparate rates). However, the RF
+receive bandwidth is configurable per-handle between 5% and 80% in 0.5% increments.</p>
+<table border="1" class="colwidths-auto docutils" id="id12">
+<caption><span class="caption-number">Table 14 </span><span class="caption-text">Sidekiq NV100 Sample Rates</span><a class="headerlink" href="#id12" title="Permalink to this table">¶</a></caption>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Rx/Tx Sample Rate (Msps)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0.541667</td>
+</tr>
+<tr class="row-odd"><td>1.92</td>
+</tr>
+<tr class="row-even"><td>2.4576</td>
+</tr>
+<tr class="row-odd"><td>2.8</td>
+</tr>
+<tr class="row-even"><td>3.84</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+</tr>
+<tr class="row-even"><td>4.9152</td>
+</tr>
+<tr class="row-odd"><td>5.6</td>
+</tr>
+<tr class="row-even"><td>7.68</td>
+</tr>
+<tr class="row-odd"><td>9.8304</td>
+</tr>
+<tr class="row-even"><td>10</td>
+</tr>
+<tr class="row-odd"><td>11.2</td>
+</tr>
+<tr class="row-even"><td>15.36</td>
+</tr>
+<tr class="row-odd"><td>16</td>
+</tr>
+<tr class="row-even"><td>20</td>
+</tr>
+<tr class="row-odd"><td>21.6667</td>
+</tr>
+<tr class="row-even"><td>22</td>
+</tr>
+<tr class="row-odd"><td>23.04</td>
+</tr>
+<tr class="row-even"><td>30.72</td>
+</tr>
+<tr class="row-odd"><td>40</td>
+</tr>
+<tr class="row-even"><td>61.44</td>
+</tr>
+</tbody>
+</table>
+<p>The following table shows the full list of disparate sample rates available in libsidekiq v4.17.0
+for a Sidekiq NV100.  If a sample rate combination is listed there, the receivers can be configured
+at the input rate while the transmitters can be configured at the output rate.</p>
+<table border="1" class="colwidths-auto docutils" id="id13">
+<caption><span class="caption-number">Table 15 </span><span class="caption-text">Sidekiq NV100 Sample Rates</span><a class="headerlink" href="#id13" title="Permalink to this table">¶</a></caption>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Input Rate (Msps)</th>
+<th class="head">Output Rate (Msps)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1.4</td>
+<td>5.6</td>
+</tr>
+<tr class="row-odd"><td>11.2</td>
+<td>5.6</td>
+</tr>
+</tbody>
+</table>
+<p>The RF receive bandwidth is configurable per-handle between 5% and 80% in 0.5% increments with
+additional values above 80% listed in the subsequent table.</p>
+<table border="1" class="colwidths-auto docutils" id="id14">
+<caption><span class="caption-number">Table 16 </span><span class="caption-text">Sidekiq NV100 Supported Rx Bandwidth Percentages</span><a class="headerlink" href="#id14" title="Permalink to this table">¶</a></caption>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Bandwidth % of Sample Rate</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>3</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+</tr>
+<tr class="row-even"><td>5.5</td>
+</tr>
+<tr class="row-odd"><td>.</td>
+</tr>
+<tr class="row-even"><td>.  ( Between 5 and 80% possible in 0.5% increments )</td>
+</tr>
+<tr class="row-odd"><td>.</td>
+</tr>
+<tr class="row-even"><td>75.5</td>
+</tr>
+<tr class="row-odd"><td>80</td>
+</tr>
+<tr class="row-even"><td>86</td>
+</tr>
+<tr class="row-odd"><td>89</td>
+</tr>
+<tr class="row-even"><td>95</td>
+</tr>
+<tr class="row-odd"><td>96</td>
+</tr>
+<tr class="row-even"><td>99</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configuring Sample Rate / Channel Bandwidth</a><ul>
+<li><a class="reference internal" href="#api-ordering-dependency">API Ordering Dependency</a></li>
+<li><a class="reference internal" href="#configuring-sample-rate-channel-bandwidth-on-multiple-handles">Configuring Sample Rate / Channel Bandwidth on Multiple Handles</a></li>
+<li><a class="reference internal" href="#sidekiq-mpcie-m-2-stretch-m-2-2280-z2-and-matchstiq-z3u-only">Sidekiq mPCIe, m.2, Stretch (m.2-2280), Z2, and Matchstiq Z3u only</a><ul>
+<li><a class="reference internal" href="#sample-rate-and-fir-selection">Sample Rate and FIR Selection</a></li>
+<li><a class="reference internal" href="#number-of-filter-taps">Number of Filter Taps</a></li>
+<li><a class="reference internal" href="#filter-selection-example">Filter Selection Example</a></li>
+<li><a class="reference internal" href="#custom-filter-coefficients">Custom Filter Coefficients</a></li>
+<li><a class="reference internal" href="#filter-passband-available">Filter Passband Available</a></li>
+<li><a class="reference internal" href="#analog-filtering">Analog Filtering</a></li>
+<li><a class="reference internal" href="#sidekiq-mpcie-and-matchstiq-z3u">Sidekiq mPCIe and Matchstiq Z3u</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sidekiq-x2-and-x4">Sidekiq X2 and X4</a><ul>
+<li><a class="reference internal" href="#built-in-profiles">Built-in Profiles</a><ul>
+<li><a class="reference internal" href="#sidekiq-x2-built-in-profiles">Sidekiq X2 Built-in Profiles</a></li>
+<li><a class="reference internal" href="#sidekiq-x4-built-in-profiles">Sidekiq X4 Built-in Profiles</a></li>
+<li><a class="reference internal" href="#options-for-sample-decimation">Options for Sample Decimation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#runtime-loaded-user-generated-profiles">Runtime Loaded User Generated Profiles</a><ul>
+<li><a class="reference internal" href="#determine-dev-clock-settings-for-adi-profile-tool">Determine Dev Clock Settings for ADI Profile Tool</a></li>
+<li><a class="reference internal" href="#create-new-profile">Create New Profile</a></li>
+<li><a class="reference internal" href="#configure-sidekiq-with-profile">Configure Sidekiq with Profile</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sidekiq-nv100">Sidekiq NV100</a><ul>
+<li><a class="reference internal" href="#sidekiq-nv100-built-in-profiles">Sidekiq NV100 Built-in Profiles</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="skiq_remote.html" title="previous chapter">Using Libsidekiq Remotely</a></li>
+      <li>Next: <a href="example_x4_use_cases.html" title="next chapter">Example X4 Use Cases: Rx</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/configuring_sample_rate.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/configuring_sample_rate.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

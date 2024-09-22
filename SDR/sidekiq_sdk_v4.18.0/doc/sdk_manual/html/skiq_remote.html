@@ -1,0 +1,351 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Using Libsidekiq Remotely &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuring Sample Rate / Channel Bandwidth" href="configuring_sample_rate.html" />
+    <link rel="prev" title="Software Development Flow" href="developing_apps.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="using-libsidekiq-remotely">
+<span id="section-skiq-remote"></span><h1>Using Libsidekiq Remotely<a class="headerlink" href="#using-libsidekiq-remotely" title="Permalink to this headline">¶</a></h1>
+<p>Introduced in libsidekiq v4.16.0 is a mechanism for running libsidekiq applications on a client
+which connects to a server supported by the network transport interface.  Both the Sidekiq Z2
+and Matchstiq Z3u support this functionality. The server physically contains the Sidekiq card.
+An overview of the deployment of such a system is depicted below.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="_images/skiq_remote.png"><img alt="Sidekiq Remote Deployment" src="_images/skiq_remote.png" style="width: 4.562in; height: 5.011in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 11 </span><span class="caption-text">Sidekiq Remote Deployment</span></p>
+</div>
+<p>The server containing the Sidekiq card allows for applications to be run either remotely
+or locally on the server itself.  Management of the Sidekiq card resource is handled by
+the daemon.  Client(s) communicate with a server via a network interface, using a daemon
+API to send and receive messages.</p>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="netconfig">
+<h3>netconfig<a class="headerlink" href="#netconfig" title="Permalink to this headline">¶</a></h3>
+<p>After the integration of libtirpc into libsidekiq v4.17.5, network transport now requires
+a <code class="docutils literal notranslate"><span class="pre">netconfig</span></code> file be present on the host. A default version of the contents of the <code class="docutils literal notranslate"><span class="pre">netconfig</span></code>
+file are provided below if the host operating system does not include it.  Since each
+operating system may handle this file differently, please contact Epiq Solutions for
+installation instructions if needed.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># The network configuration file. This file is currently only used in
+# conjunction with the TI-RPC code in the libtirpc library.
+#
+# Entries consist of:
+#
+#       &lt;network_id&gt; &lt;semantics&gt; &lt;flags&gt; &lt;protofamily&gt; &lt;protoname&gt; \
+#               &lt;device&gt; &lt;nametoaddr_libs&gt;
+#
+# The &lt;device&gt; and &lt;nametoaddr_libs&gt; fields are always empty in this
+# implementation.
+#
+udp        tpi_clts      v     inet     udp     -       -
+tcp        tpi_cots_ord  v     inet     tcp     -       -
+udp6       tpi_clts      v     inet6    udp     -       -
+tcp6       tpi_cots_ord  v     inet6    tcp     -       -
+rawip      tpi_raw       -     inet      -      -       -
+local      tpi_cots_ord  -     loopback  -      -       -
+unix       tpi_cots_ord  -     loopback  -      -       -
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In a future release of libsidekiq a patch will be released to remove
+this requirement for using network transport.</p>
+</div>
+</div>
+<div class="section" id="matchstiq-z3u">
+<h3>Matchstiq Z3u<a class="headerlink" href="#matchstiq-z3u" title="Permalink to this headline">¶</a></h3>
+<p>The <em>z3u-usb-net-</em> package must be at least at least version <em>1.0.0-1</em>.  To view the currently
+installed <em>z3u-usb-net</em> package installed on the Z3u, run <code class="code docutils literal notranslate"><span class="pre">apt</span> <span class="pre">list</span> <span class="pre">z3u-usb-net</span></code>.</p>
+<p>In order to decrease the overall system latency and improve the streaming throughput, it is highly
+recommended to use the Ethernet Emulation Model (EEM) USB networking protocol.  To configure the
+USB network to use this profile, run <code class="code docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">fw_setenv</span> <span class="pre">usb_network_profile</span> <span class="pre">eem</span></code> on the Z3u
+(refer to the “USB Network Configuration” section of the Matchstiq Z3u Hardware User Manual).
+Note that after updating the profile, the system must be rebooted for the settings to be applied.</p>
+</div>
+<div class="section" id="sidekiq-z2">
+<h3>Sidekiq Z2<a class="headerlink" href="#sidekiq-z2" title="Permalink to this headline">¶</a></h3>
+<p>A minimum BSP of v3.3.0 is required.</p>
+</div>
+<div class="section" id="client">
+<h3>Client<a class="headerlink" href="#client" title="Permalink to this headline">¶</a></h3>
+<p>Libsidekiq utilizes Open Network Computing (ONC) Remote Procedure Calls (RPC) to provide acceleration
+of a handful of libsidekiq functions.  As a result, the client system most have RPC bind installed.
+For instance, on a Debian machine (such as Ubuntu 18.04), you can run <code class="code docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">rpcbind</span></code>.</p>
+<p>Only Linux on a x86-64 bit processor is currently supported.  For support of alternative operating system
+support, please contact Epiq Solutions.</p>
+</div>
+</div>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="client-system">
+<h3>Client System<a class="headerlink" href="#client-system" title="Permalink to this headline">¶</a></h3>
+<p>Connecting to a remote Sidekiq card requires setting environment variables <strong>SKIQ_DAEMON_IP</strong> and
+<strong>SKIQ_DAEMON_PORT</strong> with the server’s IP address and port (default port of 3417).</p>
+</div>
+<div class="section" id="server-system">
+<h3>Server System<a class="headerlink" href="#server-system" title="Permalink to this headline">¶</a></h3>
+<p>The server must be running the daemon process (<em>skiq_daemon</em>) prior to accepting client connections.
+The <em>skiq_daemon</em> test application is provided for both the Sidekiq Z2 and the Matchstiq Z3u
+in the prebuilt applications bundled with a Sidekiq release.</p>
+</div>
+<div class="section" id="id1">
+<h3>Matchstiq Z3u<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>For the Matchstiq Z3u, a Debian package, <em>z3u-skiq-daemon</em> is provided.  This package includes
+the <em>skiq_daemon</em> application as well as a service that is enabled to run automatically upon
+startup once the package is installed.  Note that the card ownership is managed by <em>skiq_daemon</em>
+such that running <em>skiq_daemon</em> will not prevent applications from running natively on the Matchstiq
+Z3u if client does not have the Matchstiq Z3u card enabled.  If it is desired to disable
+<em>skiq_daemon</em> from running automatically upon startup, this can be disabled by running
+<code class="code docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">systemctl</span> <span class="pre">disable</span> <span class="pre">z3u-skiq-daemon</span></code> on the Z3u.</p>
+</div>
+</div>
+<div class="section" id="example-usage">
+<h2>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h2>
+<p>Let’s consider an example deployment of running a Matchstiq Z3u connected to a Linux laptop.
+The Linux laptop will be running an x86-64 bit version of libsidekiq.</p>
+<div class="figure align-center" id="id3">
+<img alt="_images/skiq_remote_example.png" src="_images/skiq_remote_example.png" />
+<p class="caption"><span class="caption-number">Fig. 12 </span><span class="caption-text">Sidekiq Remote Example Usage</span></p>
+</div>
+<p>Since the Matchstiq Z3u automatically starts <em>skiq_daemon</em> when powered on, there is no additional
+steps required to setup the Matchstiq Z3u.</p>
+<p>On the Linux laptop, we must configure the daemon IP address and port number.  By default,
+the Matchstiq Z3u’s IP address is 192.168.0.15.  Additionally, the default port number of <em>skiq_daemon</em>
+is 3417.  To configure the IP address and port number, on the laptop, we can run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export SKIQ_DAEMON_IP=192.168.0.15
+$ export SKIQ_DAEMON_PORT=3417
+</pre></div>
+</div>
+<p>Now, also on the Linux laptop, we can run the <em>version_test</em> application.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./version_test
+1 card(s) found: 0 in use, 1 available!
+Card IDs currently used     :
+Card IDs currently available: 0
+Info: initializing 1 card(s)...
+SKIQ[18197]: &lt;INFO&gt; libsidekiq v4.16.0 (gXXXXXXXXX)
+version_test[18197]: &lt;INFO&gt; Sidekiq card 0 is serial number=9X0J, Z3U (rev B) (part ES032201-B0-00)
+version_test[18197]: &lt;DEBUG&gt; got port 3417, ip 192.168.0.15 card=0
+version_test[18197]: &lt;DEBUG&gt; Allocating new hash table
+version_test[18197]: &lt;DEBUG&gt; Allocating new connection 5620507011113330880
+version_test[18197]: &lt;DEBUG&gt; Creating new RPC client
+version_test[18197]: &lt;DEBUG&gt; Saving server card 0 (uid=5620507011113330880) to client card 0
+version_test[18197]: &lt;WARNING&gt; FPGA capabilities indicate no support for reading/writing flash for card 0
+version_test[18197]: &lt;INFO&gt; Sidekiq card 0 FPGA v3.14.0, (date 20081217, FIFO size unknown)
+version_test[18197]: &lt;INFO&gt; Sidekiq card 0 is configured for an internal reference clock
+***********************************************************
+* libsidekiq v4.16.0
+***********************************************************
+***********************************************************
+* Sidekiq Card 0
+Card
+    accelerometer present: true
+    part type: Z3U
+    part info: ES032201-B0-00
+    serial: 9X0J
+    xport: network
+FPGA
+    version: 3.14.0
+    git hash: 0x1eefb308
+    build date (yymmddhh): 20081217
+    tx fifo size: unknown
+RF
+    reference clock: internal
+    reference clock frequency: 40000000 Hz
+
+version_test[18197]: &lt;INFO&gt; Unlocking card 0
+version_test[18197]: &lt;DEBUG&gt; Hash table empty, destroying...
+</pre></div>
+</div>
+<p>We can see that our remotely connected Matchstiq Z3u was detected by the <em>version_test</em> application
+running on the Linux x86 host.</p>
+</div>
+<div class="section" id="detailed-network-and-port-use">
+<h2>Detailed Network and Port Use<a class="headerlink" href="#detailed-network-and-port-use" title="Permalink to this headline">¶</a></h2>
+<p>The <em>skiq_daemon</em> application uses both TCP and UDP sockets for use.  The probe socket exists on
+port number 3417 and can be overwritten by launching the <em>skiq_daemon</em> with a different port.
+For example, if the probe port number is desired to be 4000, you can start the <em>skiq_daemon</em>
+application with: <code class="code docutils literal notranslate"><span class="pre">./skiq_daemon</span> <span class="pre">-p</span> <span class="pre">4000</span></code>.  The client will need to specify the
+daemon port as <strong>SKIQ_DAEMON_PORT</strong> as 4000 (<code class="code docutils literal notranslate"><span class="pre">export</span> <span class="pre">SKIQ_DAEMON_PORT=4000</span></code>).  When a card is in use
+by libsidekiq, a TCP socket connection is established between the client and server.  The port
+number used can vary and typically begins from the <strong>SKIQ_DAEMON_PORT</strong>.  The port in use for
+the control is established during the probe procedure of the card.  Additionally, a TCP and
+UDP socket connection are established to support RPC.  The port number in use to support RPC varies.
+Finally, when streaming samples, a UDP socket is used to stream the sample data.  The port number used
+in streaming can vary and typically begins from the <strong>SKIQ_DAEMON_PORT</strong>.</p>
+</div>
+<div class="section" id="limited-capabilities">
+<h2>Limited Capabilities<a class="headerlink" href="#limited-capabilities" title="Permalink to this headline">¶</a></h2>
+<p>The following features / capabilities are not supported in libsidekiq v4.17.4 via remote operation using the network transport:</p>
+<ul class="simple">
+<li>reprogramming the RFIC via <cite>skiq_prog_rfic_from_file()</cite></li>
+<li>reprogramming the FPGA via <cite>skiq_prog_fpga_from_file()</cite></li>
+<li><dl class="first docutils">
+<dt>accessing the flash via</dt>
+<dd><ul class="first last">
+<li><cite>skiq_verify_fpga_config_from_flash()</cite></li>
+<li><cite>skiq_save_fpga_config_to_flash_slot()</cite></li>
+<li><cite>skiq_verify_fpga_config_in_flash_slot()</cite></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>frequency hopping via</dt>
+<dd><ul class="first last">
+<li><cite>skiq_write_rx_freq_tune_mode()</cite></li>
+<li><cite>skiq_read_rx_freq_tune_mode()</cite></li>
+<li><cite>skiq_write_tx_freq_tune_mode()</cite></li>
+<li><cite>skiq_read_tx_freq_tune_mode()</cite></li>
+<li><cite>skiq_write_rx_freq_hop_list()</cite></li>
+<li><cite>skiq_read_rx_freq_hop_list()</cite></li>
+<li><cite>skiq_write_tx_freq_hop_list()</cite></li>
+<li><cite>skiq_read_tx_freq_hop_list()</cite></li>
+<li><cite>skiq_write_next_rx_freq_hop()</cite></li>
+<li><cite>skiq_write_next_tx_freq_hop()</cite></li>
+<li><cite>skiq_perform_rx_freq_hop()</cite></li>
+<li><cite>skiq_perform_tx_freq_hop()</cite></li>
+<li><cite>skiq_read_curr_rx_freq_hop()</cite></li>
+<li><cite>skiq_read_curr_tx_freq_hop()</cite></li>
+<li><cite>skiq_read_next_rx_freq_hop()</cite></li>
+<li><cite>skiq_read_next_tx_freq_hop()</cite></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>RX streaming on 1PPS or a trigger source via</dt>
+<dd><ul class="first last">
+<li><cite>skiq_start_rx_streaming_on_1pps()</cite></li>
+<li><cite>skiq_start_rx_streaming_multi_on_trigger()</cite></li>
+<li><cite>skiq_stop_rx_streaming_on_1pps()</cite></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>RX stream configuration via</dt>
+<dd><ul class="first last">
+<li><cite>skiq_set_rx_transfer_timeout()</cite></li>
+<li><cite>skiq_get_rx_transfer_timeout()</cite></li>
+<li><cite>skiq_write_rx_stream_mode()</cite></li>
+<li><cite>skiq_read_rx_stream_mode()</cite></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>Only a single remote card can be used</li>
+<li>Only a single handle can be used</li>
+<li>RF port selection is not supported on Z2</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using Libsidekiq Remotely</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#netconfig">netconfig</a></li>
+<li><a class="reference internal" href="#matchstiq-z3u">Matchstiq Z3u</a></li>
+<li><a class="reference internal" href="#sidekiq-z2">Sidekiq Z2</a></li>
+<li><a class="reference internal" href="#client">Client</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setup">Setup</a><ul>
+<li><a class="reference internal" href="#client-system">Client System</a></li>
+<li><a class="reference internal" href="#server-system">Server System</a></li>
+<li><a class="reference internal" href="#id1">Matchstiq Z3u</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example-usage">Example Usage</a></li>
+<li><a class="reference internal" href="#detailed-network-and-port-use">Detailed Network and Port Use</a></li>
+<li><a class="reference internal" href="#limited-capabilities">Limited Capabilities</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="developing_apps.html" title="previous chapter">Software Development Flow</a></li>
+      <li>Next: <a href="configuring_sample_rate.html" title="next chapter">Configuring Sample Rate / Channel Bandwidth</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/skiq_remote.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/skiq_remote.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

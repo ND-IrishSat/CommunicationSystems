@@ -1,0 +1,5 @@
+<map id="sidekiq_core/inc/sidekiq_api.h" name="sidekiq_core/inc/sidekiq_api.h">
+<area shape="rect" id="node9" href="$sidekiq__types_8h.html" title="This file contains the public type definitions of the sidekiq_api provided by libsidekiq. " alt="" coords="276,245,388,272"/>
+<area shape="rect" id="node11" href="$sidekiq__params_8h.html" title="This file contains data structures used to determine the parameters of a given Sidekiq. " alt="" coords="182,96,306,123"/>
+<area shape="rect" id="node12" href="$sidekiq__xport__types_8h.html" title="This file contains the type definitions associated with the Sidekiq Transport API (sidekiq_xport_api..." alt="" coords="170,171,318,197"/>
+</map>

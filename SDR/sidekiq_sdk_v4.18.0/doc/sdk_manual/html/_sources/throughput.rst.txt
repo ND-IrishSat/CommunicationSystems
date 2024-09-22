@@ -1,0 +1,230 @@
+.. _section_throughput:
+
+Assessing Throughput Performance
+================================
+
+Since the Sidekiq card can be used in a wide variety of host systems,
+the throughput capabilities of the Sidekiq varies greatly. Included with
+the prebuilt Sidekiq test applications are a set of benchmarking test
+applications. These benchmarking applications can be used to determine
+the theoretical maximum throughput performance of a particular host
+system. Additionally, various Sidekiq parameters can be adjusted to
+observe impact in performance.
+
+Receive Performance
+-------------------
+
+The ``rx_benchmark`` application provides insight into a receive-only
+application's maximum theoretical benchmark on a specific host system.
+The user can specify the number of handles specified to use and whether
+the blocking receive capability is used. The application then monitors
+timestamp errors for each enabled channel to validate receive throughput
+performance.
+
+If a desired run time or minimum error count is desired, the
+``--threshold`` and ``--time`` parameters can be used for the application.
+If the threshold criteria was met, a :code:`0` is returned by the application.
+
+Receive Performance Example
+---------------------------
+
+Here is an example of running the benchmark application with both RX A1
+and A2 enabled at a rate of 20Msps for 5 seconds. The return code of 
+:code:`0` indicates that the threshold criteria was met.
+
+.. code-block:: none
+
+  $ ./rx_benchmark --card 0 --handle both --rate 20000000 --threshold 1 --time 5
+  rx_benchmark[27478]: <INFO> libsidekiq v4.0.0, RF IC library 2.5.2
+  rx_benchmark[27478]: <INFO> Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+  rx_benchmark[27478]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  rx_benchmark[27478]: <INFO> Sidekiq card 0 firmware v2.2
+  rx_benchmark[27478]: <INFO> Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+  rx_benchmark[27478]: <INFO> card 0: number of tx channels supported 1, number of rx channels supported 2
+  Receive throughput: 148 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+  Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+  Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+  Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+  Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+  rx_benchmark[27478]: <INFO> unlocking card 0
+  $ echo $?
+  0
+
+Here is an example of running the benchmark application with both RX A1
+and A2 enabled at a rate of 30Msps for 5 seconds. The return code of
+:code:`1` indicates that the threshold criteria was not met.
+
+.. code-block:: none
+
+  $ ./rx_benchmark --card 0 --handle both --rate 30000000 --threshold 1 --time 5
+  rx_benchmark[27504]: <INFO> libsidekiq v4.0.0, RF IC library 2.5.2
+  rx_benchmark[27504]: <INFO> Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+  rx_benchmark[27504]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  rx_benchmark[27504]: <INFO> Sidekiq card 0 firmware v2.2
+  rx_benchmark[27504]: <INFO> Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+  rx_benchmark[27504]: <INFO> card 0: number of tx channels supported 1, number of rx channels supported 2
+  Receive throughput: 191 MB/s (# RxA1 timestamp errors 4898) (# RxA2 timestamp errors 4902)
+  Receive throughput: 198 MB/s (# RxA1 timestamp errors 9968) (# RxA2 timestamp errors 9981)
+  Receive throughput: 198 MB/s (# RxA1 timestamp errors 15041) (# RxA2 timestamp errors 15063)
+  Receive throughput: 198 MB/s (# RxA1 timestamp errors 20107) (# RxA2 timestamp errors 20148)
+  Receive throughput: 198 MB/s (# RxA1 timestamp errors 25176) (# RxA2 timestamp errors 25228)
+  rx_benchmark[27504]: <INFO> unlocking card 0
+  $ echo $?
+  1
+
+Transmit Performance
+--------------------
+
+The ``tx_benchmark`` application provides insight into a transmit-only
+application's maximum theoretical benchmark on a specific host system.
+The user can specify the number of threads to use (:code:`1` implies
+synchronous transmit mode, more than :code:`1` selects asynchronous
+transmit mode) and the block size. This allows for a user to evaluate
+how different transmit configuration options impact the overall transmit
+throughput on a system.
+
+If a desired run time or minimum error count is desired, the
+``--threshold`` and ``--time`` parameters can be used for the application.
+If the threshold criteria was met, a :code:`0` is returned by the
+application.
+
+Transmit Performance Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is an example of running the ``tx_benchmark`` application in
+asynchronous transmit mode with 4 threads, a block size of 16380, and at
+a rate of 45Msps for 5 seconds. The return code of :code:`0` indicates that
+the threshold criteria was met.
+
+.. code-block:: none
+
+  $ ./tx_benchmark --block-size 16380 --threshold 5 --time 5 --threads 4 --rate 45000000
+  Info: number of samples is 16380 (65536 bytes)
+  tx_benchmark[27680]: <INFO> libsidekiq v4.0.0, RF IC library 2.5.2
+  tx_benchmark[27680]: <INFO> Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+  tx_benchmark[27680]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  tx_benchmark[27680]: <INFO> Sidekiq card 0 firmware v2.2
+  tx_benchmark[27680]: <INFO> Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+  tx_benchmark[27680]: <INFO> card 0: number of tx channels supported 1, number of rx channels supported 2
+  Setting sample rate to 45000000
+  Send throughput: 175 MB/s (# underruns 1)
+  Send throughput: 171 MB/s (# underruns 1)
+  Send throughput: 171 MB/s (# underruns 1)
+  Send throughput: 171 MB/s (# underruns 1)
+  Send throughput: 171 MB/s (# underruns 1)
+  Sending complete
+  Cleaning up
+  tx_benchmark[27680]: <INFO> unlocking card 0
+  $ echo $?
+  0
+
+Here is an example of running the ``tx_benchmark`` application in
+synchronous transmit mode with 4 threads, a block size of 16380, and at
+a rate of 45Msps for 5 seconds. The return code of :code:`1` indicates that
+the threshold criteria was not met.
+
+.. code-block:: none
+
+  $ ./tx_benchmark --block-size 16380 --threshold 5 --time 5 --threads 1 --rate 45000000
+  Info: number of samples is 16380 (65536 bytes)
+  tx_benchmark[27690]: <INFO> libsidekiq v4.0.0, RF IC library 2.5.2
+  tx_benchmark[27690]: <INFO> Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+  tx_benchmark[27690]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  tx_benchmark[27690]: <INFO> Sidekiq card 0 firmware v2.2
+  tx_benchmark[27690]: <INFO> Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+  tx_benchmark[27690]: <INFO> card 0: number of tx channels supported 1, number of rx channels supported 2
+  Setting sample rate to 45000000
+  Send throughput: 159 MB/s (# underruns 5140)
+  Send throughput: 152 MB/s (# underruns 11176)
+  Send throughput: 154 MB/s (# underruns 16406)
+  Send throughput: 155 MB/s (# underruns 21748)
+  Send throughput: 155 MB/s (# underruns 27068)
+  Sending complete
+  Cleaning up
+  tx_benchmark[27690]: <INFO> unlocking card 0
+  $ echo $?
+  1
+
+Transceive
+----------
+
+The ``xcv_benchmark`` application provides insight into a transceiver
+application's maximum theoretical benchmark on a specific host system.
+The user can specify the number of threads to use for transmission
+(:code:`1` implies synchronous transmit mode, more than :code:`1`
+selects asynchronous transmit mode), the transmit block size, and
+whether to receive samples with the blocking mode. This allows for a
+user to evaluate how different streaming configuration options impact
+the overall throughput on a specific host system. Both transmit
+underruns as well as receive timestamp errors are monitored to
+determine the performance of the system.
+
+If a desired run time or minimum error count is desired, the
+``--threshold`` and ``--time`` parameters can be used for the application.
+If the threshold criteria was met, a :code:`0` is returned by the
+application.
+
+Transceive Performance Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is an example of running the benchmark application in asynchronous
+transmit mode with 4 TX threads, a TX block size of 16380, using the
+blocking receive mode, and at a rate of 30Msps for 5 seconds. The return
+code of :code:`0` indicates that the threshold criteria was met.
+
+.. code-block:: none
+
+  $ ./xcv_benchmark --threads 4 --block-size 16380 --blocking --rate 30000000 --time 5 --threshold 5
+  xcv_benchmark[28256]: <INFO> libsidekiq v4.0.0, RF IC library 2.5.2
+  xcv_benchmark[28256]: <INFO> Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+  xcv_benchmark[28256]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  xcv_benchmark[28256]: <INFO> Sidekiq card 0 firmware v2.2
+  xcv_benchmark[28256]: <INFO> Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+  xcv_benchmark[28256]: <INFO> card 0: number of tx channels supported 1, number of rx channels supported 2
+  Send throughput: 117 MB/s (# underruns 3)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 3)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 3)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 3)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 3)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Waiting for packets to complete transfer, num_pkts 9210, num_complete 9160
+  Packet send completed!
+  xcv_benchmark[28256]: <INFO> unlocking card 0
+  $ echo $?
+  0
+
+Here is an example of running the benchmark application in asynchronous
+transmit mode with 1 TX thread (synchronous mode), a TX block size of
+16380, using the blocking receive mode, and at a rate of 30Msps for 5
+seconds. The return code of :code:`1` indicates that the threshold criteria
+was not met.
+
+.. code-block:: none
+
+  $ ./xcv_benchmark --threads 1 --block-size 16380 --blocking --rate 30000000 --time 5 --threshold 5
+  xcv_benchmark[28267]: <INFO> libsidekiq v4.0.0, RF IC library 2.5.2
+  xcv_benchmark[28267]: <INFO> Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+  xcv_benchmark[28267]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  xcv_benchmark[28267]: <INFO> Sidekiq card 0 firmware v2.2
+  xcv_benchmark[28267]: <INFO> Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+  xcv_benchmark[28267]: <INFO> card 0: number of tx channels supported 1, number of rx channels supported 2
+  Send throughput: 114 MB/s (# underruns 191)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 472)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 1048)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 1056)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Send throughput: 114 MB/s (# underruns 1534)
+  Receive throughput: 115 MB/s (# timestamp errors 0)
+  Packet send completed!
+  xcv_benchmark[28267]: <INFO> unlocking card 0
+  $ echo $?
+  1
+
+

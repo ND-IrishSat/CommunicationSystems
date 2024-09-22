@@ -1,0 +1,99 @@
+.. _ref1:
+
+.. _ref2:
+
+.. _ref3:
+
+.. _ref4:
+
+.. _ref5:
+
+.. _ref6:
+
+.. _ref7:
+
+.. _ref8:
+
+.. _ref9:
+
+.. _ref10:
+
+.. _ref11:
+
+.. _ref12:
+
+.. _ref13:
+
+.. _ref14:
+
+.. _ref15:
+
+*****
+Links
+*****
+
+
+[1] **Epiq Solutions Website**
+
+    https://www.epiqsolutions.com
+
+[2] **Xilinx Website for the Spartan 6 FPGA**
+
+    http://www.xilinx.com/support/documentation/spartan-6.htm
+
+[3] **GCC Website**
+
+    http://gcc.gnu.org
+
+[4] **Cypress Website for FX2**
+
+    https://www.infineon.com/cms/en/product/universal-serial-bus-usb-power-delivery-controller/peripheral-controllers/ez-usb-fx2lp/
+
+[5] **Epiq Solutions Support Website**
+
+    https://support.epiqsolutions.com
+
+[6] **Sidekiq Hardware User's Manual**
+
+    https://support.epiqsolutions.com/viewforum.php?f=119
+
+[7] **Sidekiq GNU Radio Support**
+
+    https://github.com/epiqsolutions/gr-sidekiq
+
+[8] **Sidekiq System Updates**
+
+    https://support.epiqsolutions.com/viewforum.php?f=125
+
+[9] **AD9361 Reference Manual UG-570**
+
+    http://www.analog.com/media/en/technical-documentation/user-guides/AD9361_Reference_Manual_UG-570.pdf
+
+[10] **AD9371 User Guide (UG-992)**
+
+    https://form.analog.com/Form_Pages/Catalina/CatalinaDesign.aspx?prodid=AD9371
+
+    (Registration Required)
+
+[11] **ADRV9008-1/ADRV9008-2/ADRV9009 Hardware Reference Manual (UG-1295)**
+
+    https://form.analog.com/Form_Pages/Catalina/CatalinaDesign.aspx?prodid=ADRV9009
+
+    (Registration Required)
+
+[12] **Xilinx Website for the Artix 7 FPGA**
+
+    https://www.xilinx.com/products/silicon-devices/fpga/artix-7.html
+
+[13] **Xilinx Website for the Kintex Ultrascale FPGA**
+
+    https://www.xilinx.com/products/silicon-devices/fpga/kintex-ultrascale.html
+
+[14] **Annapolis Micro System WILDSTAR WB3XZD Baseboard** (Discontinued)
+
+    https://www.annapmicro.com/products/wildstar-ultrakvp-zp-dram-3u-openvpx
+
+[15] **ADRV9001 System Development User Guide (UG-1828)**
+
+    https://www.analog.com/media/en/technical-documentation/user-guides/adrv9001-system-development-user-guide-ug-1828.pdf
+

@@ -1,0 +1,55 @@
+.. _issues:
+
+Known Issues / Limitations
+==========================
+
+There are some features that are either partially supported or
+unsupported. Below is a list of unsupported or limited features.
+
+PCIe only functions
+-------------------
+
+In general, any function involved with transmitting data is currently
+supported only through PCIe or a custom transport. Below is the specific list of functions
+that work only with the PCIe (or custom) interface.
+
+.. code-block:: c
+
+  int32_t skiq_start_tx_streaming (uint8_t card, skiq_tx_hdl_t hdl)
+  int32_t skiq_start_tx_streaming_on_1pps (uint8_t card, skiq_tx_hdl_t hdl, uint64_t sys_timestamp)
+  int32_t skiq_stop_tx_streaming (uint8_t card, skiq_tx_hdl_t hdl)
+  int32_t skiq_stop_tx_streaming_on_1pps (uint8_t card, skiq_tx_hdl_t hdl, uint64_t sys_timestamp)
+  int32_t skiq_write_tx_sample_rate_and_bandwidth (uint8_t card, skiq_tx_hdl_t hdl, uint32_t rate, uint32_t bandwidth)
+  int32_t skiq_transmit (uint8_t card, skiq_tx_hdl_t hdl, skiq_tx_block_t *p_block, void *p_user)
+
+USB only functions
+------------------
+
+In general, any function involved in reconfiguring the FPGA on-the-fly is currently
+only supported through USB (or Sidekiq Z2's custom transport). Below is the specific list of functions
+that work only when those interfaces are available.
+
+.. code-block:: c
+
+  int32_t skiq_prog_fpga_from_file (uint8_t card)
+
+Limited Capabilities
+--------------------
+
+.. code-block:: c
+
+  int32_t skiq_read_rx_LO_freq (uint8_t card, skiq_rx_hdl_t hdl, uint64_t *p_freq, double *p_actual_freq)
+  int32_t skiq_read_tx_LO_freq (uint8_t card, skiq_tx_hdl_t hdl, uint64_t *p_freq, double *p_tuned_freq)
+
+-  Only returns cached frequency value, not actual tuned frequency
+
+.. code-block:: c
+
+   skiq_rx_status_t skiq_receive (uint8_t card, skiq_rx_hdl_t * p_hdl, skiq_rx_block_t** pp_data, uint32_t* p_data_len)
+
+-  For systems using a USB transport FPGA bitstream, all received data
+   packets will have word four of the header -- containing *SYSTEM
+   META*, *RFIC CTRL OUT*, *OVRLD*, *HDL* -- set to zero.
+
+
+

@@ -1,0 +1,411 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Software Errata &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Troubleshooting a Sidekiq Installed in a New Host *" href="troubleshooting.html" />
+    <link rel="prev" title="Sidekiq X4 - Methods of LO frequency tuning" href="x4_tuning_methods.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="software-errata">
+<span id="sw-errata"></span><h1>Software Errata<a class="headerlink" href="#software-errata" title="Permalink to this headline">¶</a></h1>
+<p>For a complete and up-to-date list of Software Errata, please visit
+<a class="reference external" href="https://support.epiqsolutions.com/viewtopic.php?f=115&amp;t=2536">https://support.epiqsolutions.com/viewtopic.php?f=115&amp;t=2536</a></p>
+<div class="section" id="errata-sw1">
+<h2>Errata <code class="docutils literal notranslate"><span class="pre">SW1</span></code><a class="headerlink" href="#errata-sw1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="issue-description">
+<h3>Issue Description<a class="headerlink" href="#issue-description" title="Permalink to this headline">¶</a></h3>
+<p>The HTG-K800 FMC carrier’s flash contents may fail to program
+successfully (~7%). When the flash fails to program in this manner,
+the user bitstream will subsequently fail to configure the FPGA and
+the fallback FPGA bitstream is ignored. If a user encounters this
+issue, currently the only means of recovery is to overwrite the
+carrier card flash contents using the JTAG pod.</p>
+</div>
+<div class="section" id="affected-product-s">
+<h3>Affected Product(s):<a class="headerlink" href="#affected-product-s" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Sidekiq X2 PDK (Thunderbolt 3 Chassis)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="impact-version-s">
+<h3>Impact Version(s):<a class="headerlink" href="#impact-version-s" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>libsidekiq v4.2.x</li>
+<li>libsidekiq v4.4.x</li>
+<li>libsidekiq v4.6.0</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="resolution">
+<h3>Resolution:<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h3>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">store_user_fpga</span></code> test application, use the
+<code class="docutils literal notranslate"><span class="pre">--verify</span></code> command line option to verify the bitstream is correct
+after programming it to flash. In the software API, use the
+<code class="code docutils literal notranslate"><span class="pre">skiq_verify_fpga_config_from_flash()</span></code> function after using
+<code class="code docutils literal notranslate"><span class="pre">skiq_save_fpga_config_to_flash()</span></code> and check that the return
+code of <code class="code docutils literal notranslate"><span class="pre">skiq_verify_fpga_config_from_flash()</span></code> is 0.</p>
+</div>
+<div class="section" id="fixed-in">
+<h3>Fixed in:<a class="headerlink" href="#fixed-in" title="Permalink to this headline">¶</a></h3>
+<p>libsidekiq v4.7.0 contains a fix for this intermittent flash erase /
+programming behavior. However, as with any unattended update
+procedure, it is still recommended that the verification step be
+performed where critical operations are in use.</p>
+</div>
+</div>
+<div class="section" id="errata-sw2">
+<h2>Errata <code class="docutils literal notranslate"><span class="pre">SW2</span></code><a class="headerlink" href="#errata-sw2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Issue Description<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The expected locations of the fallback (aka golden) and user
+bitstreams have been updated in the HTG-K800 FMC carrier card’s flash
+starting in libsidekiq v4.7.0 and later.</p>
+</div>
+<div class="section" id="id2">
+<h3>Affected Product(s):<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Sidekiq X2 PDK (Thunderbolt 3 Chassis)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="affected-api-function-s">
+<h3>Affected API Function(s):<a class="headerlink" href="#affected-api-function-s" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_save_fpga_config_to_flash</span></code></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id3">
+<h3>Impact Version(s):<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>libsidekiq v4.2.x</li>
+<li>libsidekiq v4.4.x</li>
+<li>libsidekiq v4.6.x</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id4">
+<h3>Resolution:<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>In order to better support FPGA bitstream fallback and to support
+full-sized FPGA bitstreams, it was necessary to change the locations
+of the fallback and user bitstreams.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">sidekiq_hardware_updater_for_v4.7.0.sh</span></code> script will take care
+of flashing the fallback and user bitstreams to their new locations
+(only if needed).</p>
+<p>After the bitstreams are relocated, if an application compiled against
+an impacted version (see above) of libsidekiq uses
+<code class="code docutils literal notranslate"><span class="pre">skiq_save_fpga_config_to_flash()</span></code>, an error will be emitted
+stating that “<em>golden FPGA not present, cannot update user FPGA
+image</em>”. A user must use libsidekiq v4.7.0 or later in conjunction
+with relocated bitstreams in order to store a user bitstream to
+non-volatile memory.</p>
+<p>If a user wishes to revert the relocation, they may run a
+<code class="docutils literal notranslate"><span class="pre">sidekiq_hardware_updater</span></code> from a release prior to v4.7.0.</p>
+</div>
+</div>
+<div class="section" id="errata-sw3">
+<h2>Errata <code class="docutils literal notranslate"><span class="pre">SW3</span></code><a class="headerlink" href="#errata-sw3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>Issue Description:<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>A flash transaction on the HTG-K800 FMC carrier can fail
+intermittently and without detection. A user may see the warning
+message “<em>Quad SPI operation bit needed assertion</em>” emitted, however
+the software does not react correctly to address the warning.</p>
+</div>
+<div class="section" id="id6">
+<h3>Affected Product(s):<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Sidekiq X2 PDK (Thunderbolt 3 Chassis)</li>
+<li>Sidekiq X4 PDK (Thunderbolt 3 Chassis)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id7">
+<h3>Affected API Function(s):<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>skiq_save_fpga_config_to_flash</li>
+<li>skiq_verify_fpga_config_from_flash</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="affected-test-application-s-utilities">
+<h3>Affected Test Application(s) / Utilities:<a class="headerlink" href="#affected-test-application-s-utilities" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>sidekiq_hardware_updater.sh</li>
+<li>store_user_fpga</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id8">
+<h3>Impact Version(s):<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>libsidekiq v4.2.x</li>
+<li>libsidekiq v4.4.x</li>
+<li>libsidekiq v4.6.x</li>
+<li>libsidekiq v4.7.x</li>
+<li>libsidekiq v4.8.x</li>
+<li>libsidekiq v4.9.0 through v4.9.3</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id9">
+<h3>Resolution:<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="admonition danger">
+<p class="first admonition-title">Danger</p>
+<p class="last"><strong>Do not use</strong> the <code class="docutils literal notranslate"><span class="pre">sidekiq_hardware_updater.sh</span></code> utility
+prior to <strong>v4.9.4</strong> to upgrade or downgrade an X2 PDK or X4
+PDK system. <strong>Only</strong> use the updaters and installers from
+the System Update <code class="docutils literal notranslate"><span class="pre">v4.9.4</span> <span class="pre">20190503</span></code> and later</p>
+</div>
+<div class="admonition danger">
+<p class="first admonition-title">Danger</p>
+<p class="last"><strong>Do not use</strong> the <code class="docutils literal notranslate"><span class="pre">store_user_fpga</span></code> test application
+prior to <strong>v4.9.4</strong> on an X2 PDK or X4 PDK system. Use the
+<code class="docutils literal notranslate"><span class="pre">store_user_fpga</span></code> test application from the <strong>v4.9.4</strong> SDK or
+the run-time/complete installer from the System Update
+<code class="docutils literal notranslate"><span class="pre">v4.9.4</span> <span class="pre">20190503</span></code> and later</p>
+</div>
+<p>If your application uses either of the affected API functions, you
+must update to libsidekiq SDK v4.9.4 or there is a risk of incorrect
+flash behavior (corruption).</p>
+</div>
+</div>
+<div class="section" id="errata-sw4">
+<h2>Errata <code class="docutils literal notranslate"><span class="pre">SW4</span></code><a class="headerlink" href="#errata-sw4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id10">
+<h3>Issue Description:<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>Memory allocated for <code class="code docutils literal notranslate"><span class="pre">skiq_tx_block_t</span></code> may not be aligned on a memory page
+boundary.  When a misaligned <code class="code docutils literal notranslate"><span class="pre">skiq_tx_block_t</span></code> is transferred to the FPGA,
+it is mishandled, resulting in corrupt samples inadvertently added to
+the sample block being transmitted.</p>
+</div>
+<div class="section" id="id11">
+<h3>Affected Product(s):<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Sidekiq X4 HTG platforms with 8 lane PCIe support (HTG-K800, HTG-K810)</li>
+<li>FPGA bitstreams &gt;= v3.14.1</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="affected-api-function-s-macros">
+<h3>Affected API Function(s) / Macros:<a class="headerlink" href="#affected-api-function-s-macros" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_tx_block_allocate</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_tx_block_allocate_by_bytes</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">SKIQ_TX_BLOCK_INITIALIZER</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">SKIQ_TX_BLOCK_INITIALIZER_BY_BYTES</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">SKIQ_TX_BLOCK_INITIALIZER_BY_WORDS</span></code></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id12">
+<h3>Affected Test Application(s) / Utilities:<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">tx_samples</span></code>, <code class="docutils literal notranslate"><span class="pre">tx_benchmark</span></code>, <code class="docutils literal notranslate"><span class="pre">xcv_benchmark</span></code></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id13">
+<h3>Impact Version(s):<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>libsidekiq v4.7.0 through v4.16.2</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id14">
+<h3>Resolution:<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>Libsidekiq v4.17.0 will page align memory when allocating for Tx blocks.  By
+default, a page size of 4K is used, but can be overridden by <code class="code docutils literal notranslate"><span class="pre">#defining</span>
+<span class="pre">SKIQ_TX_BLOCK_MEMORY_ALIGN</span></code>.  If an application uses any of the affected API
+functions, it <em>must</em> be updated to libsidekiq SDK v4.17.0 or there is a risk
+of incorrect data being transmitted by the FPGA.</p>
+</div>
+</div>
+<div class="section" id="errata-sw5">
+<h2>Errata <code class="docutils literal notranslate"><span class="pre">SW5</span></code><a class="headerlink" href="#errata-sw5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id15">
+<h3>Issue Description:<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>When transmitting on timestamps, four samples are erroneously sent when the
+packet is received, regardless of the specified timestamp.  This can be four
+samples from a previous packet, or samples from the current packet.</p>
+</div>
+<div class="section" id="id16">
+<h3>Affected Product(s):<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Sidekiq X2 PDK (Thunderbolt 3 Chassis)</li>
+<li>Sidekiq X4 PDK (Thunderbolt 3 Chassis) and Sidekiq X4 PCIe Blade</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id17">
+<h3>Affected Test Application(s) / Utilities:<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">tx_samples</span></code>, <code class="docutils literal notranslate"><span class="pre">tx_samples_async</span></code>, <code class="docutils literal notranslate"><span class="pre">fdd_rx_tx_samples</span></code>, <code class="docutils literal notranslate"><span class="pre">tdd_rx_tx_samples</span></code></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id18">
+<h3>Impact Version(s):<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>FPGA bitstreams version v3.14.1 through v3.15.1</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id19">
+<h3>Resolution:<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<p>If transmit on timestamp is utilized, please use a FPGA bitstream
+with a version prior to v3.14.1 when this defect was introduced or
+version v3.16.1 and later when the issue was resolved.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Software Errata</a><ul>
+<li><a class="reference internal" href="#errata-sw1">Errata <code class="docutils literal notranslate"><span class="pre">SW1</span></code></a><ul>
+<li><a class="reference internal" href="#issue-description">Issue Description</a></li>
+<li><a class="reference internal" href="#affected-product-s">Affected Product(s):</a></li>
+<li><a class="reference internal" href="#impact-version-s">Impact Version(s):</a></li>
+<li><a class="reference internal" href="#resolution">Resolution:</a></li>
+<li><a class="reference internal" href="#fixed-in">Fixed in:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#errata-sw2">Errata <code class="docutils literal notranslate"><span class="pre">SW2</span></code></a><ul>
+<li><a class="reference internal" href="#id1">Issue Description</a></li>
+<li><a class="reference internal" href="#id2">Affected Product(s):</a></li>
+<li><a class="reference internal" href="#affected-api-function-s">Affected API Function(s):</a></li>
+<li><a class="reference internal" href="#id3">Impact Version(s):</a></li>
+<li><a class="reference internal" href="#id4">Resolution:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#errata-sw3">Errata <code class="docutils literal notranslate"><span class="pre">SW3</span></code></a><ul>
+<li><a class="reference internal" href="#id5">Issue Description:</a></li>
+<li><a class="reference internal" href="#id6">Affected Product(s):</a></li>
+<li><a class="reference internal" href="#id7">Affected API Function(s):</a></li>
+<li><a class="reference internal" href="#affected-test-application-s-utilities">Affected Test Application(s) / Utilities:</a></li>
+<li><a class="reference internal" href="#id8">Impact Version(s):</a></li>
+<li><a class="reference internal" href="#id9">Resolution:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#errata-sw4">Errata <code class="docutils literal notranslate"><span class="pre">SW4</span></code></a><ul>
+<li><a class="reference internal" href="#id10">Issue Description:</a></li>
+<li><a class="reference internal" href="#id11">Affected Product(s):</a></li>
+<li><a class="reference internal" href="#affected-api-function-s-macros">Affected API Function(s) / Macros:</a></li>
+<li><a class="reference internal" href="#id12">Affected Test Application(s) / Utilities:</a></li>
+<li><a class="reference internal" href="#id13">Impact Version(s):</a></li>
+<li><a class="reference internal" href="#id14">Resolution:</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#errata-sw5">Errata <code class="docutils literal notranslate"><span class="pre">SW5</span></code></a><ul>
+<li><a class="reference internal" href="#id15">Issue Description:</a></li>
+<li><a class="reference internal" href="#id16">Affected Product(s):</a></li>
+<li><a class="reference internal" href="#id17">Affected Test Application(s) / Utilities:</a></li>
+<li><a class="reference internal" href="#id18">Impact Version(s):</a></li>
+<li><a class="reference internal" href="#id19">Resolution:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="x4_tuning_methods.html" title="previous chapter">Sidekiq X4 - Methods of LO frequency tuning</a></li>
+      <li>Next: <a href="troubleshooting.html" title="next chapter">Troubleshooting a Sidekiq Installed in a New Host <sup>*</sup></a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/sw_errata.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/sw_errata.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,16 @@
+.. raw:: latex
+
+    \begin{landscape}
+
+Sidekiq mPCIe Block Diagram
+===========================
+
+.. figure:: _static/sidekiq_mpci_block_diagram.png
+   :alt: Sidekiq mPCIe block diagram showing how libsidekiq + user applications fit in the system
+   :align: center
+
+   Sidekiq mPCIe block diagram showing how libsidekiq + user applications fit in the system
+
+.. raw:: latex
+
+    \end{landscape}

@@ -1,0 +1,336 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Introduction &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sidekiq mPCIe Block Diagram" href="mpcie_diagram.html" />
+    <link rel="prev" title="Links" href="references.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>This document provides the details required to enable a software
+developer to develop Linux software applications that will utilize the
+Sidekiq SDR. The following topics will be discussed:</p>
+<ul class="simple">
+<li>Overview of the software architecture of Sidekiq</li>
+<li>Acquiring the prerequisites for developing software applications,
+including the GCC compiler, the libsidekiq Linux userspace library,
+and a text editor for source code editing</li>
+<li>Building and downloading the suite of test applications that are
+shipped with each Sidekiq PDK</li>
+<li>Development of custom applications that use libsidekiq</li>
+<li>Reference documentation for libsidekiq</li>
+</ul>
+<p>All documentation and support for Sidekiq is provided through Epiq
+Solutions’ support website, which can be found at:</p>
+<p class="centered">
+<strong><a class="reference external" href="https://support.epiqsolutions.com">https://support.epiqsolutions.com</a></strong></p><p>Please note that it is necessary to register prior to accessing the
+relevant information for your purchase.</p>
+<div class="section" id="legal-considerations">
+<h2>Legal Considerations<a class="headerlink" href="#legal-considerations" title="Permalink to this headline">¶</a></h2>
+<p>The Sidekiq is distributed all over the world. Each country has its own
+laws governing reception and transmission of radio frequencies. The user
+of the Sidekiq and associated software is solely responsible for
+insuring that it is used in a manner consistent with the laws of the
+jurisdiction in which it is used. Many countries, including the United
+States, prohibit the transmission and reception of certain frequency
+bands, or receiving certain transmissions without proper authorization.
+Again, the user is solely responsible for the user’s own actions.</p>
+</div>
+<div class="section" id="proper-care-and-handling">
+<h2>Proper Care and Handling<a class="headerlink" href="#proper-care-and-handling" title="Permalink to this headline">¶</a></h2>
+<p>The Sidekiq unit is fully tested by Epiq Solutions before shipment, and
+is guaranteed functional at the time it is received by the customer, and
+ONLY AT THAT TIME. Improper use of the Sidekiq unit can cause it to
+become non-functional. In particular, a list of actions that may cause
+damage to the hardware include the following:</p>
+<ul class="simple">
+<li>Handling the unit without proper static precautions (ESD protection)
+when the housing is removed or opened up</li>
+<li>Connecting a transmitter to the RX port without proper attenuation –
+A max input of -10 dBm is recommended</li>
+<li>Executing custom software and/or an FPGA bitstream that was not
+developed according to guidelines</li>
+</ul>
+<p>The above list is not comprehensive, and experience with the appropriate
+measures for handling electronic devices is required.</p>
+</div>
+<div class="section" id="terms-and-definitions">
+<h2>Terms and Definitions<a class="headerlink" href="#terms-and-definitions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils align-center" id="table1">
+<colgroup>
+<col width="17%" />
+<col width="83%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>Term</strong></th>
+<th class="head"><strong>Definition</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1PPS</td>
+<td>1 Pulse Per Second</td>
+</tr>
+<tr class="row-odd"><td>A/D</td>
+<td>Analog to Digital converter</td>
+</tr>
+<tr class="row-even"><td>API</td>
+<td>Application Program Interface</td>
+</tr>
+<tr class="row-odd"><td>CPU</td>
+<td>Central Processing Unit</td>
+</tr>
+<tr class="row-even"><td>D/A (DAC)</td>
+<td>Digital to Analog converter</td>
+</tr>
+<tr class="row-odd"><td>dB</td>
+<td>Decibel</td>
+</tr>
+<tr class="row-even"><td>DKMS</td>
+<td>Dynamic Kernel Module Support</td>
+</tr>
+<tr class="row-odd"><td>DMA</td>
+<td>Direct Memory Access</td>
+</tr>
+<tr class="row-even"><td>DSP</td>
+<td>Digital Signal Processor</td>
+</tr>
+<tr class="row-odd"><td>ERA</td>
+<td>Epiq RF Analyzer</td>
+</tr>
+<tr class="row-even"><td>FDD</td>
+<td>Frequency Division Duplex</td>
+</tr>
+<tr class="row-odd"><td>FIFO</td>
+<td>First In, First Out</td>
+</tr>
+<tr class="row-even"><td>FPGA</td>
+<td>Field Programmable Gate Array</td>
+</tr>
+<tr class="row-odd"><td>GCC</td>
+<td>GNU Compiler Collection</td>
+</tr>
+<tr class="row-even"><td>GHz</td>
+<td>Gigahertz</td>
+</tr>
+<tr class="row-odd"><td>GPS</td>
+<td>Global Positioning System</td>
+</tr>
+<tr class="row-even"><td>GPSDO</td>
+<td>GPS Disciplined Oscillator</td>
+</tr>
+<tr class="row-odd"><td>IP</td>
+<td>Internet Protocol</td>
+</tr>
+<tr class="row-even"><td>I/Q</td>
+<td>In-Phase / Quadrature Phase</td>
+</tr>
+<tr class="row-odd"><td>kHz</td>
+<td>Kilohertz</td>
+</tr>
+<tr class="row-even"><td>MHz</td>
+<td>Megahertz</td>
+</tr>
+<tr class="row-odd"><td>Msps</td>
+<td>Mega samples per second</td>
+</tr>
+<tr class="row-even"><td>PC</td>
+<td>Personal Computer</td>
+</tr>
+<tr class="row-odd"><td>PCIe</td>
+<td>Peripheral Component Interconnect express</td>
+</tr>
+<tr class="row-even"><td>PDK</td>
+<td>Platform Development Kit</td>
+</tr>
+<tr class="row-odd"><td>PL</td>
+<td>Programmable Logic</td>
+</tr>
+<tr class="row-even"><td>PLL</td>
+<td>Phase Locked Loop</td>
+</tr>
+<tr class="row-odd"><td>ppm</td>
+<td>Parts Per Million</td>
+</tr>
+<tr class="row-even"><td>PS</td>
+<td>Processing System</td>
+</tr>
+<tr class="row-odd"><td>RAM</td>
+<td>Random Access Memory</td>
+</tr>
+<tr class="row-even"><td>RF</td>
+<td>Radio Frequency</td>
+</tr>
+<tr class="row-odd"><td>RF IC</td>
+<td>Radio Frequency Integrated Circuit</td>
+</tr>
+<tr class="row-even"><td>Rx</td>
+<td>Receive</td>
+</tr>
+<tr class="row-odd"><td>SCP</td>
+<td>Secure CoPy</td>
+</tr>
+<tr class="row-even"><td>SDK</td>
+<td>Software Development Kit</td>
+</tr>
+<tr class="row-odd"><td>SDR</td>
+<td>Software Defined Radio</td>
+</tr>
+<tr class="row-even"><td>SRFS</td>
+<td>System RF Server</td>
+</tr>
+<tr class="row-odd"><td>SSH</td>
+<td>Secure SHell</td>
+</tr>
+<tr class="row-even"><td>TCVCXO</td>
+<td>Temperature Compensated Voltage Controlled Crystal Oscillator</td>
+</tr>
+<tr class="row-odd"><td>TDD</td>
+<td>Time Division Duplex</td>
+</tr>
+<tr class="row-even"><td>Tx</td>
+<td>Transmit</td>
+</tr>
+<tr class="row-odd"><td>USB</td>
+<td>Universal Serial Bus</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The Sidekiq SDR is a miniature software defined radio platform in the
+form of a standards compliant miniPCIe, m.2 (both 3042 and 2280), or FMC card. These form
+factors provide the potential for a wide variety of host systems with
+various processors. For clarity, the remainder of this document covers
+building applications for the Sidekiq PDK system except when otherwise
+specified.</p>
+<div class="section" id="software-architecture">
+<h3>Software Architecture<a class="headerlink" href="#software-architecture" title="Permalink to this headline">¶</a></h3>
+<p>A Sidekiq system consists of a Sidekiq miniPCIe, m.2, or FMC card inserted into
+a Linux or Windows host platform supporting the Sidekiq form
+factor. Additionally, the Sidekiq Z2 consists of a Zynq 7010, which is a self
+contained embedded ARM processor running Linux and Xilinx FPGA in the mPCIe form
+factor. The Matchstiq Z3u is a fully housed software defined radio consisting
+of the Zynq Ultrascale+, running Linux and Xilinx FPGA, a wideband transceiver,
+and an integrated GPS.  The Sidekiq miniPCIe or m.2 card combines a Xilinx FPGA and Cypress USB
+microcontroller to provide a complete SDR system accessible to the host platform
+through PCIe and/or USB. The Cypress USB microcontroller is the FX2 <a class="reference internal" href="references.html#ref4"><span class="std std-ref">[4]</span></a>. For the miniPCIe variant of Sidekiq, the FPGA is a Xilinx Spartan 6
+LX45T FPGA <a class="reference internal" href="references.html#ref2"><span class="std std-ref">[2]</span></a>. For both of the m.2 variants of Sidekiq
+(traditional, Stretch, and NV100), the FPGA is a Xilinx Artix 7 XC7A50T FPGA <a class="reference internal" href="references.html#ref12"><span class="std std-ref">[12]</span></a>. For the Sidekiq FMC card, referred to as Sidekiq X2 or Sidekiq X4, a
+FPGA carrier card in the form of the Kintex Ultrascale (KU060 and KU115)
+<a class="reference internal" href="references.html#ref13"><span class="std std-ref">[13]</span></a> is installed in a Thunderbolt 3 chassis for a PDK is
+provided. This chassis uses the Thunderbolt 3 interface of a laptop to provide
+access to the Sidekiq FMC card. As of Q1 2019, the Sidekiq X2 and Sidekiq X4 are
+also supported in the Annapolis Micro Systems’ WILDSTAR baseboard (WB3XZD) <a class="reference internal" href="references.html#ref14"><span class="std std-ref">[14]</span></a>
+for use in an OpenVPX system.</p>
+<p>A Sidekiq signal processing application consists of a userspace software
+application running on the host platform, which links against a
+userspace library called libsidekiq (as shown in following architecture
+figures). The libsidekiq library provides an API for configuring various RF
+and baseband parameters, access to various peripherals (temperature sensor,
+accelerometer, etc), as well as an interface for transferring data
+between the CPU and the FPGA. This data is typically digitized baseband
+I/Q samples. Full details of the libsidekiq library can be found in
+<a class="reference internal" href="sidekiq_api.html#sidekiq-api"><span class="std std-ref">Sidekiq API</span></a>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#legal-considerations">Legal Considerations</a></li>
+<li><a class="reference internal" href="#proper-care-and-handling">Proper Care and Handling</a></li>
+<li><a class="reference internal" href="#terms-and-definitions">Terms and Definitions</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#software-architecture">Software Architecture</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="references.html" title="previous chapter">Links</a></li>
+      <li>Next: <a href="mpcie_diagram.html" title="next chapter">Sidekiq mPCIe Block Diagram</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/introduction.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/introduction.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

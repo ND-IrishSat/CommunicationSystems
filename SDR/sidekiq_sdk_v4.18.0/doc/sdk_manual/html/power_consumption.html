@@ -1,0 +1,179 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Power consumption states (mPCIe, m.2) &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sidekiq X4 - Methods of LO frequency tuning" href="x4_tuning_methods.html" />
+    <link rel="prev" title="FPGA Programming" href="fpga_programming.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="power-consumption-states-mpcie-m-2">
+<span id="power-consumption"></span><h1>Power consumption states (mPCIe, m.2)<a class="headerlink" href="#power-consumption-states-mpcie-m-2" title="Permalink to this headline">¶</a></h1>
+<p>As of libsidekiq v3.5.0, the Sidekiq has three distinct power
+consumption states: Idle, RX, and RX/TX. Each state is entered / exited
+automatically by way of existing API function calls and initialization
+levels. Using an initialization level of
+<code class="code docutils literal notranslate"><span class="pre">skiq_xport_init_level_full</span></code> in a call to <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> brings
+the RFIC out of low power mode and into the RX state. However, using an
+initialization level of <code class="code docutils literal notranslate"><span class="pre">skiq_xport_init_level_basic</span></code> in a call to
+<code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> does not change the RFIC power state.</p>
+<p>The Sidekiq transmit line-up stays powered down after a call to
+<code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> until <code class="code docutils literal notranslate"><span class="pre">skiq_write_tx_LO_freq()</span></code> is called for the
+first time. It will then only be powered down (along with the rest of
+the RFIC) on a call to <code class="code docutils literal notranslate"><span class="pre">skiq_exit()</span></code>. <a class="reference internal" href="#table12"><span class="std std-ref">Sidekiq Power State Consumption (in Watts)</span></a> shows the different power
+consumption states and their associated transitions.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="_images/sidekiq_power_state_graph.png"><img alt="Sidekiq power state transitions" src="_images/sidekiq_power_state_graph.png" style="width: 6.92520in; height: 3.57910in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 26 </span><span class="caption-text">Sidekiq power state transitions</span></p>
+</div>
+<p>There can be significant power consumption savings related to the three
+distinct states. outlines a typical example of both a miniPCIe Sidekiq
+card and an m.2 Sidekiq card in the various power consumption states.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These power consumption measurements will vary based on
+sample rate, transmit LO frequency, and transmit
+attenuation.</p>
+</div>
+<p>The Idle state measurements were performed after a clean application
+shutdown.  The RX state measurements were performed using
+<code class="docutils literal notranslate"><span class="pre">rx_benchmark</span></code> with a sample rate of 45Msps. The RX/TX state
+measurements were performed using <code class="docutils literal notranslate"><span class="pre">tx_samples_async</span></code> in four
+different configurations:</p>
+<blockquote>
+<div><ul class="simple">
+<li>fc=850MHz, tx_atten=0, sample_rate=10MHz, bw=10MHz, block-size=16380</li>
+<li>fc=850MHz, tx_atten=359, sample_rate=10MHz, bw=10MHz, block-size=16380</li>
+<li>fc=3.85GHz, tx_atten=0, sample_rate=10MHz, bw=10MHz, block-size=16380</li>
+<li>fc=3.85GHz, tx_atten=359, sample_rate=10MHz, bw=10MHz, block-size=16380</li>
+</ul>
+</div></blockquote>
+<p>In libsidekiq version 3.4.1 and before, the Idle state’s power
+consumption varied depending on the previous state (RX or “RX / TX”)
+since the RFIC did not enter a low power state.</p>
+<span id="table12"></span><table border="1" class="docutils align-center" id="id2">
+<caption><span class="caption-number">Table 31 </span><span class="caption-text">Sidekiq Power State Consumption (in Watts)</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="24%" />
+<col width="26%" />
+<col width="17%" />
+<col width="17%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Hardware</th>
+<th class="head">libsidekiq version</th>
+<th class="head">Idle</th>
+<th class="head">RX</th>
+<th class="head">RX / TX</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td rowspan="2">Sidekiq miniPCIe</td>
+<td>v3.4.1 and before</td>
+<td>2.0 to 2.3</td>
+<td>2.2</td>
+<td>2.1 to 2.4</td>
+</tr>
+<tr class="row-odd"><td>v3.5.0 and after</td>
+<td>1.1</td>
+<td>2.0</td>
+<td>2.1 to 2.4</td>
+</tr>
+<tr class="row-even"><td rowspan="2">Sidekiq m.2</td>
+<td>v3.4.1 and before</td>
+<td>2.4 to 2.6</td>
+<td>2.5</td>
+<td>2.4 to 2.8</td>
+</tr>
+<tr class="row-odd"><td>v3.5.0 and after</td>
+<td>1.4</td>
+<td>2.25</td>
+<td>2.4 to 2.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="fpga_programming.html" title="previous chapter">FPGA Programming</a></li>
+      <li>Next: <a href="x4_tuning_methods.html" title="next chapter">Sidekiq X4 - Methods of LO frequency tuning</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/power_consumption.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/power_consumption.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

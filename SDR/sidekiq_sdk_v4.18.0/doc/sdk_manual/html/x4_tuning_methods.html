@@ -1,0 +1,326 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Sidekiq X4 - Methods of LO frequency tuning &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Software Errata" href="sw_errata.html" />
+    <link rel="prev" title="Power consumption states (mPCIe, m.2)" href="power_consumption.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="sidekiq-x4-methods-of-lo-frequency-tuning">
+<span id="x4-tuning-methods"></span><h1>Sidekiq X4 - Methods of LO frequency tuning<a class="headerlink" href="#sidekiq-x4-methods-of-lo-frequency-tuning" title="Permalink to this headline">¶</a></h1>
+<p>There are three methods of tuning the LO frequency on the Sidekiq X4, with each method having
+advantages and disadvantages that need to be considered based on the user’s system requirements.
+Each mode is described below with respect to configuration, re-tuning, and differences from other
+modes.  At the end, some real-world tuning duration measurements are shown to help demonstrate what
+can typically be expected in a given Sidekiq X4 system.  Please note that the timing tests were
+performed with a Sidekiq X4 installed on a HiTech Global HTG-K800 PCIe carrier card, and housed in a
+PCIe-to-Thunderbolt 3 chassis. An Intel NUC7 was connected to the PCIe-to-Thunderbolt 3 chassis over
+Thunderbolt 3. The test utilities were based upon the libsidekiq v4.13.0 release.</p>
+<div class="section" id="hop-on-timestamp-fpga-triggered">
+<h2><code class="code docutils literal notranslate"><span class="pre">hop_on_timestamp</span></code> (FPGA triggered)<a class="headerlink" href="#hop-on-timestamp-fpga-triggered" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_on_timestamp</span></code> mode provides the fastest LO tuning times, using
+the FPGA to pulse a GPIO connected to the ADRV9009 RFIC at a user-defined timestamp in order to tune
+the LO frequency at a precise time.  Once configured, the entire LO tuning operation is performed
+automatically by the FPGA without any additional software intervention.</p>
+<div class="section" id="configuration-for-hopping-on-timestamp">
+<h3>Configuration for hopping on timestamp<a class="headerlink" href="#configuration-for-hopping-on-timestamp" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Configure the frequency tune mode to <code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_on_timestamp</span></code> using <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_freq_tune_mode()</span></code></li>
+<li>Configure the frequency hop list and initial hop index using <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_freq_hop_list([freqA,</span> <span class="pre">freqB,</span> <span class="pre">freqC],</span> <span class="pre">freqA_idx)</span></code></li>
+</ol>
+</div>
+<div class="section" id="perform-frequency-retune-at-a-specified-rf-timestamp">
+<h3>Perform frequency retune at a specified RF timestamp<a class="headerlink" href="#perform-frequency-retune-at-a-specified-rf-timestamp" title="Permalink to this headline">¶</a></h3>
+<p>The RFICs used on Sidekiq X4 and libsidekiq impose a restriction on how to perform frequency
+hopping.  A hop index can only be written to a “mailbox” slot on the RFIC.  A hop operation executes
+a retune to the frequency in the “next” slot, then delivers the index from the “mailbox” to the
+“next” slot.  It acts much like a 2 element deep FIFO that must have 1 or 2 indices enqueued and
+cannot go empty.  Even though this approach is only required for Sidekiq X4, libsidekiq presents a
+consistent interface across all radio products.</p>
+<p>In this example, note that <code class="code docutils literal notranslate"><span class="pre">freqA</span></code> is the first tuned frequency since <code class="code docutils literal notranslate"><span class="pre">freqA_idx</span></code> is
+configured as the initial index in Configuration step 2 from above.</p>
+<ol class="arabic simple">
+<li>Prepare the next hop index using <code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">freqB_idx)</span></code></li>
+<li>Perform the re-tune to <code class="code docutils literal notranslate"><span class="pre">freqA</span></code> using <code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">&lt;rf_timestamp&gt;)</span></code></li>
+<li>Once <code class="code docutils literal notranslate"><span class="pre">&lt;rf_timestamp&gt;</span></code> has passed, tuning to <code class="code docutils literal notranslate"><span class="pre">freqA</span></code> has completed</li>
+<li>Prepare the next hop index using <code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">freqC_idx)</span></code></li>
+<li>Perform the re-tune to <code class="code docutils literal notranslate"><span class="pre">freqB</span></code> using <code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">&lt;rf_timestamp&gt;)</span></code></li>
+<li>Once <code class="code docutils literal notranslate"><span class="pre">&lt;rf_timestamp&gt;</span></code> has passed, tuning to <code class="code docutils literal notranslate"><span class="pre">freqB</span></code> has completed</li>
+</ol>
+</div>
+<div class="section" id="caveats">
+<h3>Caveats<a class="headerlink" href="#caveats" title="Permalink to this headline">¶</a></h3>
+<p>During standard LO tuning operations, software is in control of the entire process (including proper
+selection of the RF preselect filter).  When frequency hopping on a timestamp, the FPGA is in
+control, and doesn’t currently coordinate selection of the RF preselect filter as part of the
+process.  Thus, if the user-defined frequency hopping list spans more than one of the preselect
+filter bands (shown below), then libsidekiq automatically chooses the “bypass” filter path, where no
+preselect filtering is applied.  This way the tuning speed is optimized for speed.  Here are the
+preselect bands on Sidekiq X4 for convenience:</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_filt_390_to_620MHz</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_filt_540_to_850MHz</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_filt_770_to_1210MHz</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_filt_1130_to_1760MHz</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_filt_1680_to_2580MHz</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_filt_2500_to_3880MHz</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_filt_3800_to_6000MHz</span></code></li>
+</ul>
+</div>
+</div>
+<div class="section" id="hop-immediate-software-triggered">
+<h2><code class="code docutils literal notranslate"><span class="pre">hop_immediate</span></code> (software triggered)<a class="headerlink" href="#hop-immediate-software-triggered" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_immediate</span></code> mode provides the second fastest LO tuning speed on
+Sidekiq X4.  This mode uses software to tell the ADRV9009 RFIC to perform the LO frequency hop
+operation immediately upon reception of a SPI command initiated by libsidekiq.  This method is not
+as deterministic as the hop-on-timestamp mode, since the host’s CPU load and transport layer between
+the CPU and FPGA (typically PCIe) affects communication latency.</p>
+<div class="section" id="configuration-for-hopping-immediately">
+<h3>Configuration for hopping immediately<a class="headerlink" href="#configuration-for-hopping-immediately" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Configure the frequency tune mode to <code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_immediate</span></code> using <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_freq_tune_mode()</span></code></li>
+<li>Configure the frequency hop list and initial hop index using <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_freq_hop_list([freqA,</span> <span class="pre">freqB,</span> <span class="pre">freqC],</span> <span class="pre">freqA_idx)</span></code></li>
+</ol>
+</div>
+<div class="section" id="perform-frequency-retune-immediately">
+<h3>Perform frequency retune immediately<a class="headerlink" href="#perform-frequency-retune-immediately" title="Permalink to this headline">¶</a></h3>
+<p>The RFICs used on Sidekiq X4 and libsidekiq impose a restriction on how to perform frequency
+hopping.  A hop index can only be written to a “mailbox” slot on the RFIC.  A hop operation executes
+a retune to the frequency in the “next” slot, then delivers the index from the “mailbox” to the
+“next” slot.  It acts much like a 2 element deep FIFO that must have 1 or 2 indices enqueued and
+cannot go empty.  Even though this approach is only required for Sidekiq X4, libsidekiq presents a
+consistent interface across all radio products.</p>
+<p>In this example, note that <code class="code docutils literal notranslate"><span class="pre">freqA</span></code> is the first tuned frequency since <code class="code docutils literal notranslate"><span class="pre">freqA_idx</span></code> is
+configured as the initial index in Configuration step 2 from above.</p>
+<ol class="arabic simple">
+<li>Prepare the next hop index using <code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">freqB_idx)</span></code></li>
+<li>Perform the re-tune to <code class="code docutils literal notranslate"><span class="pre">freqA</span></code> using <code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">0)</span></code> – specifying <code class="code docutils literal notranslate"><span class="pre">0</span></code> as the timestamp means “immediate”</li>
+<li>Prepare the next hop index using <code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">freqC_idx)</span></code></li>
+<li>Perform the re-tune to <code class="code docutils literal notranslate"><span class="pre">freqB</span></code> using <code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop(&lt;card&gt;,</span> <span class="pre">&lt;hdl&gt;,</span> <span class="pre">0)</span></code> – specifying <code class="code docutils literal notranslate"><span class="pre">0</span></code> as the timestamp means “immediate”</li>
+</ol>
+</div>
+<div class="section" id="differences-from-hop-on-timestamp">
+<h3>Differences from <code class="code docutils literal notranslate"><span class="pre">hop_on_timestamp</span></code><a class="headerlink" href="#differences-from-hop-on-timestamp" title="Permalink to this headline">¶</a></h3>
+<p>In the “hop immediate” mode, the RF frontend is controlled by software so the preselect filters are
+used _even if the hop list spans more than one frequency band.  This is different from “hop on
+timestamp” where the preselect filters are configured only _once_ whenever the hop list is written.
+This also means that the “hop immediate” mode performance is limited by the speed of the SPI
+transactions to configure the RF frontend.</p>
+</div>
+</div>
+<div class="section" id="standard-tune">
+<h2>Standard tune<a class="headerlink" href="#standard-tune" title="Permalink to this headline">¶</a></h2>
+<p>The standard tune mode is the default LO tuning mode for libsidekiq, and is implemented for all
+Sidekiq products.  Compared to the previously described hopping modes, this is the slowest LO tuning
+mode on Sidekiq X4, but also provides the most flexibility in terms of RF performance since the user
+can control the type(s) of receive calibration and choose between automatic (re-tune initiated) or
+manual calibration (user-initiated).  The standard tune mode requires no special configuration to
+start using it: the user simply calls <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_LO_freq()</span></code> as needed.  Similar to the
+“hop-immediate” mode, the standard tune mode engages the appropriate RF frontend preselect filter
+configuration during the retune automatically based on the requested LO frequency.</p>
+<ol class="arabic simple">
+<li>Configure the frequency tune mode to <code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_standard</span></code> using <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_freq_tune_mode()</span></code> (Note: this is only needed if a different tune mode was previously set by the user)</li>
+<li>Use <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_LO_freq()</span></code> as needed</li>
+</ol>
+<div class="section" id="differences-from-hop-immediate">
+<h3>Differences from <code class="code docutils literal notranslate"><span class="pre">hop_immediate</span></code><a class="headerlink" href="#differences-from-hop-immediate" title="Permalink to this headline">¶</a></h3>
+<p>The standard tune mode performs receive calibration steps on the ADRV9009 RFIC as recommended by
+Analog Devices which can take upwards of one second to complete.  These calibration steps ensure
+optimal quadrature error correction (thus minimizing image/sideband artifacts), as well as
+minimizing any DC offset in the received signal.  The calibration operation is performed whenever
+the LO frequency is tuned more than 100MHz away from the current LO frequency, which is also based
+on recommendations from Analog Devices.  The operation is also performed when the LO frequency
+crosses an RF PLL resolution boundary (see Talise User Guide for details).  There are multiple
+calibration knobs (refer to <code class="code docutils literal notranslate"><span class="pre">skiq_rx_cal_type_t</span></code> starting with libsidekiq v4.13.0) that can be
+independently enabled/disabled through the libsidekiq API, thus allowing a user to strike the
+appropriate balance of performance and tuning speed.</p>
+</div>
+</div>
+<div class="section" id="comparisons-between-tuning-modes">
+<h2>Comparisons between tuning modes<a class="headerlink" href="#comparisons-between-tuning-modes" title="Permalink to this headline">¶</a></h2>
+<p>The API call duration varies depending on which tuning mode is being used.  The next table provides
+ranges of performance based on the specific configuration described in the introduction.</p>
+<div class="section" id="typical-api-call-duration-sidekiq-x4-only">
+<h3>Typical API call duration (Sidekiq X4 only)<a class="headerlink" href="#typical-api-call-duration-sidekiq-x4-only" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="66%" />
+<col width="34%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Tuning Mode</th>
+<th class="head"><code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_LO_freq</span></code></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_standard</span></code> (&gt; 3GHz)</td>
+<td>7 - 8 ms <a class="footnote-reference" href="#id3" id="id1">[2]</a></td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_standard</span></code> (<span class="math notranslate">\(\leq\)</span> 3GHz)</td>
+<td>9 - 17 ms <a class="footnote-reference" href="#id3" id="id2">[2]</a></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> Only when retuning less than 100MHz from current LO frequency, otherwise calibration is
+performed and takes time to complete.</td></tr>
+</tbody>
+</table>
+<p>In the <code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_immediate</span></code> tuning mode, the two API calls
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop()</span></code> and <code class="code docutils literal notranslate"><span class="pre">skiq_perform_freq_hop()</span></code> are typically performed
+back-to-back so the total duration is shown below.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="55%" />
+<col width="45%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Tuning Mode</th>
+<th class="head"><code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop</span></code>
+and <code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop</span></code></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_immediate</span></code></td>
+<td>400 - 500 us</td>
+</tr>
+</tbody>
+</table>
+<p>In the <code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_on_timestamp</span></code> tuning mode, the two API calls
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop()</span></code> and <code class="code docutils literal notranslate"><span class="pre">skiq_perform_freq_hop()</span></code> can be separated in time
+so each call’s duration is shown below.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="40%" />
+<col width="31%" />
+<col width="29%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Tuning Mode</th>
+<th class="head"><code class="code docutils literal notranslate"><span class="pre">skiq_write_next_rx_freq_hop</span></code></th>
+<th class="head"><code class="code docutils literal notranslate"><span class="pre">skiq_perform_rx_freq_hop</span></code></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="code docutils literal notranslate"><span class="pre">skiq_freq_tune_mode_hop_on_timestamp</span></code></td>
+<td>~250 us</td>
+<td>~40 us</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Sidekiq X4 - Methods of LO frequency tuning</a><ul>
+<li><a class="reference internal" href="#hop-on-timestamp-fpga-triggered"><code class="code docutils literal notranslate"><span class="pre">hop_on_timestamp</span></code> (FPGA triggered)</a><ul>
+<li><a class="reference internal" href="#configuration-for-hopping-on-timestamp">Configuration for hopping on timestamp</a></li>
+<li><a class="reference internal" href="#perform-frequency-retune-at-a-specified-rf-timestamp">Perform frequency retune at a specified RF timestamp</a></li>
+<li><a class="reference internal" href="#caveats">Caveats</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hop-immediate-software-triggered"><code class="code docutils literal notranslate"><span class="pre">hop_immediate</span></code> (software triggered)</a><ul>
+<li><a class="reference internal" href="#configuration-for-hopping-immediately">Configuration for hopping immediately</a></li>
+<li><a class="reference internal" href="#perform-frequency-retune-immediately">Perform frequency retune immediately</a></li>
+<li><a class="reference internal" href="#differences-from-hop-on-timestamp">Differences from <code class="code docutils literal notranslate"><span class="pre">hop_on_timestamp</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#standard-tune">Standard tune</a><ul>
+<li><a class="reference internal" href="#differences-from-hop-immediate">Differences from <code class="code docutils literal notranslate"><span class="pre">hop_immediate</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#comparisons-between-tuning-modes">Comparisons between tuning modes</a><ul>
+<li><a class="reference internal" href="#typical-api-call-duration-sidekiq-x4-only">Typical API call duration (Sidekiq X4 only)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="power_consumption.html" title="previous chapter">Power consumption states (mPCIe, m.2)</a></li>
+      <li>Next: <a href="sw_errata.html" title="next chapter">Software Errata</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/x4_tuning_methods.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/x4_tuning_methods.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

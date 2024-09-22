@@ -1,0 +1,16 @@
+.. raw:: latex
+
+    \begin{landscape}
+
+Sidekiq NV100 Block Diagram
+===========================
+
+.. figure:: _static/nv100_architecture_for_sdk.png
+   :alt: Sidekiq NV100 block diagram showing how libsidekiq + user applications fit in the system
+   :align: center
+
+   Sidekiq NV100 block diagram showing how libsidekiq + user applications fit in the system
+
+.. raw:: latex
+
+    \end{landscape}

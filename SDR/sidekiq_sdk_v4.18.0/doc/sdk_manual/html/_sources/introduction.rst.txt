@@ -1,0 +1,201 @@
+************
+Introduction
+************
+
+This document provides the details required to enable a software
+developer to develop Linux software applications that will utilize the
+Sidekiq SDR. The following topics will be discussed:
+
+-  Overview of the software architecture of Sidekiq
+-  Acquiring the prerequisites for developing software applications,
+   including the GCC compiler, the libsidekiq Linux userspace library,
+   and a text editor for source code editing
+-  Building and downloading the suite of test applications that are
+   shipped with each Sidekiq PDK
+-  Development of custom applications that use libsidekiq
+-  Reference documentation for libsidekiq
+
+All documentation and support for Sidekiq is provided through Epiq
+Solutions' support website, which can be found at:
+
+.. centered::
+    https://support.epiqsolutions.com
+
+Please note that it is necessary to register prior to accessing the
+relevant information for your purchase.
+
+
+Legal Considerations
+====================
+
+The Sidekiq is distributed all over the world. Each country has its own
+laws governing reception and transmission of radio frequencies. The user
+of the Sidekiq and associated software is solely responsible for
+insuring that it is used in a manner consistent with the laws of the
+jurisdiction in which it is used. Many countries, including the United
+States, prohibit the transmission and reception of certain frequency
+bands, or receiving certain transmissions without proper authorization.
+Again, the user is solely responsible for the user's own actions.
+
+
+Proper Care and Handling
+========================
+
+The Sidekiq unit is fully tested by Epiq Solutions before shipment, and
+is guaranteed functional at the time it is received by the customer, and
+ONLY AT THAT TIME. Improper use of the Sidekiq unit can cause it to
+become non-functional. In particular, a list of actions that may cause
+damage to the hardware include the following:
+
+-  Handling the unit without proper static precautions (ESD protection)
+   when the housing is removed or opened up
+-  Connecting a transmitter to the RX port without proper attenuation –
+   A max input of -10 dBm is recommended
+-  Executing custom software and/or an FPGA bitstream that was not
+   developed according to guidelines
+
+The above list is not comprehensive, and experience with the appropriate
+measures for handling electronic devices is required.
+
+
+Terms and Definitions
+=====================
+
+.. _table1:
+
+.. table::
+    :align: center
+
+    +-------------+-----------------------------------------------------------------+
+    | **Term**    | **Definition**                                                  |
+    +=============+=================================================================+
+    | 1PPS        | 1 Pulse Per Second                                              |
+    +-------------+-----------------------------------------------------------------+
+    | A/D         | Analog to Digital converter                                     |
+    +-------------+-----------------------------------------------------------------+
+    | API         | Application Program Interface                                   |
+    +-------------+-----------------------------------------------------------------+
+    | CPU         | Central Processing Unit                                         |
+    +-------------+-----------------------------------------------------------------+
+    | D/A (DAC)   | Digital to Analog converter                                     |
+    +-------------+-----------------------------------------------------------------+
+    | dB          | Decibel                                                         |
+    +-------------+-----------------------------------------------------------------+
+    | DKMS        | Dynamic Kernel Module Support                                   |
+    +-------------+-----------------------------------------------------------------+
+    | DMA         | Direct Memory Access                                            |
+    +-------------+-----------------------------------------------------------------+
+    | DSP         | Digital Signal Processor                                        |
+    +-------------+-----------------------------------------------------------------+
+    | ERA         | Epiq RF Analyzer                                                |
+    +-------------+-----------------------------------------------------------------+
+    | FDD         | Frequency Division Duplex                                       |
+    +-------------+-----------------------------------------------------------------+
+    | FIFO        | First In, First Out                                             |
+    +-------------+-----------------------------------------------------------------+
+    | FPGA        | Field Programmable Gate Array                                   |
+    +-------------+-----------------------------------------------------------------+
+    | GCC         | GNU Compiler Collection                                         |
+    +-------------+-----------------------------------------------------------------+
+    | GHz         | Gigahertz                                                       |
+    +-------------+-----------------------------------------------------------------+
+    | GPS         | Global Positioning System                                       |
+    +-------------+-----------------------------------------------------------------+
+    | GPSDO       | GPS Disciplined Oscillator                                      |
+    +-------------+-----------------------------------------------------------------+
+    | IP          | Internet Protocol                                               |
+    +-------------+-----------------------------------------------------------------+
+    | I/Q         | In-Phase / Quadrature Phase                                     |
+    +-------------+-----------------------------------------------------------------+
+    | kHz         | Kilohertz                                                       |
+    +-------------+-----------------------------------------------------------------+
+    | MHz         | Megahertz                                                       |
+    +-------------+-----------------------------------------------------------------+
+    | Msps        | Mega samples per second                                         |
+    +-------------+-----------------------------------------------------------------+
+    | PC          | Personal Computer                                               |
+    +-------------+-----------------------------------------------------------------+
+    | PCIe        | Peripheral Component Interconnect express                       |
+    +-------------+-----------------------------------------------------------------+
+    | PDK         | Platform Development Kit                                        |
+    +-------------+-----------------------------------------------------------------+
+    | PL          | Programmable Logic                                              |
+    +-------------+-----------------------------------------------------------------+
+    | PLL         | Phase Locked Loop                                               |
+    +-------------+-----------------------------------------------------------------+
+    | ppm         | Parts Per Million                                               |
+    +-------------+-----------------------------------------------------------------+
+    | PS          | Processing System                                               |
+    +-------------+-----------------------------------------------------------------+
+    | RAM         | Random Access Memory                                            |
+    +-------------+-----------------------------------------------------------------+
+    | RF          | Radio Frequency                                                 |
+    +-------------+-----------------------------------------------------------------+
+    | RF IC       | Radio Frequency Integrated Circuit                              |
+    +-------------+-----------------------------------------------------------------+
+    | Rx          | Receive                                                         |
+    +-------------+-----------------------------------------------------------------+
+    | SCP         | Secure CoPy                                                     |
+    +-------------+-----------------------------------------------------------------+
+    | SDK         | Software Development Kit                                        |
+    +-------------+-----------------------------------------------------------------+
+    | SDR         | Software Defined Radio                                          |
+    +-------------+-----------------------------------------------------------------+
+    | SRFS        | System RF Server                                                |
+    +-------------+-----------------------------------------------------------------+
+    | SSH         | Secure SHell                                                    |
+    +-------------+-----------------------------------------------------------------+
+    | TCVCXO      | Temperature Compensated Voltage Controlled Crystal Oscillator   |
+    +-------------+-----------------------------------------------------------------+
+    | TDD         | Time Division Duplex                                            |
+    +-------------+-----------------------------------------------------------------+
+    | Tx          | Transmit                                                        |
+    +-------------+-----------------------------------------------------------------+
+    | USB         | Universal Serial Bus                                            |
+    +-------------+-----------------------------------------------------------------+
+
+
+Overview
+========
+
+The Sidekiq SDR is a miniature software defined radio platform in the
+form of a standards compliant miniPCIe, m.2 (both 3042 and 2280), or FMC card. These form
+factors provide the potential for a wide variety of host systems with
+various processors. For clarity, the remainder of this document covers
+building applications for the Sidekiq PDK system except when otherwise
+specified.
+
+Software Architecture
+---------------------
+
+A Sidekiq system consists of a Sidekiq miniPCIe, m.2, or FMC card inserted into
+a Linux or Windows host platform supporting the Sidekiq form
+factor. Additionally, the Sidekiq Z2 consists of a Zynq 7010, which is a self
+contained embedded ARM processor running Linux and Xilinx FPGA in the mPCIe form
+factor. The Matchstiq Z3u is a fully housed software defined radio consisting
+of the Zynq Ultrascale+, running Linux and Xilinx FPGA, a wideband transceiver,
+and an integrated GPS.  The Sidekiq miniPCIe or m.2 card combines a Xilinx FPGA and Cypress USB
+microcontroller to provide a complete SDR system accessible to the host platform
+through PCIe and/or USB. The Cypress USB microcontroller is the FX2 :ref:`[4]
+<ref4>`. For the miniPCIe variant of Sidekiq, the FPGA is a Xilinx Spartan 6
+LX45T FPGA :ref:`[2] <ref2>`. For both of the m.2 variants of Sidekiq
+(traditional, Stretch, and NV100), the FPGA is a Xilinx Artix 7 XC7A50T FPGA :ref:`[12]
+<ref12>`. For the Sidekiq FMC card, referred to as Sidekiq X2 or Sidekiq X4, a
+FPGA carrier card in the form of the Kintex Ultrascale (KU060 and KU115)
+:ref:`[13] <ref13>` is installed in a Thunderbolt 3 chassis for a PDK is
+provided. This chassis uses the Thunderbolt 3 interface of a laptop to provide
+access to the Sidekiq FMC card. As of Q1 2019, the Sidekiq X2 and Sidekiq X4 are
+also supported in the Annapolis Micro Systems’ WILDSTAR baseboard (WB3XZD) :ref:`[14] <ref14>`
+for use in an OpenVPX system.
+
+A Sidekiq signal processing application consists of a userspace software
+application running on the host platform, which links against a
+userspace library called libsidekiq (as shown in following architecture
+figures). The libsidekiq library provides an API for configuring various RF
+and baseband parameters, access to various peripherals (temperature sensor,
+accelerometer, etc), as well as an interface for transferring data
+between the CPU and the FPGA. This data is typically digitized baseband
+I/Q samples. Full details of the libsidekiq library can be found in
+:ref:`sidekiq_api`.
+
+

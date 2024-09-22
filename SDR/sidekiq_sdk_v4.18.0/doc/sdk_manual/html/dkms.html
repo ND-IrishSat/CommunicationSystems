@@ -1,0 +1,192 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>DKMS &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Advanced Topics" href="advanced_topics.html" />
+    <link rel="prev" title="Assessing Throughput Performance" href="throughput.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dkms">
+<span id="section-dkms"></span><h1>DKMS<a class="headerlink" href="#dkms" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-dkms">
+<h2>What is DKMS?<a class="headerlink" href="#what-is-dkms" title="Permalink to this headline">¶</a></h2>
+<p>In general, Linux drivers (kernel modules) need to be compiled to run with a specific version of the Linux kernel. While many Linux distributions ship updated drivers alongside new versions of the kernel, any third-party or user-added modules are not recompiled by default. Upon rebooting the system to use the new kernel version, these modules can not load due to a version mismatch and require manual installation. As this can be annoying and time consuming, the Dynamic Kernel Module Support (DKMS) framework was developed by the Linux community.</p>
+<p>DKMS is a tool for Linux-based systems that allows kernel modules to be automatically recompiled upon the installation of a new kernel version. This helps to ensure that the kernel modules are always available for the running kernel without needing to download them or request a new version from the vendor.</p>
+</div>
+<div class="section" id="what-systems-does-dkms-work-on">
+<h2>What systems does DKMS work on?<a class="headerlink" href="#what-systems-does-dkms-work-on" title="Permalink to this headline">¶</a></h2>
+<p>While DKMS works on most major Linux distributions, most do not include it in a default installation and require the installation of extra software packages. For example, Ubuntu requires the installation of the <code class="docutils literal notranslate"><span class="pre">dkms</span></code> package from the official repositories while CentOS requires the addition of the third-party EPEL repository before installing the <code class="docutils literal notranslate"><span class="pre">dkms</span></code> package.</p>
+</div>
+<div class="section" id="how-is-epiq-using-dkms">
+<h2>How is Epiq using DKMS?<a class="headerlink" href="#how-is-epiq-using-dkms" title="Permalink to this headline">¶</a></h2>
+<p>Sidekiq software defined radios use several kernel modules to communicate between the host and the radio card.</p>
+<p>In the past, Sidekiq software installs have included pre-compiled versions of the kernel modules for a list of specific kernel versions - usually the latest kernel versions of the long-term support branches of popular Linux distributions. While this is adequate at time of a libsidekiq release, most Linux distributions frequently release newer kernel version requiring Epiq to supply updated drivers upon request (on our support forums, <a class="reference external" href="https://support.epiqsolutions.com">https://support.epiqsolutions.com</a>).</p>
+<p>As of libsidekiq v4.15.0, all of the Epiq kernel modules provide optional DKMS support. Precompiled kernel modules will continue to be bundled with libsidekiq releases, and Epiq will certainly supply updated modules upon request. Customers may also install the DKMS packaged versions of these modules to ensure that appropriate kernel modules are always used without the need for manual recompilation.</p>
+</div>
+<div class="section" id="are-there-any-licensing-requirements-for-using-dkms-support">
+<h2>Are there any licensing requirements for using DKMS support?<a class="headerlink" href="#are-there-any-licensing-requirements-for-using-dkms-support" title="Permalink to this headline">¶</a></h2>
+<p>Several of Epiq’s kernel modules are licensed under the GPL and source code and DKMS support are freely provided. These modules include:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">pci_manager</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_uart</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_gps</span></code></li>
+</ul>
+<p>Some of Epiq’s kernel modules contain proprietary and/or sublicensed code. These modules include:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">dmadriver</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">skiq_platform_driver</span></code></li>
+</ul>
+<p>As DKMS modules recompile as needed, they require the source code of the module to be bundled in the DKMS package. Therefore, as of libsidekiq v4.15.0, DKMS support for these modules requires the purchase of a sublicense for the DMA Driver source code. Please contact the Epiq sales department (<a class="reference external" href="mailto:sales&#37;&#52;&#48;epiqsolutions&#46;com">sales<span>&#64;</span>epiqsolutions<span>&#46;</span>com</a>) or your account executive for more information on sublicensing.</p>
+</div>
+<div class="section" id="how-are-the-epiq-dkms-modules-installed">
+<h2>How are the Epiq DKMS modules installed?<a class="headerlink" href="#how-are-the-epiq-dkms-modules-installed" title="Permalink to this headline">¶</a></h2>
+<p>With the exception of DKMS modules requiring a license, all other DKMS modules are included in the default libsidekiq install (v4.15.0 and higher). As these are optional components, they must be manually installed and enabled to take advantage of them.</p>
+<p>Please note that not all Linux distributions come with the DKMS subsystem installed by default; please check your distribution’s documentation for more information on DKMS and installation / configuration.</p>
+<p>The DKMS packages reside in the <code class="docutils literal notranslate"><span class="pre">drivers/dkms</span></code> of the libsidekiq install (typically <code class="docutils literal notranslate"><span class="pre">~/sidekiq_image_current/</span></code>). Each DKMS module has its own package, and all DKMS packages should be installed to ensure that all of the modules are kept up-to-date. There are several ways to install the DKMS modules:</p>
+<ul class="simple">
+<li>Automatically install all of the appropriate packages:<ul>
+<li>Run the <code class="docutils literal notranslate"><span class="pre">install-dkms-packages.sh</span></code> script, which installs the proper packages for the currently running Linux Distribution</li>
+</ul>
+</li>
+<li>Manually install packages appropriate for OS through its package manager:<ul>
+<li>Each module has its own package file<ul>
+<li><code class="docutils literal notranslate"><span class="pre">deb/*.deb</span></code> for Ubuntu &amp; Debian-based systems</li>
+<li><code class="docutils literal notranslate"><span class="pre">rpm/*.rpm</span></code> for CentOS / Fedora / RHEL-based systems</li>
+</ul>
+</li>
+<li>Packages can be installed from the command line (<code class="docutils literal notranslate"><span class="pre">dpkg</span></code> or <code class="docutils literal notranslate"><span class="pre">yum</span></code>, depending on Linux distribution) or through the GUI</li>
+</ul>
+</li>
+<li>Manually install packages through the source packages:<ul>
+<li>Uncompress the driver source package using the <code class="docutils literal notranslate"><span class="pre">tar</span></code> and/or <code class="docutils literal notranslate"><span class="pre">xz</span></code> command(s)<ul>
+<li>Source packages may be found in the <code class="docutils literal notranslate"><span class="pre">source/</span></code> directory</li>
+</ul>
+</li>
+<li>Run the <code class="docutils literal notranslate"><span class="pre">install-dkms.sh</span></code> script found inside the uncompressed directory (will likely need to run as <code class="docutils literal notranslate"><span class="pre">root</span></code> user or via <code class="docutils literal notranslate"><span class="pre">sudo</span></code>)</li>
+</ul>
+</li>
+</ul>
+<p>In order to upgrade the DKMS modules - for example, when a new version of libsidekiq comes out - please follow the above steps for installing the DKMS module. If source packages were originally used to install the DKMS modules, please remove them (see directions below) before installing the new versions.</p>
+<p>Installation of the sublicensed DMA Driver DKMS module should use the same instructions as either of the manual steps the above; please note that this module bundles both the <code class="docutils literal notranslate"><span class="pre">dma_driver</span></code> and <code class="docutils literal notranslate"><span class="pre">skiq_platform_device</span></code> into one package.</p>
+</div>
+<div class="section" id="how-to-check-the-status-of-the-epiq-dkms-modules">
+<h2>How to check the status of the Epiq DKMS modules?<a class="headerlink" href="#how-to-check-the-status-of-the-epiq-dkms-modules" title="Permalink to this headline">¶</a></h2>
+<p>From the command line, run the command <code class="docutils literal notranslate"><span class="pre">dkms</span> <span class="pre">status</span></code>. Depending on which module(s) were installed, one or more of the following should be listed:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_gps</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_uart</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">pci_manager</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">dmadriver</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">skiq_platform_device</span></code></li>
+</ul>
+<p>This command verifies that the listed DKMS modules are installed and enabled, and lists the current source version and the kernel version(s) that the modules were automatically built for.</p>
+</div>
+<div class="section" id="how-are-the-epiq-dkms-modules-removed">
+<h2>How are the Epiq DKMS modules removed?<a class="headerlink" href="#how-are-the-epiq-dkms-modules-removed" title="Permalink to this headline">¶</a></h2>
+<p>If the OS packages were installed (e.g. through the <code class="docutils literal notranslate"><span class="pre">.deb</span></code> or <code class="docutils literal notranslate"><span class="pre">.rpm</span></code> installation steps listed above), then remove the packages through the OS’s package manager. This can typically be done through the GUI or on the command line (typically <code class="docutils literal notranslate"><span class="pre">apt</span></code> or <code class="docutils literal notranslate"><span class="pre">yum</span></code>).</p>
+<p>If the installation was done through the source packages, run the <code class="docutils literal notranslate"><span class="pre">remove-dkms.sh</span></code> scripts found in each of the compressed source packages (will likely need to run as <code class="docutils literal notranslate"><span class="pre">root</span></code> user or via <code class="docutils literal notranslate"><span class="pre">sudo</span></code>).</p>
+</div>
+<div class="section" id="how-are-the-epiq-dkms-modules-loaded">
+<h2>How are the Epiq DKMS modules loaded?<a class="headerlink" href="#how-are-the-epiq-dkms-modules-loaded" title="Permalink to this headline">¶</a></h2>
+<p>By default, the libsidekiq installation automatically attempts to load the needed kernel modules on system startup using the <code class="docutils literal notranslate"><span class="pre">load_sidekiq_drivers.sh</span></code> script (found in the <code class="docutils literal notranslate"><span class="pre">drivers/</span></code> directory of the libsidekiq install). With the addition of DKMS support, if one of the pre-built kernel modules cannot be found for the currently running kernel, the system will attempt to load the DKMS-based modules (if installed).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">DKMS</a><ul>
+<li><a class="reference internal" href="#what-is-dkms">What is DKMS?</a></li>
+<li><a class="reference internal" href="#what-systems-does-dkms-work-on">What systems does DKMS work on?</a></li>
+<li><a class="reference internal" href="#how-is-epiq-using-dkms">How is Epiq using DKMS?</a></li>
+<li><a class="reference internal" href="#are-there-any-licensing-requirements-for-using-dkms-support">Are there any licensing requirements for using DKMS support?</a></li>
+<li><a class="reference internal" href="#how-are-the-epiq-dkms-modules-installed">How are the Epiq DKMS modules installed?</a></li>
+<li><a class="reference internal" href="#how-to-check-the-status-of-the-epiq-dkms-modules">How to check the status of the Epiq DKMS modules?</a></li>
+<li><a class="reference internal" href="#how-are-the-epiq-dkms-modules-removed">How are the Epiq DKMS modules removed?</a></li>
+<li><a class="reference internal" href="#how-are-the-epiq-dkms-modules-loaded">How are the Epiq DKMS modules loaded?</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="throughput.html" title="previous chapter">Assessing Throughput Performance</a></li>
+      <li>Next: <a href="advanced_topics.html" title="next chapter">Advanced Topics</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dkms.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dkms.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

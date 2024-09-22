@@ -1,0 +1,16 @@
+.. raw:: latex
+
+    \begin{landscape}
+
+Matchstiq Z3u Block Diagram
+===========================
+
+.. figure:: _static/sidekiq_z3u_architecture_for_sdk.png
+   :alt: Matchstiq Z3u block diagram showing how libsidekiq + user applications fit in the system
+   :align: center
+
+   Matchstiq Z3u block diagram showing how libsidekiq + user applications fit in the system
+
+.. raw:: latex
+
+    \end{landscape}

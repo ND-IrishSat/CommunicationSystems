@@ -1,0 +1,1648 @@
+.. _release_history:
+
+Release History
+===============
+
+.. contents:: Releases
+   :local:
+
+v4.18.0 - 2-Feb-2024
+---------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.18.0
+
+    === Sidekiq M.2 ===
+      - Added support for external 50MHz reference clock
+
+    === Sidekiq X4 ===
+      - FPGA bitstream v3.17.2
+        - Added support supplying 100MHz reference clock over FMC in PDK on AMS WB3XBM
+
+    === NV100 ===
+      - Added RX Alignment registers for Sidekiq NV100
+        - New API function(s):
+            o skiq_write_rx_sample_shift()
+            o skiq_read_rx_sample_shift()
+        - RX Alignment registers support a calibration routine for A1/A2 channels that 
+          maintain rx sample alignment when stopping and restarting streaming. Contact 
+          customer support for instructions.
+      - Added support for A2 handle on Tx
+      - Remapped TxA1 to LO1. See NV100 Hardware User manual for more details. 
+        -The updated LO mapping is:
+          TxA1 ==> LO1
+          TxA2 ==> LO1
+          TxB1 ==> LO2
+          RxA1 ==> LO1
+          RxA2 ==> LO1
+          RxB1 ==> LO2
+  
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.18.0
+
+    === All ===
+      - Writing the rf port for transmit now returns -ENOTSUP on devices that do not
+        support this functionality
+        - Related API function(s):
+            o skiq_write_tx_rf_port_for_hdl()
+
+    === M2, NV100, Stretch ===
+      - FPGA bitstream v3.18.0
+        - Fixed under-run reporting on B1/A2
+        - Timestamp synchronization fixes
+
+    === Sidekiq NV100, M.2 ===
+      - FPGA bitstream v3.18.0
+        - Fix an issue where Tx2 channel (TxB1/TxA2) underruns was incorrectly reported
+          - Related API function(s):
+              o skiq_read_tx_num_underruns()
+              o skiq_read_tx_num_late_timestamps()
+              
+    === Sidekiq NV100 ===
+      - FPGA bitstream v3.18.0
+        - updated partial reconfiguration use case that caused rx2 to not establish an lssi link
+        - fixes rf timestamp alignment between A1 and A2 channels
+        - sign change on handle A2 so that it matches A1 input channel
+
+
+v4.17.2 - 28-Feb-2022
+---------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.17.2
+
+    === No new features for v4.17.2 ===
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.17.2
+
+    === All ===
+      - Disable libsidekiq’s internal custom transport when a user registers
+        their own transport so as not to interfere with device detection
+      - Downgrade logging message severity from WARN->INFO on a valid
+        operation mode of reduced number of Tx/Rx channels
+
+    === Test Apps ===
+      - read_gpsdo.c
+          - Set "host" as the default 1PPS source
+          - Allow users to configure external 1PPS source
+      - tdd_rx_tx_samples.c
+          - Add additional command line parameters and utility functions
+      - tx_samples_async.c
+          - Restructure example application, improve the capability / command line options
+
+    === Sidekiq mPCIe, M.2 ===
+      - Report FPGA bitstream version as unavailable instead of v0.0.0 if the
+        expected transport is absent
+
+    === Sidekiq NV100 ===
+      - Correct the reporting of the Tx channel bandwidth on NV100
+          - Related API functions(s):
+            o skiq_read_tx_sample_rate_and_bandwidth()
+
+    === Sidekiq X2 and Sidekiq X4 ===
+    - FPGA bitstream v3.16.1
+      - Fix Errata SW5: Transmit on timestamp will no longer erroneously send
+        four samples upon reception of the first packet.
+      - X4 transmit at maximum block size (65532) no longer drops packets
+
+    === Sidekiq Z2 and Matchstiq Z3u ===
+      - Network Transport:
+          - Significantly improve initialization time
+
+
+v4.17.1 - 11-Feb-2022
+---------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.17.1
+
+    === No new features for v4.17.1 ===
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.17.1
+
+    === Test Apps ===
+      - rx_samples_on_trigger.c
+          - Fix output file naming
+      - pps_tester.c
+          - Fix card detection logic
+
+    === Sidekiq NV100 ===
+      - Fix receive path by setting RF input port after every re-tune of the LO
+      - Fix last calibrated LO frequency tracking for transmit paths
+      - Update RFIC profiles to accurately report RF transmit bandwidth
+
+    === Sidekiq X4 ===
+      - Fix internal handle assignment following a re-initialization of a card.
+        This can happen in several cases of interacting with the libsidekiq API:
+          - If a user calls:
+            - skiq_disable_cards() followed by a call to skiq_enable_cards()
+            - skiq_exit() followed by a call to skiq_init()
+            - skiq_write_ref_clock_select() on its own
+            - skiq_write_ext_ref_clock_freq() on its own
+            - skiq_prog_fpga_from_flash() on its own
+
+    === Matchstiq Z3u ===
+      - Fix setting RF isolation during TRX
+
+    === Sidekiq mPCIe, M.2, Stretch, Z2, and Matchstiq Z3u ===
+      - Fix configuring RFIC back to defaults after a re-initialization.  This can
+        happen in several cases of interacting with the libsidekiq API.
+          - If a user calls:
+            - skiq_disable_cards() followed by a call to skiq_enable_cards()
+            - skiq_exit() followed by a call to skiq_init()
+            - skiq_write_ref_clock_select() on its own
+            - skiq_write_ext_ref_clock_freq() on its own
+            - skiq_prog_fpga_from_flash() on its own
+          - Resolves "Rx filter caching issue after FPGA reprogramming" issue
+
+
+v4.17.0 - 15-Oct-2021
+---------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.17.0
+
+    === All ===
+      - Add support for Sidekiq NV100 rev C
+      - Extend on-the-fly reference clock source switching to include frequency
+        - Related API function(s):
+            o skiq_write_ext_ref_clock_freq()
+      - Expose GPSDO lock state through new public API function
+        - Related API functions(s):
+            o skiq_gpsdo_is_locked()
+        - Example Test Application: (new)
+            o read_gpsdo
+      - Expose Sidekiq card's warp capabilities in skiq_param_t
+      - Improve rx_samples_on_trigger.c example application
+
+    === Sidekiq mPCIe, M.2, Stretch, Z2, and Matchstiq Z3u ===
+      - Enable user override of AD9361 analog filter settings
+        - Related API function(s):
+            o skiq_read_rx_analog_filter_bandwidth()
+            o skiq_read_tx_analog_filter_bandwidth()
+            o skiq_write_rx_analog_filter_bandwidth()
+            o skiq_write_tx_analog_filter_bandwidth()
+
+    === Sidekiq M.2 ===
+      - Add pull-ups to BOARD_ID pins on FPGA design
+
+    === Matchstiq Z3u ===
+      - Significantly increased the sustained receive performance
+
+    === Sidekiq X4 ===
+      - Update fdd_rx_tx_samples.c example application to add support for Sidekiq X4
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.17.0
+
+    === All ===
+      - Update skiq_write_rx_dc_offset_corr() to return -ENOTSUP for Sidekiq X2 and X4
+      - Fix defect where skiq_gpsdo_read_freq_accuracy() reports success when there's no fix or 1PPS
+      - Disable all receive / transmit channels when disabling a specified card
+      - Fix defect when reading TCVCXO warp voltage prior to full initialization
+      - Fix defect where a card failed initialization if skiq_rx_cal_mode_auto is set
+      - Fix defect related to hotplugging when utilizing a custom transport
+
+    === Sidekiq Z2 and Matchstiq Z3u ===
+      - Fix defect causing timestamp gaps when using network transport
+
+
+v4.16.2 - 9-Sept-2021
+---------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.16.2
+
+    === All ===
+      - No new features added in v4.16.2
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.16.2
+
+    === Matchstiq Z3u ===
+      - Fix occasional device initialization issue after reprogramming the FPGA
+
+
+v4.16.1 - 9-Jun-2021
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.16.1
+
+    === Sidekiq M.2 ===
+      - Add support for M.2 rev D hardware
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.16.1
+
+    === Sidekiq Z2 and Matchstiq Z3u ===
+      - Fix card manager caching of network transport entries
+
+    === Sidekiq mPCIe, M.2, Stretch, Z2, and Matchstiq Z3u ===
+      - Fix defect when specifying non-zero initial_index in calls to
+        skiq_write_rx_hop_list() or skiq_write_tx_hop_list()
+
+
+v4.16.0 - 1-Jun-2021
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.16.0
+
+    === All ===
+      - Prevent out-of-specification RF LO tune requests by returning an error
+        code.  Check skiq_read_parameters() or the output from `version_test
+        --full` to determine the permitted tuning range.
+      - Perform a soft reset of all FPGA registers at card initialization and
+        exit
+      - In FPGA bitstreams v3.15.1 and later, add support for configuring the
+        transmit timestamp base for RF Sample Clock or System Clock.  This
+        feature only applies when transmitting on timestamp.
+         - Related API functions(s):
+            o skiq_read_tx_timestamp_base()
+            o skiq_write_tx_timestamp_base()
+
+    === Sidekiq Z2 ===
+      - Add support for network-based transport (see SDK manual for more
+        details)
+
+    === Sidekiq X4 ===
+      - Add support on Windows 10 for FPGA designs v3.14.0 and later
+
+    === Sidekiq Stretch ===
+      - Add support for GPSDO 1PPS source configuration (matches the system 1PPS
+        source configuration) on products that support the FPGA-based GPSDO
+        algorithm
+         - Related API function(s):
+            o skiq_read_1pps_source()
+            o skiq_write_1pps_source()
+
+    === Matchstiq Z3u ===
+      - Add support for network-based transport (see SDK manual for more
+        details)
+      - Add GPSDO support
+         - Related API function(s):
+            o skiq_is_gpsdo_supported()
+            o skiq_gpsdo_enable()
+            o skiq_gpsdo_disable()
+            o skiq_gpsdo_is_enabled()
+            o skiq_gpsdo_read_freq_accuracy()
+      - Add support for GPSDO 1PPS source configuration (matches the system 1PPS
+        source configuration) on products that support the FPGA-based GPSDO
+        algorithm
+         - Related API function(s):
+            o skiq_read_1pps_source()
+            o skiq_write_1pps_source()
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.16.0
+
+    === All ===
+      - Fix skiq_read_tx_tone_freq() when only frequency hopping to report
+        correct value
+      - FPGA bitstream v3.15.1
+         - Fix missing timestamp reset related to clock crossing synchronization
+           on the register interface
+
+    === Sidekiq mPCIe, M.2, Stretch, Z2, and Matchstiq Z3u ===
+      - Fix tracking of DC offset calibration when switching internal RFIC RX
+        ports
+
+    === Sidekiq M.2 and Stretch ===
+      - FPGA bitstream v3.15.1
+         - Fix Windows 10 enumeration related issues for Sidekiq M.2 and Sidekiq
+           Stretch
+         - Fix errantly flushing subsequent transmit burst packets after
+           encountering a late timestamp by limiting flush to full and partial
+           (i.e. arriving) packets in the FPGA FIFO
+
+    === dmadriver ===
+      - Fix Physical Address Space verification against PCIe address space
+         - Addresses issues observed with 3rd-party NVIDIA Jetson carriers
+
+
+v4.15.2 - 31-Mar-2021
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.15.2
+
+    === sample applications ===
+      - Added 'pps_tester.c' sample application
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.15.2
+
+    === Sidekiq X4 ===
+      - Resolved issue where spurs appeared intermittently after continuous
+        transmission for a relatively long duration (e.g. multiple seconds)
+      - Updated clock termination settings to match recommended values
+      - Improved JESD sync procedure
+
+    === Sidekiq X2 ===
+      - Updated clock termination settings to match recommended values
+
+    === Sidekiq mPCIe, M.2, Stretch, Z2, Z3u ===
+      - Fix off-by-one transmit frequency defect when frequency hopping
+      - Fix off-by-one receive filter selection defect when frequency hopping
+
+
+v4.15.1 - 3-Mar-2021
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.15.1
+
+    === Matchstiq Z3u ===
+      - Add support for Matchstiq Z3u rev C hardware
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.15.1
+
+    === Sidekiq mPCIe, M.2, Stretch ===
+      - Fix unaligned packed receive samples after an LO re-tune
+
+    === Matchstiq Z3u ===
+      - Prohibit unsupported packed mode setting for Matchstiq Z3u
+
+
+v4.15.0 - 3-Feb-2021
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.15.0
+
+    === All ===
+      - Add preliminary support for Matchstiq Z3u
+      - Identify out-of-specification RF LO tune requests by issuing a
+        message to user.  Starting with libsidekiq v4.16.0, tune requests
+        outside of valid tuning range will result in a return error code.
+
+    === Sidekiq mPCIe ===
+      - Add identification of hardware revision E
+
+    === Sidekiq X4 ===
+      - Add API function to configure multiple handles in a single call
+         - Related API function(s):
+            o skiq_write_rx_sample_rate_and_bandwidth_multi()
+      - FPGA bitstream v3.14.1 on HTG-K800 and HTG-K810 carriers adds support
+        for PCIe Gen3 x8 lane as long as the host supports it
+
+    === Sidekiq Stretch ===
+      - Add support for GPSDO
+         - Related API function(s):
+            o skiq_is_gpsdo_supported()
+            o skiq_gpsdo_enable()
+            o skiq_gpsdo_disable()
+            o skiq_gpsdo_is_enabled()
+            o skiq_gpsdo_read_freq_accuracy()
+
+    === dmadriver ===
+      - Add DKMS support (if source code is licensed)
+      - Add support for Linux kernels v5.6 and v5.8
+
+    === pci_manager, sidekiq_uart, sidekiq_gps ===
+      - Add DKMS support
+      - Add support for Linux kernels v5.6 and v5.8
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.15.0
+
+    === All ===
+      - Lower 1PPS polling interval to help reduce overruns in the receive
+        streams
+      - FPGA bitstream v3.14.1
+        - Fixes reporting FIFO underruns in dual channel transmit
+          applications
+        - Fixes streaming synchronization issue on 1PPS where samples started
+          flowing up to 1 second prior to function returning control to the
+          caller.
+
+    === Sidekiq Z2 ===
+      - FPGA bitstream v3.14.1
+        - Fixes empty FIFO issue in FPGA that resulted in intermittent
+          receive block corruption
+        - Fixes errant packed mode in FPGA on platforms that do not support
+          packed mode that resulted in timestamp gaps and receive block
+          corruption
+
+
+v4.14.2 - 12/09/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.14.2
+
+    === No new features for v4.14.2 ===
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.14.2
+
+    === Sidekiq Z2 ===
+      - Fix receive streaming after call to skiq_prog_fpga_from_file() on BSP
+        v3.1.0
+
+    === Example Applications ===
+      - Add missing rf-port-config parameter in tdd_rx_tx_samples.c
+      - Add call to skiq_set_rx_transfer_timeout() in rx_samples_on_trigger.c
+        when --blocking is specified
+      - Bundle prog_fpga in pre-built applications for Sidekiq Z2
+
+
+v4.14.1 - 10/30/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.14.1
+
+    === No new features for v4.14.1 ===
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.14.1
+
+    === All ===
+      - Internally restore the configured channel mode when calling
+        skiq_prog_rfic_from_file() instead of defaulting to
+        skiq_chan_mode_single
+      - Realign receive streams if an overrun is detected in skiq_receive()
+
+    === Sidekiq Z2 ===
+      - Update libsidekiq product capabilities to reflect that Sidekiq Z2 does
+        not support packed mode of I/Q sample blocks
+
+
+v4.14.0 - 10/16/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.14.0
+
+    === All ===
+      - Add support for hotplug of Sidekiq devices by identifying addition,
+        removal, or replacing a card.  See the Software Development Manual for
+        more details.
+      - Add support for automatically calling skiq_exit() as a precaution at
+        Linux application exit (unintentional or otherwise).
+         - New Related API function(s):
+            o skiq_set_exit_handler_state()
+
+    === Sidekiq mPCIe, M.2 ===
+      - Add support for configuring the RX calibration mode and type mask.
+         - Related API function(s):
+            o skiq_read_rx_cal_mode()
+            o skiq_write_rx_cal_mode()
+            o skiq_run_rx_cal()
+            o skiq_read_rx_cal_type_mask()
+            o skiq_write_rx_cal_type_mask()
+            o skiq_read_rx_cal_types_avail()
+
+    === Sidekiq Z2 ===
+      - Add support for run-time reference clock source management and control
+         - Related API function(s):
+            o skiq_write_ref_clock_select()
+      - Add support for configuring the RX calibration mode and type mask.
+         - Related API function(s):
+            o skiq_read_rx_cal_mode()
+            o skiq_write_rx_cal_mode()
+            o skiq_run_rx_cal()
+            o skiq_read_rx_cal_type_mask()
+            o skiq_write_rx_cal_type_mask()
+            o skiq_read_rx_cal_types_avail()
+
+    === Sidekiq X2 ===
+      - Add support for run-time reference clock source management and control
+         - Related API function(s):
+            o skiq_write_ref_clock_select()
+
+    === Sidekiq X4 ===
+      - Add FMC carrier support for HTG-K810 (Xilinx Kintex UltraScale COM
+        EXPRESS CPU Card (Type 6))
+      - Add support for run-time reference clock source management and control
+         - Related API function(s):
+            o skiq_write_ref_clock_select()
+      - Add support for RFIC pin control mode to allow enabling and disabling
+        receivers handles and transmitters handles from the FPGA.
+         - Related API function(s):
+            o skiq_read_rx_rfic_pin_ctrl_mode()
+            o skiq_read_tx_rfic_pin_ctrl_mode()
+            o skiq_write_rx_rfic_pin_ctrl_mode()
+            o skiq_write_tx_rfic_pin_ctrl_mode()
+      - Add support for FPGA bitstreams that have the decimator built for
+        RFIC B.  Future FPGA PDKs for Sidekiq X4 on the HTG-K800 will offer a
+        build option for decimating samples from RFIC B.
+
+    === Sidekiq Stretch ===
+      - Add support for run-time reference clock source management and control
+         - Related API function(s):
+            o skiq_write_ref_clock_select()
+      - Add support for configuring the RX calibration mode and type mask.
+         - Related API function(s):
+            o skiq_read_rx_cal_mode()
+            o skiq_write_rx_cal_mode()
+            o skiq_run_rx_cal()
+            o skiq_read_rx_cal_type_mask()
+            o skiq_write_rx_cal_type_mask()
+            o skiq_read_rx_cal_types_avail()
+
+    === Example Applications ===
+      - Convert fdd_rx_tx_samples.c and tdd_rx_tx_samples.c to use arg_parser.
+      - Add optional Sidekiq card temperature logging to rx_benchmark.c,
+        tx_benchmark.c, and xcv_benchmark.c
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.14.0
+
+    === Sidekiq M.2, Stretch ===
+        - FPGA bitstream v3.14.0 fixes reporting of transmit block underruns
+          with the dual channel transmit mode.  In previous bitstreams,
+          underruns were not always reported.
+
+    === Sidekiq X4 ===
+        - Fix frequency hopping mode when using RxA2 with skiq_chan_mode_dual
+        - Fix frequency hopping on timestamp on RFIC B (any of RxB1, RxB2, TxB1,
+          TxB2)
+
+    === dmadriver ===
+        - Fix registration of TTY and GPIO devices if the Sidekiq card is using
+          FPGA bitstream v3.14.0 or later.  At this time, this only affects the
+          Sidekiq Stretch.
+
+    === Example Applications ===
+        - Switch calling order between LO retuning API functions and sample rate
+          configuration API functions.  Refer to the latest Software Development
+          Manual for more details on why calling order can matter.
+
+
+v4.13.1 - 09/10/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.13.1
+
+    === Sidekiq mPCIe ===
+        - Add support for Sidekiq mPCIe rev D hardware
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.13.1
+
+    === Sidekiq ===
+        - Fix known issue where frequency hopping would fail on a Sidekiq's RxA2
+          handle when channel mode is set to skiq_chan_mode_dual
+
+    === Sidekiq mPCIe / M.2 / Z2 / Stretch ===
+        - Correct hop list returned by skiq_read_rx_freq_hop_list() and
+          skiq_read_tx_freq_hop_list()
+
+    === Sidekiq X4 ===
+        - If a transmit test tone is enabled, restore its state after a sample
+          rate reconfiguration
+        - Revert some poll intervals values (see Features v4.13.0) since it can
+          adversely affect radio tuning and cause critical errors
+        - Disable receive LNAs during receive calibration to provide maximal
+          isolation
+        - Fix misconfiguration of pre-select filters on Sidekiq X4 rev C
+
+
+v4.13.0 - 06/30/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.13.0
+
+    === Sidekiq ===
+      - Add API call to initialize libsidekiq without specifying any cards --
+        skiq_init_without_cards()
+      - Logging from AD9361 driver routed through libsidekiq logging facilities
+
+    === Sidekiq X2 / X4 ===
+      - Add API functions to read/write/run RX calibration procedures manually
+        or automatically
+        - New functions include: skiq_read_rx_cal_mode, skiq_write_rx_cal_mode,
+          skiq_run_rx_cal, skiq_read_rx_cal_type_mask,
+          skiq_write_rx_cal_type_mask, skiq_read_rx_cal_types_avail
+
+    === Sidekiq X4 ===
+      - Improve standard and frequency hop tune times by lowering poll intervals
+      - Add support for dual independently tunable RF transmit (A1 and B1)
+      - Add support for AMS 3U VPX WB3XBM platform
+      - Add support for importing RFIC profile from ADI's Profile Wizard
+
+    === dmadriver ===
+      - Add support for larger DMA ring buffer for Rx operation when using PCIe
+        transport
+      - Add support for Linux v5.4 kernels
+
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.13.0
+
+    === Sidekiq ===
+      - Fix known issue: Process forking and skiq_receive()
+        - With FPGA bitstream v3.13.1 and later along with libsidekiq v4.13.0 and
+          later, stale DMA data is no longer an issue.
+      - Fix skiq_save_fpga_config_to_flash() to reset metadata for config slot #0
+
+    === Sidekiq Z2 ===
+      - Fix filter setting after calling skiq_disable_cards / skiq_enable_cards
+      - Fix known issue: FPGA reprogramming preserves transmit capability
+        (requires updated Z2 BSP)
+
+    === Sidekiq X4 ===
+      - Address ADI-ERROR message(s) regarding "gain index exceeded expected
+        maximum or minimum value..." when restoring RFIC configuration changing
+        sample rate
+      - Fix ref_clock application so that verification no longer fails to execute
+        when an external reference clock is configured
+      - Extend calibration timeout from 8 seconds to 25 seconds as is recommended
+        by ADI
+
+    === sidekiq_gps ===
+      - Fix known issue: GPIO values are retained and reapplied when reprogramming
+        the FPGA
+        - With dmadriver v5.4.0 and sidekiq_gps v1.0.1, the settings are retained
+          through an FPGA reprogramming.
+
+
+v4.12.2 - 04/06/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.12.2
+
+    === No new features for v4.12.2 ===
+
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.12.2
+
+    === Sidekiq X4 ===
+      - Fix issue where RX calibration was inadvertently skipped for LO
+        frequencies around 4.2GHz
+
+    === Sidekiq X2 ===
+      - Fix issue where system timestamp frequency could be incorrect after
+        loading a custom RFIC profile using skiq_prog_rfic_from_file
+
+    === Sidekiq ===
+      - Eliminate race condition in skiq_read_last_1pps_timestamp() where
+        timestamps from different PPS periods could be returned
+      - Fix issue where custom transport was inadvertantly skipped on
+        aarch64.gcc6.3
+      - Resolved incorrect behavior with skiq_rx_stream_mode_low_latency that
+        could occur after FPGA re-programming
+
+
+v4.12.1 - 02/21/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.12.1
+
+    === No new features for v4.12.1 ===
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.12.1
+
+    === Sidekiq Stretch ===
+      - Restore reference clock selection and internal flash configuration after
+        FPGA reprogramming
+
+    === Sidekiq ===
+      - Full reinitialization of RF front end configuration after FPGA
+        reprogramming
+
+
+v4.12.0 - 02/10/2020
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.12.0
+
+    === Sidekiq ===
+      - Add support for storing and accessing multiple FPGA bitstreams in flash on
+        supported devices.  Refer to the latest SDK manual under the "FPGA
+        Configuration Flash Slots" section for more information.
+
+    === Sidekiq mPCIe and M.2 ===
+      - FPGA bitstream v3.13.0 for the USB transport doubles the FPGA's RX FIFO
+        depth to help absorb delays by an overloaded host.
+
+    === Sidekiq X2 ===
+      - Although the Sidekiq X2 does not support frequency hopping, the libsidekiq
+        API now allows a developer to use those functions with the X2.  The
+        under-the-hood implementation uses the traditional tuning mode.  This
+        allows developers to use a common tuning interface among products.
+
+    === Sidekiq X4 ===
+      - Support for 4 channel transmit at sample rates of 491.52Msps and 500Msps
+        (400MHz or 450MHz RF BW) and transmit channels remain 4 channel phase
+        coherent.  At this time, however, users may only transmit 4 channels using
+        the FPGA's BRAM.  PCIe streaming is only supported for A1/A2.  BRAM
+        playback is supported for A1/A2/B1/B2.  If users are interested in PCIe
+        streaming to A1/B1, please contact Epiq Solutions through its support
+        forums.
+
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.12.0
+
+    === Sidekiq Z2 ===
+      - Restore FPGA reprogramming functionality that was inadvertently removed in
+        libsidekiq v4.11.x
+
+    === Sidekiq mPCIe + Dropkiq ===
+      - Significant performance improvement in frequency tuning speed, requires
+        FPGA bitstream v3.13.0 or later
+
+    === Sidekiq Stretch ===
+      - FPGA bitstream v3.13.0 defaults the PPS source to the
+        `skiq_1pps_source_host`, the 1PPS signal from the on-board GPS module.
+
+    === Sidekiq X4 ===
+      - TALISE_setRfPllFrequency() : Invalid rfpllLoFreq -- Fixed tuning failures
+        at LO frequencies that should be permitted for a configured RxA1/A2/B1/B2
+        RF bandwidth.
+      - Frequency hop list is retained when sample rate configuration is changed
+      - Restore 4 channel phase coherency functionality that was inadvertently
+        removed in libsidekiq v4.11.1
+
+    === dmadriver ===
+        - Addressed incorrect usage of holding a spinlock across kernel calls
+          that can sleep
+
+    === sidekiq_uart ===
+        - Addressed incorrect usage of mutex in timer callback
+
+
+v4.11.1 - 11/22/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.11.1
+
+    === Sidekiq X2 ===
+      - Add support for the HTG-K800 FMC carrier with Xilinx Kintex Ultrascale
+        KU115
+
+    === Sidekiq X4 ===
+      - Expand sample rate and bandwidth support on ORx handles (C1 and D1) to
+        include 491.52Msps and 500Msps.
+      - Add more sample rate and bandwidth RFIC profiles to match existing X2
+        RFIC profiles (see Limited Sidekiq X4 Capabilities below for a full
+        list)
+
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.11.1
+
+    === Sidekiq Stretch (M.2-2280) ===
+      - Fix external 10MHz reference clock selection in ref_clock
+
+    === Sidekiq X4 ===
+      - Restore Tx test tone after transmit calibration
+      - Fix frequency hop on timestamp
+
+
+v4.11.0 - 10/17/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.11.0
+
+    === Sidekiq Stretch (M.2-2280) ===
+      - Add product support
+        - Receive, Transmit, and Transceive features fully functional
+        - See "Limited Capabilities of Sidekiq Stretch" for what's missing
+      - dmadriver v5.3.0.0 offers support for Stretch and its GPS/UART interface
+        - skiq_platform_device is required to be loaded prior to dmadriver
+        - sidekiq_uart and sidekiq_gps kernel modules are needed to receive NMEA
+          sentences
+
+    === Sidekiq X4 ===
+      - Add support for the HTG-K800 FMC carrier with Xilinx Kintex Ultrascale
+        KU115
+
+
+  Bug Fixes for libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.11.0
+
+    === All ===
+      - Perform range check for entries in passed frequency hop list to
+        skiq_write_rx_freq_hop_list() and skiq_write_tx_freq_hop_list()
+
+    === Sidekiq mPCIe / M.2 ===
+      - Fix reading / writing gain mode selection -- skiq_read_rx_gain_mode()
+        and skiq_write_rx_gain_mode()
+
+    === Sidekiq Z2 ===
+      - Fix reading / writing gain mode selection -- skiq_read_rx_gain_mode()
+        and skiq_write_rx_gain_mode()
+      - Fix transport defect where starting streaming, stopping streaming, or
+        receiving sample blocks would result in an indefinite hang
+
+    === Sidekiq X4 ===
+      - Fix invalid Rx filter selection when frequency hopping
+
+
+v4.10.1 - 08/16/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.10.1
+
+    === Sidekiq mPCIe / M.2 / Z2 ===
+      - Add support for skiq_freq_tune_mode_hop_on_timestamp mode.
+        NOTE: All frequencies in hopping list must fall within a
+        single filter band.
+
+    === Sidekiq X4 ===
+      - Add support for skiq_freq_tune_mode_hop_on_timestamp mode.
+        NOTE: If all frequencies do not fall within a single filter
+        band, the bypass setting is used for all frequencies.  Users
+        can override the filter setting at any point with the
+        skiq_write_rx_preselect_filter_path() API.
+      - Add RFIC profile for 50 Msps / 41 MHz channel bandwidth
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.10.1
+
+    === All ===
+      - Add rx_samples_freq_hopping.c sample application to SDK
+      - Fix missing Jetson Xavier driver directory for JetPack 4.1.1
+      - Fix card index issue in rx_samples_on_trigger.c sample
+        application
+
+    === Sidekiq X4 ===
+      - Improve JESD sync behavior to reduce number of necessary
+        retries
+
+
+v4.10.0 - 07/30/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.10.0
+    Includes all new features from v4.9.5 and earlier
+
+    === All ===
+      - Update tx_samples_async test application to use arg_parser
+      - Add support for swapping order of I/Q components in both
+        receive and transmit block formats
+        - skiq_write_iq_order_mode() and skiq_read_iq_order_mode()
+      - Extend access to more FPGA user app registers (banks 10 - 15)
+      - Deprecate SRFS across all platforms (except on Matchstiq S10 /
+        S20 series)
+      - Add support for JetPack 4.2 for Jetson TX2 and Xavier
+
+    === Sidekiq mPCIe / M.2 / Z2 ===
+      - Add support for fast-lock profiles (receive)
+        - skiq_write_rx_freq_tune_mode / skiq_read_rx_freq_tune_mode
+        - skiq_write_rx_freq_hop_list / skiq_read_rx_freq_hop_list
+        - skiq_write_next_rx_freq_hop / skiq_perform_rx_freq_hop
+        - skiq_read_curr_rx_freq_hop / skiq_read_next_rx_freq_hop
+        - NOTE: The `skiq_freq_tune_mode_hop_on_timestamp`
+          skiq_freq_tune_mode_t functionality is not implemented as
+          part of this release
+      - Add support for fast-lock profiles (transmit)
+        - skiq_write_tx_freq_tune_mode / skiq_read_tx_freq_tune_mode
+        - skiq_write_tx_freq_hop_list / skiq_read_tx_freq_hop_list
+        - skiq_write_next_tx_freq_hop  / skiq_perform_tx_freq_hop
+        - skiq_read_curr_tx_freq_hop / skiq_read_next_tx_freq_hop
+        - NOTE: The `skiq_freq_tune_mode_hop_on_timestamp`
+          skiq_freq_tune_mode_t functionality is not implemented as
+          part of this release
+      - Improve RFIC register transaction performance
+
+    === Sidekiq X2 ===
+      - Add support for sample decimation in FPGA
+        - Sample decimation is enabled automatically dependent on
+          requested sample rate and channel bandwidth
+        - See "Sidekiq X2 Capabilities" for more details
+
+    === Sidekiq X4 ===
+      - Add support for sample decimation in FPGA
+        - Sample decimation is enabled automatically dependent on
+          requested sample rate and channel bandwidth
+        - See "Sidekiq X4 Capabilities" for more details
+      - Add support for fast frequency hopping (receive)
+        - skiq_write_rx_freq_tune_mode / skiq_read_rx_freq_tune_mode
+        - skiq_write_rx_freq_hop_list / skiq_read_rx_freq_hop_list
+        - skiq_write_next_rx_freq_hop / skiq_perform_rx_freq_hop
+        - skiq_read_curr_rx_freq_hop / skiq_read_next_rx_freq_hop
+        - NOTE: The `skiq_freq_tune_mode_hop_on_timestamp`
+          skiq_freq_tune_mode_t functionality is not implemented as
+          part of this release
+      - Add support for fast frequency hopping (transmit)
+        - skiq_write_tx_freq_tune_mode / skiq_read_tx_freq_tune_mode
+        - skiq_write_tx_freq_hop_list / skiq_read_tx_freq_hop_list
+        - skiq_write_next_tx_freq_hop / skiq_perform_tx_freq_hop
+        - skiq_read_curr_tx_freq_hop / skiq_read_next_tx_freq_hop
+        - NOTE: The `skiq_freq_tune_mode_hop_on_timestamp`
+          skiq_freq_tune_mode_t functionality is not implemented as
+          part of this release
+      - Configure single channel on single JESD lane when appropriate
+      - Add support for 2-channel phase coherent transmit streaming
+        over PCIe (handles A1 and A2)
+      - Add test application to allow signal playback (transmit) from
+        FPGA BRAM independent of transport (requires support in FPGA
+        user app)
+        - This new feature can also be used to showcase 4-channel
+          phase coherent transmit
+
+    === Windows ===
+      - Add digitally signed Windows USB INF driver for Windows 10
+        compatibility
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.10.0
+    - Includes all bug fixes from v4.9.5 and earlier
+
+    === Sidekiq mPCIe / M.2 ===
+      - Fix FPGA transmit FIFO flushing behavior in timestamp mode and
+        large block sizes
+      - Fix missing clock configuration after
+        skiq_prog_rfic_from_file()
+      - Fix issue where AGC gets "stuck" until receiving a large
+        (~20-30dB) delta in signal strength
+
+    === Sidekiq Z2 ===
+      - Fix missing clock configuration after
+        skiq_prog_rfic_from_file()
+      - Fix issue where AGC gets "stuck" until receiving a large
+        (~20-30dB) delta in signal strength
+
+    === Sidekiq X2 / X4 ===
+      - Increase PCIe FIFO depth to deal with timestamp gaps at higher
+        sample rates and multiple receive handles
+
+v4.9.5 - 06/26/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.9.5
+    o Add support for arm_cortex-a9.gcc7.2.1_gnueabihf build
+      configuration to support next Z2 BSP
+
+    o Add support for FPGA programming on Sidekiq Z2 with the
+      skiq_prog_fpga_from_file() API function
+      o WARNING: Transmit functionality after using
+        skiq_prog_fpga_from_file() on the Sidekiq Z2 is broken.  This
+        remains an unresolved defect and will be addressed in future
+        software releases.
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.9.5
+    o Fix incorrectly reported transmit tone offset frequency when
+      using Dropkiq at lower frequencies
+    o Improve performance of the Z2 LO frequency retune operation
+    o Resolved intermittent "MCS failed" errors on Sidekiq X2 / X4 by
+      validating SYSREF pulse completion to the AD9528
+    o Fix hardware probe false positives when attempting to detect
+      Dropkiq
+
+v4.9.4 - 05/03/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.9.4
+    o No new features
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.9.4
+    o Fix "Quad SPI operation bit needed assertion" errors on the
+      Sidekiq X2 PDK or Sidekiq X4 PDK
+      o Affects skiq_save_fpga_config_to_flash and
+        skiq_verify_fpga_config_from_flash
+    o Resolved initialization issue for PCIe-only Sidekiq M.2
+      configured with FPGA bitstreams prior to v3.5
+    o Prohibit unsupported packed mode setting for Sidekiq X2 and
+      Sidekiq X4
+      o Affects skiq_write_iq_pack_mode
+    o Fix 1PPS timeout approach to consider user specified system
+      timestamp
+      o Affects the following API functions:
+        o skiq_start_tx_streaming_on_1pps /
+          skiq_stop_tx_streaming_on_1pps
+        o skiq_start_rx_streaming_on_1pps /
+          skiq_stop_rx_streaming_on_1pps
+        o skiq_start_rx_streaming_multi_on_trigger /
+          skiq_stop_rx_streaming_multi_on_trigger
+    o Fix MCS failure on second initialization of Sidekiq X2
+
+v4.9.3 - 03/19/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.9.3
+    o No new features
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.9.3
+    o Fix race condition in skiq_prog_from_file() / skiq_prog_from_flash() that
+      could cause a deadlock across multiple applications controlling different
+      Sidekiq cards
+    o Correct DAC resolution provided by skiq_read_tx_iq_resolution() for
+      Sidekiq X4, was 16 (incorrect), now 14 (correct)
+
+v4.9.2 - 03/08/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.9.2
+    o No new features
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.9.2
+    o Prevent Sidekiq X4 from tuning the LO frequency to problematic values
+    o Fix M.2 dual channel transmit FIFO issue in FPGA design for M.2
+    o Fix "last TX timestamp" (affects API function skiq_read_last_tx_timestamp)
+      issue in FPGA design for mPCIe and M.2
+    o Update tx_configure, tx_samples, and tx_samples_async test applications to
+      set some of the "other" handle parameters when configured for dual channel
+      mode
+
+v4.9.1 - 02/26/2019
+--------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.9.1
+    o Added 250Msps Sample Rate / 200 MHz Channel Bandwidth profile for Sidekiq X4
+    o Added a timeout when starting/stopping streaming upon 1PPS if 1PPS never occurs
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Bug Fixes for v4.9.1
+    o Resolved issue with segfault observed with certain custom profiles for Sidekiq X2
+    o Resolved issue where register verification could fail at lower sample rates
+    o Implement retrying if configuring FPGA from flash fails (for Sidekiq M.2 / mPCIe)
+    o Revolved data streaming issues for Sidekiq X4 when using sample rates of
+      245.76Msps
+    o Reduced LO tuning time for Sidekiq X4
+    o Improved RX calibration settings for Sidekiq X4
+
+v4.9.0 - 02/06/2019
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o New Features for v4.9.0
+    o Added ability to query any actively streaming RX handles
+      o skiq_read_rx_streaming_handles()
+    o Added ability to query conflicting RX stream handles
+      o skiq_read_rx_stream_handle_conflict()
+    o Added ability to start streaming synchronously
+      o skiq_start_rx_streaming_multi_synced()
+      o skiq_stop_rx_streaming_multi_synced()
+    o Added ability to configure TX test tone frequency (not available with all
+      products)
+      o skiq_read_tx_tone_freq_offset()
+      o skiq_write_tx_tone_freq_offset()
+    o Added ability to perform verification of user FPGA register after writing
+      o skiq_write_and_verify_user_fpga_reg()
+    o Added RF IC control output support for X2/X4
+      o skiq_read_rfic_control_output_rx_gain_config()
+      o skiq_enable_rfic_control_output_rx_gain()
+    o Added support for X4 revision B
+    o Added support for X4 RX C1 / D1 handles
+    o Added support for X4 transmit
+    o Refer to X4 limited capabilities for details on TX limitations
+    o Added support for 245.76Msps for Sidekiq X2 RX B1
+  o Includes features from v4.8.0
+    o Ability to enable/disable cards independently without reinitializing the library
+      o skiq_enable_cards()
+      o skiq_disable_cards()
+  o Added ability for users to create and load their own RF profiles for
+    Sidekiq X2 generated by Analog Devices' Filter Wizard (refer to the Sidekiq
+    Software Developer's Manual for additional details)
+      o skiq_prog_rfic_from_file()
+  o Added support for blocking receive when using a USB transport
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Resolved issue with asynchronous transmit occasionally not completing
+  o Reduced tune times for Sidekiq X2
+  o Improved Windows performance for all Sidekiq products
+  o Improved RX streaming performance for Sidekiq Z2
+  o Added new return code to skiq_receive() in the case where data is requested
+    from a card not currently streaming
+    o skiq_rx_status_error_card_not_active
+  o Improved error reporting and handling
+
+v4.7.1 - 10/15/2018
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o None
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Decreased complete / run-time installer sizes
+  o Add -std=gnu11 to CFLAGS in SDK Makefiles
+  o Resolved known JESD sync transmit issues on Sidekiq X2
+  o Resolved intermittent transmit timestamp hang on Sidekiq X2
+  o Resolved storage of Dropkiq factory calibration on Matchstiq S12
+
+v4.7.0 - 09/24/2018
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  o Sidekiq X2 rev C hardware support added
+  o Sidekiq Z2 rev C hardware support added
+  o Preliminary X4 rev A support added
+  o Balanced RX stream mode for Z2
+  o Transmit support for Z2
+  o Support for host reference clock for X2 (for use with Epiq's GPS module)
+  o Support for host 1PPS source for X2 (for use with Epiq's GPS module)
+  o X2 calibration support added
+  o Storage/query of calibration date added
+  o Added support for compiling for a specific target platform (Sidekiq Z2) for
+    a reduced application and library size
+  o Added support for warpable TCVCXO for Sidekiq X2 rev C
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Improved reliability of flash reprogramming of X2 FPGA bitstream
+  o Resolved X2 FPGA reprogramming for larger bitstreams
+  o Resolved system timestamp frequency incorrectly reported after sample rate
+    configuration of the X2
+  o Resolved TX test tone frequency incorrectly reported with X2
+  o Resolved FPGA reprogramming inconsistencies when performed across multiple processes
+  o Resolved TX attenuation configuration reset after retune for X2
+  o Added full RF IC reset functionality for m.2 / mPCIe / z2 upon initialization
+  o Resolved issue with incorrect number of taps reported and used for custom FIR
+    coefficients for Sidekiq mPCIe / m.2 / Z2
+  o Significant performance improvement with Sidekiq Z2 RX stop streaming
+  o Significant reduction in Sidekiq Z2 FPGA resource utilization
+  o Fixed incorrect RF port mapping for Sidekiq X2 Rx A1 / Rx B1
+
+v4.6.0 - 06/15/2018
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  ------------------------
+  o Increased maximum available Sidekiq cards supported to 32
+  o Sidekiq Z2 rev B hardware supported
+  o Added RF port configuration and querying ability
+  o Added Sidekiq m.2 USB streaming capability
+  o Added support for a list of receive handles to be provided to start receive
+    streaming
+  o Added new transmit mode to transmit a packet in timestamp mode if the
+    timestamp is late.
+  o Added Windows 10 support
+  o Added ability for user to enable or disable TX quadrature calibration.
+  o Added new RX streaming mode to allow for shorter packets to be transferred,
+    thus reducing the transport latency.
+
+  Bug Fixes for Libsidekiq/FPGA
+  ------------------------
+  o Unaligned memory access resolved in ARM platforms
+  o Resolved issues with custom FIR coefficients overwritten during TX retune
+  o Updated numerous test applications to allow for selection of Sidekiq based on serial
+    number in addition to card number.
+  o Improved detection of the Dropkiq low frequency extender card for use with
+    Sidekiq mPCIe.
+  o Resolved invalid reporting of a late timestamp in the case where transmit
+    FIFO was empty.
+  o Improved TX quadrature error calibration for Sidekiq X2.
+
+v4.4.0 - 11/02/2017
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  ------------------------
+  o Windows 7 support now available, including signed device driver
+  o Additional sample rates supported for Sidekiq X2
+  o Preliminary Sidekiq Z2 support
+  o Support for RX attenuation mode configuration for Sidekiq X2. New APIs added
+    to support this are: skiq_write_rx_attenuation(), skiq_read_rx_attenuation(),
+    skiq_read_rx_attenuation_mode(), skiq_write_rx_attenuation_mode()
+  o The ability to query various parameters of the radio is now available via
+    skiq_read_parameters()
+  o Management of FPGA versions now support semantic versioning and can be queried
+    via skiq_read_fpga_semantic_version()
+  o RX calibration for Sidekiq mPCIe and m.2 are maintained within the flash part
+    of the card. To determine if stored calibration data is present, the
+    skiq_read_rx_cal_data_present() API is available, otherwise default
+    calibration data is used
+  o Automatic detection of transport layer now supported. The skiq_init() API can
+    take the skiq_xport_type_auto and the transport is automatically detected and
+    selected
+
+  Bug Fixes for Libsidekiq/FPGA
+  ------------------------
+  o Erratic system timestamps fixed in FPGA v3.8.0
+  o Fixed transmit PPS synchronization error
+  o Improved oscillator drift of Sidekiq X2
+  o Improved initialization time of Sidekiq X2
+  o Resolved issues with transmitter filter configuration for Sidekiq mPCIe and m.2
+  o Resolved incorrect setting of TX attenuation for Sidekiq X2
+
+v4.2.1 - 11/02/2017
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  ------------------------
+  No new features from v4.2.0 have been added.
+
+  Bug Fixes for Libsidekiq/FPGA
+  ------------------------
+  o RX FIR filter coefficients below sample rates of 13.3 Msps have been
+    updated. In v4.2.0, the RX FIR coefficients resulted in a 6dB increase when
+    operating at sample rates lower than 13.3 Msps vs higher than 13.3 Msps.
+  o The minimum and maximum variable names of skiq_read_rx_gain_index_range()
+    have been modified to match actual implementation.
+
+v4.2.0 - 09/29/2017
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  ------------------------
+  The following functions were added for v4.2.0. For full details of the
+  new functions, refer to sidekiq_api.h.
+
+  o skiq_read_tx_tone_freq()
+    - allows for the frequency of the TX test tone to be determined
+  o skiq_is_accel_supported()
+    - determines if the accelerometer is supported based on the Sidekiq type detected
+  o skiq_write_accel_reg()
+    - provides generic write register access to access to the accelerometer
+  o skiq_read_accel_reg()
+    - provides generic read register access to access to the accelerometer
+  o skiq_read_part_info()
+    - provides part information regarding Sidekiq detected
+  o skiq_read_max_sample_rate()
+    - allows for the maximum supported sample rate for the card to be determined
+  o skiq_read_min_sample_rate()
+    - allows for the minimum supported sample rate for the card to be determined
+  o skiq_read_rx_iq_resolution()
+    - allows for the RX IQ resolution for the card to be determined
+  o skiq_read_tx_iq_resolution()
+    - allows for the TX IQ resolution for the card to be determined
+  o skiq_read_rx_filters_avail()
+    - provides an array of RX filters available on the Sidekiq card
+  o skiq_read_tx_filters_avail()
+    - provides an array of TX filters available on the Sidekiq card
+  o skiq_read_filter_range()
+    - provides the minimum and maximum frequency range of the filter specified
+  o skiq_read_usb_enumeration_delay()
+    - returns the delay of the Sidekiq USB enumeration on the USB bus
+  o skiq_read_sys_timestamp_freq()
+    - returns the frequency at which the system timestamp increments for the
+      Sidekiq card
+  o skiq_read_ext_ref_clock_freq()
+    - returns the frequency at which the external reference clock operates
+
+  Bug Fixes for Libsidekiq/FPGA
+  ------------------------
+  o Race condition causing rare lockup in transmit shutdown resolved
+
+  o Sidekiq M.2 FPGA flash fallback image now supported (refer to section 14.3)
+  o Sidekiq X2 hardware revision B support added
+  o Sidekiq mPCIe / M.2 transmit quadrature / DC offset calibration improved
+  o Sidekiq mPCIe / M.2 FIR filter coefficients updated for sample rates below 13.3MHz
+  o Sidekiq mPCIe / M.2 phase inversion of A2 resolved
+
+v4.0.1 - 07/18/2017
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  --------------------------------
+  No functions were added for v4.0.1
+
+  Bug Fixes for Libsidekiq/FPGA
+  -----------------------------
+  o Fix USB probing issuing that ended up limiting USB to 3 instances instead of 4
+
+v4.0.0 - 05/15/2017
+-------------------
+
+.. code-block:: none
+
+  New Features for Libsidekiq/FPGA
+  ------------------------
+  The following functions were added for v4.0.0. For full details of the
+  new functions, refer to sidekiq_api.h.
+
+  o skiq_get_cards()
+    - provides a list of cards based on the transport type specified
+  o skiq_init_by_serial_str()
+    - identical to skiq_init() except serial numbers can be provided instead
+      of card numbers
+  o skiq_is_xport_avail()
+    - determines if a transport type is available for the specified card
+  o skiq_is_card_avail()
+    - determines if the card is available for use
+  o skiq_verify_fpga_config_from_flash()
+    - verifies the contents of the FPGA bitstream specified matches the
+      FPGA bitstream stored in flash on the Sidekiq
+  o skiq_read_rx_cal_offset()
+    - provides calibration offset
+  o skiq_read_rx_cal_offset_by_LO_freq()
+    - provides calibration offset based on frequency specified
+  o skiq_read_rx_cal_offset_by_gain_index()
+    - provides calibration offset based on gain specified
+  o skiq_read_rx_cal_offset_by_LO_freq_and_gain_index()
+    - provides calibration offset based on gain and frequency specified
+  o skiq_read_last_tx_timestamp()
+    - provides last timestamp seen by the FPGA when transmitting
+  o skiq_set_tx_block_timestamp(), skiq_tx_get_block_timestamp()
+    - convenience functions to access timestamps in TX block
+  o skiq_tx_block_allocate_by_bytes(), skiq_tx_block_allocate(), skiq_tx_block_free()
+    - convenience functions to allocate / free skiq_tx_block_t
+  o SKIQ_TX_BLOCK_INITIALIZER_BY_BYTES(), SKIQ_TX_BLOCK_INITIALIZER_BY_WORDS(),
+    SKIQ_TX_BLOCK_INITIALIZER()
+    - convenience MACROs to statically allocate skiq_tx_block_t
+  o SKIQ_RX_BLOCK_INITIALIZER_BY_BYTES(), SKIQ_RX_BLOCK_INITIALIZER_BY_WORDS(),
+    SKIQ_RX_BLOCK_INITIALIZER()
+    - convenience MACROs to statically allocate skiq_rx_block_t
+
+  Bug Fixes for Libsidekiq/FPGA
+  ------------------------
+  o Critical race condition causing EEPROM corruption in applications that use
+    multiple cards has been resolved
+  o Critical race condition in reconfiguring the FPGA on certain host systems resolved.
+  o Flash access speeds greatly improved
+  o Parallel reconfiguring of FPGA resolved
+  o Card access by multiple applications protection added
+  o System update fully supports systems with multiple cards
+  o USB RX streaming for m.2 now supported
+
+  Libsidekiq APIs Modified
+  ------------------------
+  o skiq_init()
+    Details:
+      The function has been updated to support the transport type and
+      initialization level selected as separate parameters of the
+      initialization. Additionally, if a USB interface is available, USB only
+      features are automatically available regardless of the transport type
+      specified (ex. programming the FPGA from file).
+
+    Migration Path:
+      Examples of how to transition from the skiq_init() function of v3.X.Y to
+      v4.0.0 are shown below.
+
+      o skiq_init(skiq_pcie_init_level_1, skiq_usb_init_level_0, p_cards, num_cards ) =>
+        skiq_init(skiq_xport_type_pcie, skiq_xport_init_level_basic, p_cards, num_cards )
+
+      o skiq_init(skiq_pcie_init_level_2, skiq_usb_init_level_0, p_cards, num_cards ) =>
+        skiq_init(skiq_xport_type_pcie, skiq_xport_init_level_full, p_cards, num_cards )
+
+      o skiq_init(skiq_pcie_init_level_2, skiq_usb_init_level_1, p_cards, num_cards ) =>
+        skiq_init(skiq_xport_type_pcie, skiq_xport_init_level_full, p_cards, num_cards )
+
+      o skiq_init(skiq_pcie_init_level_0, skiq_usb_init_level_1, p_cards, num_cards ) =>
+        skiq_init(skiq_xport_type_usb, skiq_xport_init_level_basic, p_cards, num_cards )
+
+      o skiq_init(skiq_pcie_init_level_0, skiq_usb_init_level_2, p_cards, num_cards ) =>
+        skiq_init(skiq_xport_type_usb, skiq_xport_init_level_full, p_cards, num_cards )
+
+  o skiq_register_tx_complete_callback()
+    Details:
+      The function has been updated to use the new skiq_tx_callback_t type. This
+      allows the transmit complete callback function to be provided both the
+      transmitted packet (skiq_tx_block_t) as well
+      as user data specified during the transmit call.
+
+    Migration Path:
+      Examples of how to transition from the
+      skiq_register_tx_complete_callback() function of v3.X.Y to v4.0.0 is shown
+      below.
+
+        o skiq_register_tx_complete_callback( card, &tx_complete )
+          o void tx_complete( int32_t status, uint32_t *p_data ) =>
+            void tx_complete( int32_t status, skiq_tx_block_t *p_data , void *p_user )
+
+   o skiq_read_libsidekiq_version()
+     Details:
+       A new parameter, p_label has been added.
+
+     Migration Path:
+       Examples of how to transition from the skiq_read_libsidekiq_version()
+       function of v3.X.Y to v4.0.0 is shown below.
+
+       o skiq_read_libsidekiq_version( &major, &minor, &patch ) =>
+         skiq_read_libsidekiq_version( &major, &minor, &patch, & label );
+
+  o skiq_register_critical_error_callback()
+    Details:
+      The critical error callback function that can be registered has been
+      updated to also allow custom user data to be referenced.
+
+    Migration Path:
+      Examples of how to transition from the
+      skiq_register_critical_error_callback() function of v3.X.Y to v4.0.0 is
+      shown below.
+
+      o void skiq_register_critical_error_callback( void (*critical_handler)(int32_t status) ) =>
+        void skiq_register_critical_error_callback( void (*critical_handler)(int32_t status, void* p_user_data ), void* p_user_data );
+
+  o skiq_transmit()
+    Details:
+      The transmit function has been updated to use the newly added
+      skiq_tx_block_t type. Additionally, custom private data can be provided on
+      a per packet basis. This private data is then provided to the registered
+      TX complete callback function when running in asynchronous mode.
+
+    Migration Path:
+      Examples of how to transition from the skiq_transmit() function of v3.X.Y
+      to v4.0.0 is shown below.
+
+        o int32_t skiq_transmit(uint8_t card, skiq_tx_hdl_t hdl, int32_t *p_samples); =>
+          int32_t skiq_transmit(uint8_t card, skiq_tx_hdl_t hdl, skiq_tx_block_t *p_block , void *p_user );
+
+  o skiq_receive()
+    Details:
+      The receive function has been updated to use the newly added skiq_rx_block_t type.
+
+    Migration Path:
+      Examples of how to transition from the skiq_receive() function of v3.X.Y
+      to v4.0.0 is shown below.
+
+        o skiq_rx_status_t skiq_receive(uint8_t card, skiq_rx_hdl_t* p_hdl, uint8_t** pp_data, uint32_t* p_data_len); =>
+          skiq_rx_status_t skiq_receive(uint8_t card, skiq_rx_hdl_t* p_hdl, skiq_rx_block_t** pp_block, uint32_t* p_data_len);
+
+  Libsidekiq Functions Deprecated (v3.X.Y => v4.0.0)
+  ------------------------
+  o skiq_probe()
+    Details:
+      This function is no longer needed as all necessary hardware probing handles
+      automatically. Hotplugging hardware is not currently supported. As a result
+      As a result, all Sidekiq hardware must be present prior to running any Sidekiq
+      application.
+    Migration Path:
+      This function is no longer needed and does not have a replacement.
+
+  o skiq_probe_xport()
+    Details:
+      This function is no longer needed as all necessary hardware probing handles
+      automatically. Hotplugging hardware is not currently supported. As a result
+      all Sidekiq hardware must be present prior to running any Sidekiq application.
+    Migration Path:
+     This function is no longer needed and does not have a replacement.
+
+  o skiq_get_avail_cards()
+    Details:
+      This function has been replaced by skiq_get_cards(), which returns a list of
+      all card numbers detected on the specified transport interface
+    Migration Path:
+      Replace skiq_get_avail_cards() with skiq_get_cards().
+
+  o skiq_get_serial_num()
+    Details:
+      This function was only supported with miniPCIe serial number formats.
+    Migration Path:
+      Replace skiq_get_serial_num() with skiq_read_serial_string().
+
+  o skiq_get_card_num()
+    Details:
+      This function was only supported with miniPCIe serial number formats.
+    Migration Path:
+      Replace skiq_get_card_num() with skiq_get_card_from_serial_string().
+
+  o skiq_read_serial_num()
+    Details:
+      This function was only supported with miniPCIe serial number formats.
+    Migration Path:
+      Replace skiq_read_serial_num() with skiq_read_serial_string().
+
+  o skiq_init_xport()
+    Details:
+      This function is no longer needed. Initialization of a custom transport is
+      supported by specifying skiq_xport_type_custom in skiq_init().
+    Migration Path:
+      Replace skiq_init_xport() with skiq_init() and specify skiq_xport_type_custom.
+
+  o skiq_read_rfic_temp()
+    Details:
+      The RF IC temperature correlates to the Sidekiq board temperature
+      (available with skiq_read_temp()). Thus, the function was removed
+      as it did not provide any additional temperature information.
+    Migration Path:
+      This function is no longer needed and does not have a replacement.

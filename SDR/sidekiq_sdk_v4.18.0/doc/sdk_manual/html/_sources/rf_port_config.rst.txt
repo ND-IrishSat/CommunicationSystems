@@ -1,0 +1,125 @@
+.. _rf_port_config:
+
+Detailed RF Port Configuration
+==============================
+
+The tables below provides a summary of RF ports and configurations
+available per Sidekiq product, revision and RF mode. For details on
+configuring the RF port and mode, refer to :ref:`RF Port Configuration`.
+
+.. _table13:
+
+.. table:: RF Port Mode
+    :align: center
+
+    =======================   ===============  =============
+    Product                   Supports Fixed?  Supports TRX?
+    =======================   ===============  =============
+    Sidekiq mPCIe             Yes              No
+    Sidekiq M.2 rev B         Yes              No
+    Sidekiq M.2 rev B TDD     No               Yes
+    Sidekiq M.2 rev C         Yes              Yes
+    Sidekiq X2                Yes              No
+    Sidekiq Z2                Yes              Yes
+    Sidekiq X4                Yes              No
+    Matchstiq Z3u             Yes              Yes
+    Sidekiq NV100             Yes              Yes
+    =======================   ===============  =============
+
+|
+
+.. _table14:
+
+.. table:: RF Port Mapping for Sidekiq mPCIe, M.2, and Stretch
+    :align: center
+
+    +------------------------+--------------+---------------+---------------+--------------------+--------------------+
+    |                        | | Sidekiq    | | Sidekiq M.2 | | Sidekiq M.2 | | Sidekiq M.2      | | Sidekiq          |
+    |                        | | mPCIe      | | rev B       | | rev B TDD   | | rev C            | | Stretch          |
+    +========================+==============+===============+===============+====================+====================+
+    | :code:`skiq_rx_hdl_A1` | Jxxx\_RX1    | J2            | J2\ :sup:`*`  | J2                 | J2 or J1\ :sup:`*` |
+    +------------------------+--------------+---------------+---------------+--------------------+--------------------+
+    | :code:`skiq_rx_hdl_A2` | Jxxx\_TX1RX2 | J3            | J3\ :sup:`*`  | J3                 | N/A                |
+    +------------------------+--------------+---------------+---------------+--------------------+--------------------+
+    | :code:`skiq_tx_hdl_A1` | Jxxx\_TX1RX2 | J1            | J2\ :sup:`*`  | J1 or J2\ :sup:`*` | J1                 |
+    +------------------------+--------------+---------------+---------------+--------------------+--------------------+
+    | :code:`skiq_tx_hdl_A2` | N/A          | J4            | J3\ :sup:`*`  | J4 or J3\ :sup:`*` | N/A                |
+    +------------------------+--------------+---------------+---------------+--------------------+--------------------+
+
+:sup:`*` - requires the RF port to be configured to TRX via :code:`skiq_write_rf_port_config()`.  RX or TX is controlled via
+:code:`skiq_write_rf_port_operation()`.
+
+|
+
+.. table:: RF Port Mapping for Sidekiq X2 and X4
+    :align: center
+    :class: longtable
+
+    +------------------------+----------------+----------------+
+    |                        | Sidekiq X2     | Sidekiq X4     |
+    +========================+================+================+
+    | :code:`skiq_rx_hdl_A1` | J2             | J2             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_rx_hdl_A2` | J1             | J3             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_rx_hdl_B1` | J3             | J6             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_rx_hdl_B2` | N/A            | J7             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_rx_hdl_C1` | N/A            | J3             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_rx_hdl_D1` | N/A            | J7             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_tx_hdl_A1` | J4             | J4             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_tx_hdl_A2` | J5             | J1             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_tx_hdl_B1` | N/A            | J8             |
+    +------------------------+----------------+----------------+
+    | :code:`skiq_tx_hdl_B2` | N/A            | J5             |
+    +------------------------+----------------+----------------+
+
+|
+
+.. table:: RF Port Mapping for Sidekiq Z2 and Matchstiq Z3u
+    :align: center
+
+    +------------------------+---------------------------+----------------------+
+    |                        | Sidekiq Z2                | Matchstiq Z3u        |
+    +========================+===========================+======================+
+    | :code:`skiq_rx_hdl_A1` | J1 or J2 or J3\ :sup:`**` | J1 or J2\ :sup:`***` |
+    +------------------------+---------------------------+----------------------+
+    | :code:`skiq_rx_hdl_A2` | N/A                       | J2                   |
+    +------------------------+---------------------------+----------------------+
+    | :code:`skiq_tx_hdl_A1` | J1                        | J2                   |
+    +------------------------+---------------------------+----------------------+
+    | :code:`skiq_tx_hdl_A2` | N/A                       | N/A                  |
+    +------------------------+---------------------------+----------------------+
+
+:sup:`**` - requires the RF port to be configured to TRX via :code:`skiq_write_rf_port_config()`.  RX or TX is controlled via
+:code:`skiq_write_rf_port_operation()`.
+
+:sup:`***` - J2 when in TRx mode, J1 when in fixed mode, mode configured with :code:`skiq_write_rf_port_config()`
+
+|
+
+.. table:: RF Port Mapping for Sidekiq NV100
+    :align: center
+
+    +------------------------+--------------------+
+    |                        | Sidekiq NV100      |
+    +========================+====================+
+    | :code:`skiq_rx_hdl_A1` | J1                 |
+    +------------------------+--------------------+
+    | :code:`skiq_rx_hdl_A2` | J2 or J1\ :sup:`*` |
+    +------------------------+--------------------+
+    | :code:`skiq_rx_hdl_B1` | J2 or J1\ :sup:`*` |
+    +------------------------+--------------------+
+    | :code:`skiq_tx_hdl_A1` | J1                 |
+    +------------------------+--------------------+
+    | :code:`skiq_tx_hdl_A2` | J2                 |
+    +------------------------+--------------------+
+    | :code:`skiq_tx_hdl_B1` | J2                 |
+    +------------------------+--------------------+
+
+:sup:`*` - RxB1 may be routed to J1, but only when operating in fixed mode (i.e. not TRX)

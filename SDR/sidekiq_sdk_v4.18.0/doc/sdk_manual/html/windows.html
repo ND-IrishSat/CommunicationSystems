@@ -1,0 +1,250 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Windows Sidekiq Development &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Developing for Alternative Host Platforms" href="alternative_hosts.html" />
+    <link rel="prev" title="FPGA user_app examples" href="fpga_user_app_examples.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="windows-sidekiq-development">
+<span id="windows"></span><h1>Windows Sidekiq Development<a class="headerlink" href="#windows-sidekiq-development" title="Permalink to this headline">¶</a></h1>
+<p>As of libsidekiq <strong>v4.4.0</strong>, the Sidekiq mPCIe and Sidekiq M.2 hardware is
+supported under Windows 7 and includes a signed device driver. The
+remainder of this section shows the steps necessary to install the SDK
+and associated device drivers under Windows 7. The Windows installer is
+available at the same location as the Linux release bundles on the Epiq
+Support forum.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Libsidekiq no longer supports Windows 7 as of libsidekiq <strong>v4.11.0</strong>
+as Microsoft ended Windows 7 support on January 14, 2020.</p>
+</div>
+<p>As of libsidekiq <strong>v4.6.0</strong>, the existing Sidekiq mPCIe and Sidekiq M.2
+hardware is supported under Windows 10 as well as Windows 7. In
+addition, the Sidekiq X2 hardware is also supported. Installation of the
+SDK under Windows 10 is very similar to that of the Windows 7
+installation.</p>
+<div class="section" id="install-the-sdk">
+<h2>Install the SDK<a class="headerlink" href="#install-the-sdk" title="Permalink to this headline">¶</a></h2>
+<p>The Windows installer is a self-extracting and executing file. When run,
+it will present a series of dialog boxes similar to those which follow.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="_images/windows_installer.png"><img alt="Windows Installer Dialog" src="_images/windows_installer.png" style="width: 5.24020in; height: 4.02170in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 15 </span><span class="caption-text">Windows Installer Dialog</span></p>
+</div>
+<p>Choose <em>Next</em>.</p>
+<p>Choose the components to install. It is recommended to install all of
+the components. The VC++ Redistributable libraries may already be
+installed if the target machine also has an installation of Microsoft
+Visual Studio present.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="_images/windows_installer_components.png"><img alt="Windows Installer Components Dialog" src="_images/windows_installer_components.png" style="width: 5.24020in; height: 4.02170in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 16 </span><span class="caption-text">Windows Installer Components Dialog</span></p>
+</div>
+<p>Choose the installation directory and wait for the installation to
+complete.</p>
+<div class="figure align-center" id="id3">
+<a class="reference internal image-reference" href="_images/windows_installer_path.png"><img alt="Windows Installer Path Dialog" src="_images/windows_installer_path.png" style="width: 5.24020in; height: 4.02010in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 17 </span><span class="caption-text">Windows Installer Path Dialog</span></p>
+</div>
+<p>If the VC++ Redistributables component was selected for installation,
+the installer will launch another installation of the VC++ libraries.</p>
+<div class="figure align-center" id="id4">
+<a class="reference internal image-reference" href="_images/windows_msvc_installer.png"><img alt="Windows MSVC++ Redistributable Dialog" src="_images/windows_msvc_installer.png" style="width: 5.05280in; height: 3.12990in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 18 </span><span class="caption-text">Windows MSVC++ Redistributable Dialog</span></p>
+</div>
+</div>
+<div class="section" id="sidekiq-device-configuration">
+<h2>Sidekiq Device Configuration<a class="headerlink" href="#sidekiq-device-configuration" title="Permalink to this headline">¶</a></h2>
+<p>When the Sidekiq is inserted into the computer, the Device Manager will
+detect the hardware but no driver will be loaded. The M.2 or PCIe
+interface for the Sidekiq will be reported as a “<em>PCI Data Acquisition
+and Signal Processing Controller</em>” and the USB interface will be
+reported as a “<em>Sidekiq</em>”, as shown in <a class="reference internal" href="#figure-windows-unknown-devices"><span class="std std-ref">Windows Detection of Sidekiq</span></a>.</p>
+<div class="figure align-center" id="id5">
+<span id="figure-windows-unknown-devices"></span><a class="reference internal image-reference" href="_images/windows_unknown_devices.png"><img alt="Windows Detection of Sidekiq" src="_images/windows_unknown_devices.png" style="width: 4.74020in; height: 4.15710in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 19 </span><span class="caption-text">Windows Detection of Sidekiq</span></p>
+</div>
+<p>Windows<sup>®</sup> will prompt to select a driver, or by right-clicking
+on the “<em>PCI Data Acquisition and Signal Processing Controller</em>” and
+the “<em>Sidekiq</em>” one may choose to install or “<em>Update Driver
+Software…</em>” for each interface.</p>
+<div class="section" id="select-the-sidekiq-pcie-driver-software">
+<h3>Select the Sidekiq PCIe Driver Software<a class="headerlink" href="#select-the-sidekiq-pcie-driver-software" title="Permalink to this headline">¶</a></h3>
+<p>When prompted to search for the device driver software, choose
+“<em>Browse my computer for driver software</em>”, as shown in <a class="reference internal" href="#figure-windows-driver-search"><span class="std std-ref">Windows Driver Search</span></a>.</p>
+<div class="figure align-center" id="id6">
+<span id="figure-windows-driver-search"></span><a class="reference internal image-reference" href="_images/windows_driver_search.png"><img alt="Windows Driver Search" src="_images/windows_driver_search.png" style="width: 6.49020in; height: 4.57010in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 20 </span><span class="caption-text">Windows Driver Search</span></p>
+</div>
+<p>Next, choose the path to the driver package, containing the
+<code class="docutils literal notranslate"><span class="pre">DMADriver.sys</span></code> file, provided by Epiq Solutions. For example, refer to
+<a class="reference internal" href="#figure-windows-driver-package-selection"><span class="std std-ref">Windows Driver Package Selection</span></a>.</p>
+<div class="figure align-center" id="id7">
+<span id="figure-windows-driver-package-selection"></span><a class="reference internal image-reference" href="_images/windows_driver_selection.png"><img alt="Windows Driver Package Selection" src="_images/windows_driver_selection.png" style="width: 6.49020in; height: 4.57010in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 21 </span><span class="caption-text">Windows Driver Package Selection</span></p>
+</div>
+<p>Agree to install the driver. The Device Manager will then rename the
+“<em>PCI Data Acquisition and Signal Processing Controller</em>” as a
+“<em>PCI Express DMA Device</em>”, as shown in <a class="reference internal" href="#figure-windows-dma-driver-installed"><span class="std std-ref">Windows Successful DMA Driver Installation</span></a>.</p>
+<div class="figure align-center" id="id8">
+<span id="figure-windows-dma-driver-installed"></span><a class="reference internal image-reference" href="_images/windows_dma_driver_installed.png"><img alt="Windows Successful DMA Driver Installation" src="_images/windows_dma_driver_installed.png" style="width: 4.74020in; height: 4.15710in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 22 </span><span class="caption-text">Windows Successful DMA Driver Installation</span></p>
+</div>
+</div>
+<div class="section" id="select-the-usb-driver-software">
+<h3>Select the USB Driver Software<a class="headerlink" href="#select-the-usb-driver-software" title="Permalink to this headline">¶</a></h3>
+<p>Similarly, the “Sidekiq” device driver for the USB interface may be
+installed by selecting the path to its Setup Information file
+(<code class="docutils literal notranslate"><span class="pre">*.inf</span></code>), which is installed in the <code class="docutils literal notranslate"><span class="pre">usb_driver</span></code> sub-directory of the
+Sidekiq SDK installation directory. Refer to to see how both Sidekiq
+devices should appear in Device Manager.</p>
+<div class="figure align-center" id="id9">
+<a class="reference internal image-reference" href="_images/windows_usb_driver_installed.png"><img alt="Windows Successful USB Driver Installation" src="_images/windows_usb_driver_installed.png" style="width: 4.74020in; height: 4.15710in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 23 </span><span class="caption-text">Windows Successful USB Driver Installation</span></p>
+</div>
+<p>It should now be possible to execute applications built against the SDR
+library (<code class="docutils literal notranslate"><span class="pre">libsidekiq__mingw64.a</span></code>) to communicate with the device
+hardware.</p>
+</div>
+</div>
+<div class="section" id="windows-development-tools">
+<h2>Windows Development Tools<a class="headerlink" href="#windows-development-tools" title="Permalink to this headline">¶</a></h2>
+<p>The MinGW-64 or Microsoft Visual Studio compilers may be used with
+libsidekiq to write applications to control the Sidekiq radio. These
+toolchains are available from the following, respective, links:</p>
+<p><a class="reference external" href="http://www.msys2.org/">http://www.msys2.org/</a></p>
+<p><a class="reference external" href="https://www.visualstudio.com/">https://www.visualstudio.com/</a></p>
+<div class="section" id="mingw-64">
+<h3>MinGW-64<a class="headerlink" href="#mingw-64" title="Permalink to this headline">¶</a></h3>
+<p>The MinGW-64 compiler is installed from the MSYS2 environment using the
+<code class="docutils literal notranslate"><span class="pre">pacman</span></code> package manager. The test applications were built using
+MinGW gcc version 7.2.0. Since MinGW-64 is designed to support the GCC
+compiler on Windows systems, the user can also leverage libsidekiq’s
+<code class="docutils literal notranslate"><span class="pre">arg_parser</span></code> library to allow easier working with command line arguments
+in applications.</p>
+</div>
+<div class="section" id="visual-studio">
+<h3>Visual Studio<a class="headerlink" href="#visual-studio" title="Permalink to this headline">¶</a></h3>
+<p>The Visual Studio test applications have been built using Visual Studio
+2015 Community Edition. Applications built with Visual Studio only need
+to link against <code class="docutils literal notranslate"><span class="pre">libsidekiq__mingw64.a</span></code> and cannot use, nor need to
+use, <code class="docutils literal notranslate"><span class="pre">arg_parser.a</span></code></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The Visual Studio solution files may require the paths to
+the header files and library to be updated.</p>
+</div>
+<div class="figure align-center" id="id10">
+<a class="reference internal image-reference" href="_images/windows_vs_include_dirs.png"><img alt="Visual Studio - Additional Include Directories" src="_images/windows_vs_include_dirs.png" style="width: 6.00000in; height: 3.90980in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 24 </span><span class="caption-text">Visual Studio - Additional Include Directories</span></p>
+</div>
+<div class="figure align-center" id="id11">
+<a class="reference internal image-reference" href="_images/windows_vs_additional_deps.png"><img alt="Visual Studio - Additional Dependencies" src="_images/windows_vs_additional_deps.png" style="width: 6.00000in; height: 3.90000in;" /></a>
+<p class="caption"><span class="caption-number">Fig. 25 </span><span class="caption-text">Visual Studio - Additional Dependencies</span></p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Windows Sidekiq Development</a><ul>
+<li><a class="reference internal" href="#install-the-sdk">Install the SDK</a></li>
+<li><a class="reference internal" href="#sidekiq-device-configuration">Sidekiq Device Configuration</a><ul>
+<li><a class="reference internal" href="#select-the-sidekiq-pcie-driver-software">Select the Sidekiq PCIe Driver Software</a></li>
+<li><a class="reference internal" href="#select-the-usb-driver-software">Select the USB Driver Software</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#windows-development-tools">Windows Development Tools</a><ul>
+<li><a class="reference internal" href="#mingw-64">MinGW-64</a></li>
+<li><a class="reference internal" href="#visual-studio">Visual Studio</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="fpga_user_app_examples.html" title="previous chapter">FPGA user_app examples</a></li>
+      <li>Next: <a href="alternative_hosts.html" title="next chapter">Developing for Alternative Host Platforms</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/windows.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/windows.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,9 @@
+<map id="skiq_param_t" name="skiq_param_t">
+<area shape="rect" id="node2" href="$structskiq__tx__param__t.html" title="Parameters for each Tx channel on a Sidekiq card. " alt="" coords="231,5,350,32"/>
+<area shape="rect" id="node3" href="$structskiq__rx__param__t.html" title="Parameters for each Rx channel on a Sidekiq card. " alt="" coords="231,56,350,83"/>
+<area shape="rect" id="node4" href="$structskiq__fw__param__t.html" title="Parameters for the firmware loaded onto a Sidekiq. " alt="" coords="230,107,351,133"/>
+<area shape="rect" id="node5" href="$structskiq__rf__param__t.html" title="Parameters for the Sidekiq&#39;s RF capabilities. " alt="" coords="233,157,348,184"/>
+<area shape="rect" id="node6" href="$structskiq__fpga__param__t.html" title="Parameter for the Sidekiq&#39;s on board FPGA. " alt="" coords="225,208,357,235"/>
+<area shape="rect" id="node7" href="$structskiq__card__param__t.html" title="Parameters related to a physical Sidekiq card. " alt="" coords="225,259,357,285"/>
+<area shape="rect" id="node8" href="$structskiq__part__info__t.html" title="Sidekiq Part Information. " alt="" coords="5,259,120,285"/>
+</map>

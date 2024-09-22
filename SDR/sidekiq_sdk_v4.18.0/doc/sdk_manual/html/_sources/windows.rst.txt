@@ -1,0 +1,211 @@
+.. include:: replacements.rst
+
+.. _windows:
+
+Windows Sidekiq Development
+===========================
+
+As of |libsidekiq| **v4.4.0**, the Sidekiq mPCIe and Sidekiq M.2 hardware is
+supported under Windows 7 and includes a signed device driver. The
+remainder of this section shows the steps necessary to install the SDK
+and associated device drivers under Windows 7. The Windows installer is
+available at the same location as the Linux release bundles on the Epiq
+Support forum.
+
+.. note:: Libsidekiq no longer supports Windows 7 as of |libsidekiq| **v4.11.0**
+    as Microsoft ended Windows 7 support on January 14, 2020.
+
+As of |libsidekiq| **v4.6.0**, the existing Sidekiq mPCIe and Sidekiq M.2
+hardware is supported under Windows 10 as well as Windows 7. In
+addition, the Sidekiq X2 hardware is also supported. Installation of the
+SDK under Windows 10 is very similar to that of the Windows 7
+installation.
+
+Install the SDK
+---------------
+
+The Windows installer is a self-extracting and executing file. When run,
+it will present a series of dialog boxes similar to those which follow.
+
+.. figure:: _static/windows_installer.png
+   :alt: Windows Installer Dialog
+   :align: center
+   :width: 5.24020in
+   :height: 4.02170in
+
+   Windows Installer Dialog
+
+Choose *Next*.
+
+Choose the components to install. It is recommended to install all of
+the components. The VC++ Redistributable libraries may already be
+installed if the target machine also has an installation of Microsoft
+Visual Studio present.
+
+.. figure:: _static/windows_installer_components.png
+   :alt: Windows Installer Components Dialog
+   :align: center
+   :width: 5.24020in
+   :height: 4.02170in
+
+   Windows Installer Components Dialog
+
+Choose the installation directory and wait for the installation to
+complete.
+
+.. figure:: _static/windows_installer_path.png
+   :alt: Windows Installer Path Dialog
+   :align: center
+   :width: 5.24020in
+   :height: 4.02010in
+
+   Windows Installer Path Dialog
+
+If the VC++ Redistributables component was selected for installation,
+the installer will launch another installation of the VC++ libraries.
+
+.. figure:: _static/windows_msvc_installer.png
+   :alt: Windows MSVC++ Redistributable Dialog
+   :align: center
+   :width: 5.05280in
+   :height: 3.12990in
+
+   Windows MSVC++ Redistributable Dialog
+
+Sidekiq Device Configuration
+----------------------------
+
+When the Sidekiq is inserted into the computer, the Device Manager will
+detect the hardware but no driver will be loaded. The M.2 or PCIe
+interface for the Sidekiq will be reported as a "*PCI Data Acquisition
+and Signal Processing Controller*" and the USB interface will be
+reported as a "*Sidekiq*", as shown in :ref:`figure_windows_unknown_devices`.
+
+.. _figure_windows_unknown_devices:
+
+.. figure:: _static/windows_unknown_devices.png
+   :alt: Windows Detection of Sidekiq
+   :align: center
+   :width: 4.74020in
+   :height: 4.15710in
+
+   Windows Detection of Sidekiq
+
+Windows\ :sup:`®` will prompt to select a driver, or by right-clicking
+on the "*PCI Data Acquisition and Signal Processing Controller*" and
+the "*Sidekiq*" one may choose to install or "*Update Driver
+Software...*" for each interface.
+
+Select the Sidekiq PCIe Driver Software
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When prompted to search for the device driver software, choose
+"*Browse my computer for driver software*", as shown in :ref:`figure_windows_driver_search`.
+
+.. _figure_windows_driver_search:
+
+.. figure:: _static/windows_driver_search.png
+   :alt: Windows Driver Search
+   :align: center
+   :width: 6.49020in
+   :height: 4.57010in
+
+   Windows Driver Search
+
+Next, choose the path to the driver package, containing the
+``DMADriver.sys`` file, provided by Epiq Solutions. For example, refer to
+:ref:`figure_windows_driver_package_selection`.
+
+.. _figure_windows_driver_package_selection:
+
+.. figure:: _static/windows_driver_selection.png
+   :alt: Windows Driver Package Selection
+   :align: center
+   :width: 6.49020in
+   :height: 4.57010in
+
+   Windows Driver Package Selection
+
+Agree to install the driver. The Device Manager will then rename the
+"*PCI Data Acquisition and Signal Processing Controller*" as a
+"*PCI Express DMA Device*", as shown in :ref:`figure_windows_dma_driver_installed`.
+
+.. _figure_windows_dma_driver_installed:
+
+.. figure:: _static/windows_dma_driver_installed.png
+   :alt: Windows Successful DMA Driver Installation
+   :align: center
+   :width: 4.74020in
+   :height: 4.15710in
+
+   Windows Successful DMA Driver Installation
+
+Select the USB Driver Software
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Similarly, the "Sidekiq" device driver for the USB interface may be
+installed by selecting the path to its Setup Information file
+(``*.inf``), which is installed in the ``usb_driver`` sub-directory of the
+Sidekiq SDK installation directory. Refer to to see how both Sidekiq
+devices should appear in Device Manager.
+
+.. figure:: _static/windows_usb_driver_installed.png
+   :alt: Windows Successful USB Driver Installation
+   :align: center
+   :width: 4.74020in
+   :height: 4.15710in
+
+   Windows Successful USB Driver Installation
+
+It should now be possible to execute applications built against the SDR
+library (``libsidekiq__mingw64.a``) to communicate with the device
+hardware.
+
+Windows Development Tools
+-------------------------
+
+The MinGW-64 or Microsoft Visual Studio compilers may be used with
+|libsidekiq| to write applications to control the Sidekiq radio. These
+toolchains are available from the following, respective, links:
+
+http://www.msys2.org/
+
+https://www.visualstudio.com/
+
+MinGW-64
+~~~~~~~~
+
+The MinGW-64 compiler is installed from the MSYS2 environment using the
+``pacman`` package manager. The test applications were built using
+MinGW gcc version 7.2.0. Since MinGW-64 is designed to support the GCC
+compiler on Windows systems, the user can also leverage |libsidekiq|’s
+``arg_parser`` library to allow easier working with command line arguments
+in applications.
+
+
+Visual Studio
+~~~~~~~~~~~~~
+
+The Visual Studio test applications have been built using Visual Studio
+2015 Community Edition. Applications built with Visual Studio only need
+to link against ``libsidekiq__mingw64.a`` and cannot use, nor need to
+use, ``arg_parser.a``
+
+.. note:: The Visual Studio solution files may require the paths to
+	  the header files and library to be updated.
+
+.. figure:: _static/windows_vs_include_dirs.png
+   :alt: Visual Studio - Additional Include Directories
+   :align: center
+   :width: 6.00000in
+   :height: 3.90980in
+
+   Visual Studio - Additional Include Directories
+
+.. figure:: _static/windows_vs_additional_deps.png
+   :alt: Visual Studio - Additional Dependencies
+   :align: center
+   :width: 6.00000in
+   :height: 3.90000in
+
+   Visual Studio - Additional Dependencies

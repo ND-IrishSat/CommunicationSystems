@@ -1,0 +1,284 @@
+Document Revision History
+=========================
+
+.. table::
+    :class: longtable
+    :align: center
+    :widths: 15 15 70
+
+    +--------------+---------------+-----------------------------------------------------------------+
+    | Date         | Revision      | Description                                                     |
+    +==============+===============+=================================================================+
+    | 04/28/2014   | 0.1           | Initial version                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 05/01/2014   | 0.2           | Updates after comments                                          |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 05/27/2014   | 0.3           | Updates for SDK v0.9                                            |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 06/10/2014   | 0.4           | Updates for SDK v0.10, system update 20140606                   |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 08/18/2014   | 0.5           | Updates for SDK v0.14, system update 20140818                   |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 10/13/2014   | 0.6           | Updates for SDK v1.1, system update 20141013                    |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 01/09/2015   | 0.7           | Updates for SDK v1.6, system update 20150109                    |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 09/03/2015   | 1.0           | Updates for SDK v2.0, system update 20150908                    |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 11/03/2015   | 1.1           | Updates for SDK v2.3, system update 20151103                    |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 03/25/2016   | 1.2           | Updates for Matchstiq S10 platform                              |
+    |              |               |                                                                 |
+    |              |               | - Added Sections 10.5, 10.5.1, and 10.5.2                       |
+    |              |               | - Updates in Section 10.2 to indicate libc2.12 BUILD_CONFIG no  |
+    |              |               |   longer required.                                              |
+    |              |               | - Updated for glib and deployment in Section 10.2.1             |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 04/20/2016   | 1.2           | Updates for SDK v3.0.0, system update v3.0.0 20160413           |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 05/30/2016   | 1.3           | Updates for SDK v3.0.3                                          |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 06/20/2016   | 1.4           | Updates for SDK v3.1.0                                          |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 07/07/2016   | 1.5           | Updates for SDK v3.2.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Migrated Appendix 6 to external document set                  |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 07/11/2016   | 1.5-develop   | Adding information regarding RF IC control output in metadata   |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 08/04/2016   | 1.5-develop   | Updated channel bandwidth configuration                         |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 08/04/2016   | 1.5-develop   | Add information regarding blocking receive feature              |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 08/10/2016   | 1.6           | Generic update for v3.3.0                                       |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 09/27/2016   | 1.6-develop   | RF port configuration update                                    |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 09/29/2016   | 1.7           | Miscellaneous updates for v3.4.0                                |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 01/05/2017   | 1.8           | Updates for SDK v3.5.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Details on USB RX streaming (new transport) and FAQ           |
+    |              |               | - Details on logging function registration                      |
+    |              |               | - Details on ref_clock test application and FAQ                 |
+    |              |               | - Removed references to manual RFIC initialization as it now    |
+    |              |               |   takes place during skiq_init() call.                          |
+    |              |               | - Added to list of supported Linux kernels                      |
+    |              |               | - Added reference to mxSidekiq, a MATLAB extension for          |
+    |              |               |   controlling Sidekiq and transferring data with Sidekiq        |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 05/08/2017   | 2.0           | Updates for SDK v4.0.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Updates for libusb and deployment in Section 10.2.1           |
+    |              |               | - skiq_init() and other general v4.0.0 updates                  |
+    |              |               | - Updated section 9.10 for skiq_receive() and new               |
+    |              |               |   skiq_rx_block_t type definition                               |
+    |              |               | - Updated section 9.13 for skiq_transmit() and new              |
+    |              |               |   skiq_tx_block_t type definition                               |
+    |              |               | - Updated Tables 6 and 7 with new supported kernel versions     |
+    |              |               |   which include 4.8 and 4.10 series kernels                     |
+    |              |               | - Added accessing performance appendix                          |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 06/27/2017   | 2.1           | Adding preliminary Sidekiq X2 details                           |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 09/22/2017   | 2.2           | Updates for SDK v4.2.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Details on supported Sidekiq power consumption states in      |
+    |              |               |   Appendix 9                                                    |
+    |              |               | - Updated Tables 6 and 7 with new supported kernel versions     |
+    |              |               |   which include 4.11 and 4.12 series kernels                    |
+    |              |               | - Updated Sidekiq X2 diagram                                    |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 02/14/2018   | 2.3           | Updates for SDK v4.4.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Added details on Sidekiq X2 Sample Rate / Bandwidth Settings  |
+    |              |               | - Updated Sidekiq mPCIe and m.2 Channel Bandwidth settings      |
+    |              |               | - Corrected Rx IQ Packet Structure in Figure 5                  |
+    |              |               | - Section 10.2.1: Added compiler flags for BUILD_CONFIGs:       |
+    |              |               |   aarch64.gcc6.3 and arm_cortex-a9.gcc4.9.2_gnueabi             |
+    |              |               | - Added Section 9.10.3: Using receive calibration offsets       |
+    |              |               | - Updated supported kernel versions in Tables 7 and 8           |
+    |              |               | - Added Section 10.6 Developing for the NVIDIA Jetson TX1/TX2   |
+    |              |               | - Added Appendix 10 – Windows Sidekiq Development               |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 06/13/2018   | 2.4-develop   | Updates for SDK v4.6.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Fixed tables in Appendix 1                                    |
+    |              |               | - Added more details on FPGA programming in Appendix 4          |
+    |              |               | - Added Section 9.7: RF Port Configuration                      |
+    |              |               | - Added Section 9.16.1 to describe new API functions for        |
+    |              |               |   working with multiple handles when starting and stopping      |
+    |              |               |   receive streaming                                             |
+    |              |               | - Added Section 9.19 on TX quadrature calibration details       |
+    |              |               | - Added Section 9.20 on Receive Stream Mode details             |
+    |              |               | - Added Section 10.7: Developing for the Sidekiq Z2             |
+    |              |               | - Updated supported kernel versions in Tables 7 and 8.  Added a |
+    |              |               |   lot more driver support for CentOS distributions.             |
+    |              |               | - Added introduction to Windows support in Appendix 10: Windows |
+    |              |               |   10 is now supported.  Sidekiq X2 is also supported.           |
+    |              |               | - Added details regarding new TX timestamps allowed late mode   |
+    |              |               | - Added appendix for detailed RF port configuration             |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 06/15/2018   | 2.4           | Finalize updates for SDK v4.6.0                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 09/21/2018   | 2.5-develop   | Updates for SDK v4.7.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Added Balanced mode description to Section 9.20               |
+    |              |               | - Added preliminary Sidekiq X4 details                          |
+    |              |               | - Added details on 1PPS source selection                        |
+    |              |               | - Added details on additional reference clock configuration     |
+    |              |               | - Updated X2 Architecture Diagram                               |
+    |              |               | - Updated supported kernel versions in Tables 7 and 8           |
+    |              |               | - Added section 9.10.4 on using I/Q phase and amplitude         |
+    |              |               |   calibration                                                   |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 09/24/2018   | 2.5           | Finalize updates for SDK v4.7.0                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 01/30/2019   | 2.6-develop   | Updates for SDK v4.9.0                                          |
+    |              |               |                                                                 |
+    |              |               | - Updated Sidekiq X4 Architecture Diagram                       |
+    |              |               | - Added details on new Sidekiq X2 profiles                      |
+    |              |               | - Added details on creating/loading runtime profile for Sidekiq |
+    |              |               |   X2                                                            |
+    |              |               | - Added RFIC control output details for Sidekiq X2 and Sidekiq  |
+    |              |               |   X4                                                            |
+    |              |               | - Updated support kernel versions in Tables 7 and 8             |
+    |              |               |   - Added support for NVIDIA Jetson platforms (JetPack / L4T)   |
+    |              |               | - Updated Section 14.2 to include information about Annapolis   |
+    |              |               |   Micro Systems’ WILDSTAR FMC Carrier                           |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 02/05/2019   | 2.6           | Finalize updates for SDK v4.9.0                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 07/25/2019   | 2.7           | Updates for SDK v4.10.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Table 3: SDK Tarball Files, update to include                 |
+    |              |               |   tx_samples_from_FPGA_RAM                                      |
+    |              |               | - Add Section 9.8: include information for adjusting the        |
+    |              |               |   ordering complex samples (I/Q) for both TX/RX                 |
+    |              |               | - Section 9.12.1: Include text on special case for dual channel |
+    |              |               |   transmit and the TX FIFO size limit                           |
+    |              |               | - Section 10.2.1: Add compiler flags for BUILD_CONFIG:          |
+    |              |               |   arm_cortex-a9.gcc7.2.1_gnueabihf                              |
+    |              |               | - Tables 7 and 8: update supported kernel versions              |
+    |              |               | - Section 11.1.3: Fixed typo in decimation factor example       |
+    |              |               | - Section 11.2.1.1: Add section to discuss Options for Sample   |
+    |              |               |   Decimation (in X2 and X4)                                     |
+    |              |               | - Section 20.4: add subsections to discuss MinGW-64 versus      |
+    |              |               |   Visual Studio usage                                           |
+    |              |               | - Table 14: RF Port Mapping, update Sidekiq X4 C1/D1 entries    |
+    |              |               | - Appendix 12 – FPGA user_app examples, added Section 22.1:     |
+    |              |               |   Transmitting samples from FPGA memory                         |
+    |              |               | - Appendix 13 – Release History, update release notes for       |
+    |              |               |   v4.9.1 through v4.9.5 and v4.10.0                             |
+    |              |               | - Added Frequency Hopping section 9.5.1                         |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 10/15/2019   | 2.8           | Updates for SDK v4.11.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Transition to using Sphinx for documentation, revision        |
+    |              |               |   history references no longer apply                            |
+    |              |               | - Add new product information for Sidekiq Stretch (M.2-2280)    |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 02/03/2020   | 2.9           | Updates for SDK v4.12.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Update supported kernel versions                              |
+    |              |               | - Add subsection on "FPGA Configuration Flash Slots"            |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 06/30/2020   | 2.10          | Updates for SDK v4.13.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Update supported kernel versions                              |
+    |              |               | - Add subsection on "Sidekiq X4 - Methods of LO frequency       |
+    |              |               |   tuning"                                                       |
+    |              |               | - Add note regarding Sidekiq X4 and TxA1/TxB1 transmit          |
+    |              |               |   capability                                                    |
+    |              |               | - Update section on "Dynamic Use of Sidekiq Cards"              |
+    |              |               | - Update code example for Frequency Hopping                     |
+    |              |               | - Added RX Calibration to "Automatic Calibration"               |
+    |              |               | - Add FAQ regarding timestamp slips within products using       |
+    |              |               |   the AD9361 RFIC                                               |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 10/13/2020   | 2.11          | Updates for SDK v4.14.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Update supported kernel versions                              |
+    |              |               | - Add information on new exit handler in the "Exit" section of  |
+    |              |               |   "Developing Apps"                                             |
+    |              |               | - Add "Hotplug" section to "Developing Apps"                    |
+    |              |               | - Update "Clock and Time Management Resources" section of       |
+    |              |               |   "Developing Apps" to expand on reference clock switching      |
+    |              |               | - Update information on sample rate/tuning function call order  |
+    |              |               | - Add Sidekiq X4 specific section "Pin Control enable of RFIC   |
+    |              |               |   signal paths"                                                 |
+    |              |               | - Update "Configuring Sample Rate / Channel Bandwidth" with     |
+    |              |               |   more information on generating profiles for Sidekiq X4        |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 2/3/2021     | 2.12          | Updated for SDK v4.15.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Update supported kernel versions                              |
+    |              |               | - Add "Advanced Topics" section to "Hosts & Platforms"          |
+    |              |               | - Update "Clock and Time Management Resources" section of       |
+    |              |               |   "Developing Apps" to include information on the use of the    |
+    |              |               |   GPSDO in Sidekiq Stretch (m.2-2280)                           |
+    |              |               | - Add Matchstiq Z3u details                                     |
+    |              |               | - Add "Example X4 Use Cases" section to demonstrate typical Rx  |
+    |              |               |   usage scenarios                                               |
+    |              |               | - Add "DKMS" section describing how DKMS is used with Sidekiq   |
+    |              |               |   kernel modules                                                |
+    |              |               | - Update "Detailed RF Port Configuration" section               |
+    |              |               | - Update "Sidekiq X4 Built-in Profiles" section                 |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 5/28/2021    | 2.13          | Updated for SDK v4.16.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Add "Using Libsidekiq Remotely" section describing the        |
+    |              |               |   network transport (currently Z3u & Z2 only)                   |
+    |              |               | - Add "Tx Timestamp Clock Source selection" section to          |
+    |              |               |   "Developing Apps"                                             |
+    |              |               | - Update "Clock and Time Management Resources" section to       |
+    |              |               |   include Matchstiq Z3u details                                 |
+    |              |               | - Update Sidekiq X4 diagram                                     |
+    |              |               | - Update "Number of Filter Taps" table for AD9631/4 parts in    |
+    |              |               |   "Configuring Sample Rate / Channel Bandwidth"                 |
+    |              |               | - Update code examples in "Developing Apps"                     |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 10/14/2021   | 2.14          | Updated for SDK v4.17.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Add Sidekiq NV100 details                                     |
+    |              |               | - Correct filter line-up for last entry in the Decimation /     |
+    |              |               |   Interpolation Factor table                                    |
+    |              |               | - Add "Analog Filtering" section describing how to override the |
+    |              |               |   analog filtering settings on AD936x-based products            |
+    |              |               | - Update supported kernel versions                              |
+    |              |               | - Add ``read_gpsdo.c`` to the list of included example apps     |
+    |              |               | - Add paragraph in the "Clock and Time Management Resources"    |
+    |              |               |   section describing how some Sidekiq products support changing |
+    |              |               |   the reference clock frequency at run-time with the libsidekiq |
+    |              |               |   API                                                           |
+    |              |               | - Updated the network transport's unsupported API functions     |
+    |              |               | - Add SW4 and SW5 Errata                                        |
+    |              |               |                                                                 |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 3/07/2022    | 2.15          | Updated for SDK v4.17.2                                         |
+    |              |               |                                                                 |
+    |              |               | - Update supported kernel versions                              |
+    |              |               | - Add table listing NV100 supported Rx bandwidth percentages    |
+    |              |               | - Add note regarding NV100 sample rate dead-zones and a         |
+    |              |               |   reference to the ADRV9001 User's Guide                        |
+    |              |               | - Fix incorrect tx_hdl listed in the RF port mapping for NV100  |
+    |              |               | - Update SW5 Errata to indicate resolution in FPGA v3.16.1      |
+    |              |               | - Correct X4 Tx sample rates table, removing C1/D1 and add a    |
+    |              |               |   note for configuring Rx handles at rates >= 200Msps           |
+    +--------------+---------------+-----------------------------------------------------------------+
+    | 2/02/2024    | 2.20          | Updated for SDK v4.18.0                                         |
+    |              |               |                                                                 |
+    |              |               | - Update supported kernel versions                              |
+    |              |               | - Include additional use case examples for capturing phase      |
+    |              |               |   coherent data for Sidekiq X4 and Sidekiq NV100                |
+    |              |               | - Add note describing user calibration for adjusting sample     |
+    |              |               |   shifts                                                        |
+    |              |               | - Add a table describing the LO mapping for Sidekiq NV100       |
+    +--------------+---------------+-----------------------------------------------------------------+

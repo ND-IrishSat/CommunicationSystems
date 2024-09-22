@@ -1,0 +1,16 @@
+.. raw:: latex
+
+    \begin{landscape}
+
+Sidekiq Stretch (M.2-2280) Block Diagram
+========================================
+
+.. figure:: _static/sidekiq_stretch_architecture_for_sdk.png
+   :alt: Sidekiq Stretch block diagram showing how libsidekiq + user applications fit in the system
+   :align: center
+
+   Sidekiq Stretch block diagram showing how libsidekiq + user applications fit in the system
+
+.. raw:: latex
+
+    \end{landscape}

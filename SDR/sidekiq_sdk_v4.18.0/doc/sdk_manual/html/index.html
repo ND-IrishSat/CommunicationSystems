@@ -1,0 +1,512 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Sidekiq Software Development Manual &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Document Revision History" href="revision_history.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="sidekiq-software-development-manual">
+<h1>Sidekiq Software Development Manual<a class="headerlink" href="#sidekiq-software-development-manual" title="Permalink to this headline">¶</a></h1>
+<p>Document Version 2.20</p>
+<p>For libsidekiq version 4.18.x</p>
+<p><img alt="family" src="_images/sidekiq_family_picture.png" /></p>
+<div class="section" id="disclaimer">
+<h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Permalink to this headline">¶</a></h2>
+<p>Epiq Solutions is disclosing this document (“Documentation”) as a
+general guideline for development. Epiq Solutions expressly disclaims
+any liability arising out of your use of the Documentation. Epiq
+Solutions reserves the right, at its sole discretion, to change the
+Documentation without notice at any time. Epiq Solutions assumes no
+obligation to correct any errors contained in the Documentation, or to
+advise you of any corrections or updates. Epiq Solutions expressly
+disclaims any liability in connection with technical support or
+assistance that may be provided to you in connection with the
+Information.</p>
+<p>THE DOCUMENTATION IS DISCLOSED TO YOU “AS IS” WITH NO WARRANTY OF ANY
+KIND. EPIQ SOLUTIONS MAKES NO OTHER WARRANTIES, WHETHER EXPRESSED,
+IMPLIED, OR STATUTORY, REGARDING THE DOCUMENTATION, INCLUDING ANY
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
+NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN NO EVENT WILL EPIQ SOLUTIONS
+BE LIABLE FOR ANY CONSEQUENTIAL, INDIRECT, EXEMPLARY, SPECIAL, OR
+INCIDENTAL DAMAGES, INCLUDING ANY LOSS OF DATA OR LOST PROFITS, ARISING
+FROM YOUR USE OF THE DOCUMENTATION.</p>
+<p>All material in this document is copyrighted by Epiq Solutions
+2014-2024. All trademarks are property of their respective owners.</p>
+</div>
+<div class="section" id="document-history">
+<h2>Document History<a class="headerlink" href="#document-history" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="revision_history.html">Document Revision History</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="references.html">Links</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+<div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#legal-considerations">Legal Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#proper-care-and-handling">Proper Care and Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#terms-and-definitions">Terms and Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#software-architecture">Software Architecture</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mpcie_diagram.html">Sidekiq mPCIe Block Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="m2_diagram.html">Sidekiq m.2 Block Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x2_diagram.html">Sidekiq X2 Block Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="z2_diagram.html">Sidekiq Z2 Block Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x4_diagram.html">Sidekiq X4 Block Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stretch_diagram.html">Sidekiq Stretch (M.2-2280) Block Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="z3u_diagram.html">Matchstiq Z3u Block Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nv100_diagram.html">Sidekiq NV100 Block Diagram</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="developing-with-libsidekiq">
+<h1>Developing with libsidekiq<a class="headerlink" href="#developing-with-libsidekiq" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Developing with libsidekiq</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_procedure.html">Installation Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_apps.html">Software Development Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_apps.html#tools-libraries-needed-for-linux-application-development">Tools/Libraries Needed for Linux Application Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#gcc-toolchain">GCC Toolchain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#libsidekiq-userspace-library">libsidekiq Userspace Library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#source-code-editor">Source Code Editor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#re-building-the-sidekiq-test-applications">Re-Building the Sidekiq Test Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developing_apps.html#developing-custom-applications-with-libsidekiq">Developing Custom Applications with libsidekiq</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#structure-of-an-application-using-libsidekiq">Structure of an Application using libsidekiq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#proper-header-file-inclusion">Proper Header File Inclusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#initializing-libsidekiq">Initializing libsidekiq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#dynamic-use-of-sidekiq-cards">Dynamic Use of Sidekiq Cards</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#logging">Logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#transport-layer">Transport Layer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#parameters">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#configuring-an-interface-using-a-handle">Configuring an Interface using a Handle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#frequency-hopping">Frequency Hopping</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#configuring-tune-mode">Configuring Tune Mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#frequency-list-definition">Frequency List Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#prepare-next-frequency-hop">Prepare Next Frequency Hop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#execute-frequency-hop">Execute Frequency Hop</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#operation-modes">Operation Modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#rf-port-configuration">RF Port Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#i-q-ordering-mode">I/Q Ordering Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#packed-mode-sidekiq-mpcie-m-2-and-stretch-m-2-2280-only">Packed Mode (Sidekiq mPCIe, m.2, and Stretch / m.2-2280 only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#starting-an-rx-interface">Starting an Rx Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#reading-i-q-samples-from-an-rx-interface">Reading I/Q Samples from an Rx Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#counter-mode-with-rx-interface">Counter Mode with Rx Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#making-skiq-receive-a-blocking-call">Making <code class="code docutils literal notranslate"><span class="pre">skiq_receive</span></code> a blocking call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#using-receive-calibration-offsets">Using receive calibration offsets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#using-i-q-phase-and-amplitude-calibration">Using I/Q phase and amplitude calibration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#configuring-a-tx-interface">Configuring a Tx Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#block-size-configuration">Block Size Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#data-flow-mode">Data Flow Mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#tx-timestamp-clock-source-selection">Tx Timestamp Clock Source selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#transfer-mode">Transfer Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#starting-the-tx-interface">Starting the Tx Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#writing-i-q-samples-to-a-tx-interface">Writing I/Q Samples to a Tx Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#simultaneous-use-of-tx-and-rx-interfaces">Simultaneous use of Tx and Rx Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#stopping-and-releasing-an-interface">Stopping and Releasing an Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#starting-and-stopping-on-1pps">Starting and Stopping on 1PPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#working-with-multiple-receive-handles">Working with multiple receive handles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#pin-control-enable-of-rfic-signal-paths-sidekiq-x4-only">Pin Control enable of RFIC signal paths (Sidekiq X4 only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#clock-and-time-management-resources">Clock and Time Management Resources</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="developing_apps.html#gpsdo">GPSDO</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#timestamp-details">Timestamp Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#automatic-calibration">Automatic Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#receive-stream-mode">Receive Stream Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#hotplug">Hotplug</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#exiting">Exiting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developing_apps.html#critical-errors">Critical Errors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="skiq_remote.html">Using Libsidekiq Remotely</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="skiq_remote.html#prerequisites">Prerequisites</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="skiq_remote.html#netconfig">netconfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skiq_remote.html#matchstiq-z3u">Matchstiq Z3u</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skiq_remote.html#sidekiq-z2">Sidekiq Z2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skiq_remote.html#client">Client</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="skiq_remote.html#setup">Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="skiq_remote.html#client-system">Client System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skiq_remote.html#server-system">Server System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skiq_remote.html#id1">Matchstiq Z3u</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="skiq_remote.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="skiq_remote.html#detailed-network-and-port-use">Detailed Network and Port Use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="skiq_remote.html#limited-capabilities">Limited Capabilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuring_sample_rate.html">Configuring Sample Rate / Channel Bandwidth</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuring_sample_rate.html#api-ordering-dependency">API Ordering Dependency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_sample_rate.html#configuring-sample-rate-channel-bandwidth-on-multiple-handles">Configuring Sample Rate / Channel Bandwidth on Multiple Handles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_sample_rate.html#sidekiq-mpcie-m-2-stretch-m-2-2280-z2-and-matchstiq-z3u-only">Sidekiq mPCIe, m.2, Stretch (m.2-2280), Z2, and Matchstiq Z3u only</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#sample-rate-and-fir-selection">Sample Rate and FIR Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#number-of-filter-taps">Number of Filter Taps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#filter-selection-example">Filter Selection Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#custom-filter-coefficients">Custom Filter Coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#filter-passband-available">Filter Passband Available</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#analog-filtering">Analog Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#sidekiq-mpcie-and-matchstiq-z3u">Sidekiq mPCIe and Matchstiq Z3u</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_sample_rate.html#sidekiq-x2-and-x4">Sidekiq X2 and X4</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#built-in-profiles">Built-in Profiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#runtime-loaded-user-generated-profiles">Runtime Loaded User Generated Profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="configuring_sample_rate.html#sidekiq-nv100">Sidekiq NV100</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuring_sample_rate.html#sidekiq-nv100-built-in-profiles">Sidekiq NV100 Built-in Profiles</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example_x4_use_cases.html">Example X4 Use Cases: Rx</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example_x4_use_cases.html#receive-single-channel-up-to-200mhz-ibw">Receive: single channel, up to 200MHz IBW</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_x4_use_cases.html#receive-single-channel-up-to-400mhz-ibw">Receive: single channel, up to 400MHz IBW</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_x4_use_cases.html#receive-two-phase-coherent-channels-up-to-200mhz-ibw">Receive: Two phase coherent channels up to 200MHz IBW</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_x4_use_cases.html#receive-two-independently-tunable-channels-different-sample-rate-up-to-200mhz-ibw">Receive: Two independently tunable channels different sample rate* up to 200MHz IBW</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example_nv100_use_cases.html">Example NV100 Use Cases: Rx</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example_nv100_use_cases.html#receive-single-channel-up-to-50mhz-ibw">Receive: single channel, up to 50MHz IBW</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_nv100_use_cases.html#receive-two-phase-coherent-channels-up-to-50mhz-ibw">Receive: two phase coherent channels, up to 50MHz IBW</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_nv100_use_cases.html#receive-two-independently-tunable-channels-same-sample-rate-up-to-50mhz-ibw">Receive: two independently tunable channels, same sample rate, up to 50MHz IBW</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sidekiq_api.html">Sidekiq API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fpga_user_app_examples.html">FPGA user_app examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fpga_user_app_examples.html#transmitting-samples-from-fpga-memory">Transmitting samples from FPGA memory</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="hosts-platforms">
+<h1>Hosts &amp; Platforms<a class="headerlink" href="#hosts-platforms" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Hosts &amp; Platforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Windows Sidekiq Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#install-the-sdk">Install the SDK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#sidekiq-device-configuration">Sidekiq Device Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="windows.html#select-the-sidekiq-pcie-driver-software">Select the Sidekiq PCIe Driver Software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="windows.html#select-the-usb-driver-software">Select the USB Driver Software</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#windows-development-tools">Windows Development Tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="windows.html#mingw-64">MinGW-64</a></li>
+<li class="toctree-l3"><a class="reference internal" href="windows.html#visual-studio">Visual Studio</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="alternative_hosts.html">Developing for Alternative Host Platforms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#supported-architectures">Supported Architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#building-test-applications">Building Test Applications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="alternative_hosts.html#deploying-applications">Deploying Applications</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#additional-dependencies">Additional Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="alternative_hosts.html#sidekiq-stretch-uart">Sidekiq Stretch UART</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alternative_hosts.html#sidekiq-stretch-gps-sysfs">Sidekiq Stretch GPS sysfs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#setting-up-sidekiq-on-new-host-pc">Setting up Sidekiq on New Host PC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="alternative_hosts.html#linux-host-pc-requirements">Linux Host PC Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alternative_hosts.html#configuring-a-new-host">Configuring A New Host</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#developing-for-the-matchstiq-s1x-and-s2x">Developing for the Matchstiq S1x and S2x</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#developing-for-the-nvidia-jetson-tx1-tx2-xavier">Developing for the NVIDIA Jetson TX1/TX2/Xavier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#developing-for-the-sidekiq-z2">Developing for the Sidekiq Z2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alternative_hosts.html#developing-for-the-matchstiq-z3u">Developing for the Matchstiq Z3u</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="throughput.html">Assessing Throughput Performance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="throughput.html#receive-performance">Receive Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="throughput.html#receive-performance-example">Receive Performance Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="throughput.html#transmit-performance">Transmit Performance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="throughput.html#transmit-performance-example">Transmit Performance Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="throughput.html#transceive">Transceive</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="throughput.html#transceive-performance-example">Transceive Performance Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dkms.html">DKMS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#what-is-dkms">What is DKMS?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#what-systems-does-dkms-work-on">What systems does DKMS work on?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#how-is-epiq-using-dkms">How is Epiq using DKMS?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#are-there-any-licensing-requirements-for-using-dkms-support">Are there any licensing requirements for using DKMS support?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#how-are-the-epiq-dkms-modules-installed">How are the Epiq DKMS modules installed?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#how-to-check-the-status-of-the-epiq-dkms-modules">How to check the status of the Epiq DKMS modules?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#how-are-the-epiq-dkms-modules-removed">How are the Epiq DKMS modules removed?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dkms.html#how-are-the-epiq-dkms-modules-loaded">How are the Epiq DKMS modules loaded?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="advanced_topics.html#adjusting-the-dma-ring-buffer-packet-count-linux-only">Adjusting the DMA Ring Buffer Packet Count (Linux only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_topics.html#configuring-sidekiq-drivers-using-a-driver-configuration-file">Configuring Sidekiq Drivers Using a Driver Configuration File</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="hardware-information">
+<h1>Hardware Information<a class="headerlink" href="#hardware-information" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Hardware Information</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rf_port_config.html">Detailed RF Port Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fpga_programming.html">FPGA Programming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fpga_programming.html#transport-layer-requirements">Transport Layer Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga_programming.html#updating-the-fpga">Updating the FPGA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga_programming.html#fpga-images-in-flash">FPGA Images in Flash <sup>*</sup></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fpga_programming.html#fpga-configuration-flash-slots">FPGA Configuration Flash Slots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="power_consumption.html">Power consumption states (mPCIe, m.2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x4_tuning_methods.html">Sidekiq X4 - Methods of LO frequency tuning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="x4_tuning_methods.html#hop-on-timestamp-fpga-triggered"><code class="code docutils literal notranslate"><span class="pre">hop_on_timestamp</span></code> (FPGA triggered)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#configuration-for-hopping-on-timestamp">Configuration for hopping on timestamp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#perform-frequency-retune-at-a-specified-rf-timestamp">Perform frequency retune at a specified RF timestamp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#caveats">Caveats</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="x4_tuning_methods.html#hop-immediate-software-triggered"><code class="code docutils literal notranslate"><span class="pre">hop_immediate</span></code> (software triggered)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#configuration-for-hopping-immediately">Configuration for hopping immediately</a></li>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#perform-frequency-retune-immediately">Perform frequency retune immediately</a></li>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#differences-from-hop-on-timestamp">Differences from <code class="code docutils literal notranslate"><span class="pre">hop_on_timestamp</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="x4_tuning_methods.html#standard-tune">Standard tune</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#differences-from-hop-immediate">Differences from <code class="code docutils literal notranslate"><span class="pre">hop_immediate</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="x4_tuning_methods.html#comparisons-between-tuning-modes">Comparisons between tuning modes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="x4_tuning_methods.html#typical-api-call-duration-sidekiq-x4-only">Typical API call duration (Sidekiq X4 only)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="errata">
+<h1>Errata<a class="headerlink" href="#errata" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Software Errata</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sw_errata.html">Software Errata</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting a Sidekiq Installed in a New Host <sup>*</sup></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#observing-the-led-state-sidekiq-mpcie-and-sidekiq-m-2-only">Observing The LED State (Sidekiq mPCIe and Sidekiq m.2 only)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#verifying-the-hardware-interfaces-detected-in-linux">Verifying the Hardware Interfaces Detected in Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#checking-kernel-and-drivers">Checking Kernel and Drivers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="release-information">
+<h1>Release Information<a class="headerlink" href="#release-information" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Release Information</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Known Issues / Limitations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="issues.html#pcie-only-functions">PCIe only functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="issues.html#usb-only-functions">USB only functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="issues.html#limited-capabilities">Limited Capabilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="release_history.html">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-18-0-2-feb-2024">v4.18.0 - 2-Feb-2024</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-17-2-28-feb-2022">v4.17.2 - 28-Feb-2022</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-17-1-11-feb-2022">v4.17.1 - 11-Feb-2022</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-17-0-15-oct-2021">v4.17.0 - 15-Oct-2021</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-16-2-9-sept-2021">v4.16.2 - 9-Sept-2021</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-16-1-9-jun-2021">v4.16.1 - 9-Jun-2021</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-16-0-1-jun-2021">v4.16.0 - 1-Jun-2021</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-15-2-31-mar-2021">v4.15.2 - 31-Mar-2021</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-15-1-3-mar-2021">v4.15.1 - 3-Mar-2021</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-15-0-3-feb-2021">v4.15.0 - 3-Feb-2021</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-14-2-12-09-2020">v4.14.2 - 12/09/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-14-1-10-30-2020">v4.14.1 - 10/30/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-14-0-10-16-2020">v4.14.0 - 10/16/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-13-1-09-10-2020">v4.13.1 - 09/10/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-13-0-06-30-2020">v4.13.0 - 06/30/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-12-2-04-06-2020">v4.12.2 - 04/06/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-12-1-02-21-2020">v4.12.1 - 02/21/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-12-0-02-10-2020">v4.12.0 - 02/10/2020</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-11-1-11-22-2019">v4.11.1 - 11/22/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-11-0-10-17-2019">v4.11.0 - 10/17/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-10-1-08-16-2019">v4.10.1 - 08/16/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-10-0-07-30-2019">v4.10.0 - 07/30/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-9-5-06-26-2019">v4.9.5 - 06/26/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-9-4-05-03-2019">v4.9.4 - 05/03/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-9-3-03-19-2019">v4.9.3 - 03/19/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-9-2-03-08-2019">v4.9.2 - 03/08/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-9-1-02-26-2019">v4.9.1 - 02/26/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-9-0-02-06-2019">v4.9.0 - 02/06/2019</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-7-1-10-15-2018">v4.7.1 - 10/15/2018</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-7-0-09-24-2018">v4.7.0 - 09/24/2018</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-6-0-06-15-2018">v4.6.0 - 06/15/2018</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-4-0-11-02-2017">v4.4.0 - 11/02/2017</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-2-1-11-02-2017">v4.2.1 - 11/02/2017</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-2-0-09-29-2017">v4.2.0 - 09/29/2017</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-0-1-07-18-2017">v4.0.1 - 07/18/2017</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_history.html#v4-0-0-05-15-2017">v4.0.0 - 05/15/2017</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Sidekiq Software Development Manual</a><ul>
+<li><a class="reference internal" href="#disclaimer">Disclaimer</a></li>
+<li><a class="reference internal" href="#document-history">Document History</a></li>
+<li><a class="reference internal" href="#references">References</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#developing-with-libsidekiq">Developing with libsidekiq</a></li>
+<li><a class="reference internal" href="#hosts-platforms">Hosts &amp; Platforms</a></li>
+<li><a class="reference internal" href="#hardware-information">Hardware Information</a></li>
+<li><a class="reference internal" href="#errata">Errata</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#release-information">Release Information</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="revision_history.html" title="next chapter">Document Revision History</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

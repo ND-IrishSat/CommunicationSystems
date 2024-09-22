@@ -1,0 +1,153 @@
+###################################
+Sidekiq Software Development Manual
+###################################
+
+.. |family| image:: _static/sidekiq_family_picture.png
+
+.. only:: html
+
+    Document Version |doc_version|
+
+    For libsidekiq version |release|
+
+    |family|
+
+Disclaimer
+==========
+
+Epiq Solutions is disclosing this document ("Documentation") as a
+general guideline for development. Epiq Solutions expressly disclaims
+any liability arising out of your use of the Documentation. Epiq
+Solutions reserves the right, at its sole discretion, to change the
+Documentation without notice at any time. Epiq Solutions assumes no
+obligation to correct any errors contained in the Documentation, or to
+advise you of any corrections or updates. Epiq Solutions expressly
+disclaims any liability in connection with technical support or
+assistance that may be provided to you in connection with the
+Information.
+
+THE DOCUMENTATION IS DISCLOSED TO YOU "AS IS" WITH NO WARRANTY OF ANY
+KIND. EPIQ SOLUTIONS MAKES NO OTHER WARRANTIES, WHETHER EXPRESSED,
+IMPLIED, OR STATUTORY, REGARDING THE DOCUMENTATION, INCLUDING ANY
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
+NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN NO EVENT WILL EPIQ SOLUTIONS
+BE LIABLE FOR ANY CONSEQUENTIAL, INDIRECT, EXEMPLARY, SPECIAL, OR
+INCIDENTAL DAMAGES, INCLUDING ANY LOSS OF DATA OR LOST PROFITS, ARISING
+FROM YOUR USE OF THE DOCUMENTATION.
+
+All material in this document is copyrighted by Epiq Solutions
+2014-2024. All trademarks are property of their respective owners.
+
+Document History
+================
+
+.. toctree::
+   :maxdepth: 3
+
+   revision_history
+
+References
+==========
+
+.. toctree::
+   :maxdepth: 3
+
+   references
+
+.. toctree::
+    :maxdepth: 3
+
+########
+Overview
+########
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Overview
+
+   introduction
+   mpcie_diagram
+   m2_diagram
+   x2_diagram
+   z2_diagram
+   x4_diagram
+   stretch_diagram
+   z3u_diagram
+   nv100_diagram
+   
+##########################
+Developing with libsidekiq
+##########################
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Developing with libsidekiq
+
+   installation_procedure
+   developing_apps
+   skiq_remote
+   configuring_sample_rate
+   example_x4_use_cases
+   example_nv100_use_cases
+   sidekiq_api
+   fpga_user_app_examples
+
+#################
+Hosts & Platforms
+#################
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Hosts & Platforms
+
+   windows
+   alternative_hosts
+   throughput
+   dkms
+   advanced_topics
+
+####################
+Hardware Information
+####################
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Hardware Information
+
+   rf_port_config
+   fpga_programming
+   power_consumption
+   x4_tuning_methods
+
+######
+Errata
+######
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Software Errata
+
+   sw_errata
+
+###############
+Troubleshooting
+###############
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Troubleshooting
+
+   troubleshooting
+   faq
+
+###################
+Release Information
+###################
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Release Information
+
+   issues
+   release_history
+

@@ -1,0 +1,102 @@
+.. include:: replacements.rst
+
+.. _section_dkms:
+
+DKMS
+====
+
+What is DKMS?
+-------------
+
+In general, Linux drivers (kernel modules) need to be compiled to run with a specific version of the Linux kernel. While many Linux distributions ship updated drivers alongside new versions of the kernel, any third-party or user-added modules are not recompiled by default. Upon rebooting the system to use the new kernel version, these modules can not load due to a version mismatch and require manual installation. As this can be annoying and time consuming, the Dynamic Kernel Module Support (DKMS) framework was developed by the Linux community.
+
+DKMS is a tool for Linux-based systems that allows kernel modules to be automatically recompiled upon the installation of a new kernel version. This helps to ensure that the kernel modules are always available for the running kernel without needing to download them or request a new version from the vendor.
+
+What systems does DKMS work on?
+-------------------------------
+
+While DKMS works on most major Linux distributions, most do not include it in a default installation and require the installation of extra software packages. For example, Ubuntu requires the installation of the ``dkms`` package from the official repositories while CentOS requires the addition of the third-party EPEL repository before installing the ``dkms`` package.
+
+How is Epiq using DKMS?
+-----------------------
+
+Sidekiq software defined radios use several kernel modules to communicate between the host and the radio card.
+
+In the past, Sidekiq software installs have included pre-compiled versions of the kernel modules for a list of specific kernel versions - usually the latest kernel versions of the long-term support branches of popular Linux distributions. While this is adequate at time of a |libsidekiq| release, most Linux distributions frequently release newer kernel version requiring Epiq to supply updated drivers upon request (on our support forums, https://support.epiqsolutions.com).
+
+As of |libsidekiq| v4.15.0, all of the Epiq kernel modules provide optional DKMS support. Precompiled kernel modules will continue to be bundled with |libsidekiq| releases, and Epiq will certainly supply updated modules upon request. Customers may also install the DKMS packaged versions of these modules to ensure that appropriate kernel modules are always used without the need for manual recompilation.
+
+Are there any licensing requirements for using DKMS support?
+------------------------------------------------------------
+
+Several of Epiq's kernel modules are licensed under the GPL and source code and DKMS support are freely provided. These modules include:
+
+* ``pci_manager``
+* ``sidekiq_uart``
+* ``sidekiq_gps``
+
+Some of Epiq's kernel modules contain proprietary and/or sublicensed code. These modules include:
+
+* ``dmadriver``
+* ``skiq_platform_driver``
+
+As DKMS modules recompile as needed, they require the source code of the module to be bundled in the DKMS package. Therefore, as of |libsidekiq| v4.15.0, DKMS support for these modules requires the purchase of a sublicense for the DMA Driver source code. Please contact the Epiq sales department (sales@epiqsolutions.com) or your account executive for more information on sublicensing.
+
+How are the Epiq DKMS modules installed?
+----------------------------------------
+
+With the exception of DKMS modules requiring a license, all other DKMS modules are included in the default |libsidekiq| install (v4.15.0 and higher). As these are optional components, they must be manually installed and enabled to take advantage of them.
+
+Please note that not all Linux distributions come with the DKMS subsystem installed by default; please check your distribution's documentation for more information on DKMS and installation / configuration.
+
+The DKMS packages reside in the ``drivers/dkms`` of the |libsidekiq| install (typically ``~/sidekiq_image_current/``). Each DKMS module has its own package, and all DKMS packages should be installed to ensure that all of the modules are kept up-to-date. There are several ways to install the DKMS modules:
+
+* Automatically install all of the appropriate packages:
+
+  * Run the ``install-dkms-packages.sh`` script, which installs the proper packages for the currently running Linux Distribution
+
+* Manually install packages appropriate for OS through its package manager:
+
+  * Each module has its own package file
+
+    * ``deb/*.deb`` for Ubuntu & Debian-based systems
+    * ``rpm/*.rpm`` for CentOS / Fedora / RHEL-based systems
+
+  * Packages can be installed from the command line (``dpkg`` or ``yum``, depending on Linux distribution) or through the GUI
+
+* Manually install packages through the source packages:
+
+  * Uncompress the driver source package using the ``tar`` and/or ``xz`` command(s)
+
+    * Source packages may be found in the ``source/`` directory
+
+  * Run the ``install-dkms.sh`` script found inside the uncompressed directory (will likely need to run as ``root`` user or via ``sudo``)
+
+In order to upgrade the DKMS modules - for example, when a new version of |libsidekiq| comes out - please follow the above steps for installing the DKMS module. If source packages were originally used to install the DKMS modules, please remove them (see directions below) before installing the new versions.
+
+Installation of the sublicensed DMA Driver DKMS module should use the same instructions as either of the manual steps the above; please note that this module bundles both the ``dma_driver`` and ``skiq_platform_device`` into one package.
+
+How to check the status of the Epiq DKMS modules?
+-------------------------------------------------
+
+From the command line, run the command ``dkms status``. Depending on which module(s) were installed, one or more of the following should be listed:
+
+* ``sidekiq_gps``
+* ``sidekiq_uart``
+* ``pci_manager``
+* ``dmadriver``
+* ``skiq_platform_device``
+    
+This command verifies that the listed DKMS modules are installed and enabled, and lists the current source version and the kernel version(s) that the modules were automatically built for.
+
+How are the Epiq DKMS modules removed?
+--------------------------------------
+
+If the OS packages were installed (e.g. through the ``.deb`` or ``.rpm`` installation steps listed above), then remove the packages through the OS's package manager. This can typically be done through the GUI or on the command line (typically ``apt`` or ``yum``).
+
+If the installation was done through the source packages, run the ``remove-dkms.sh`` scripts found in each of the compressed source packages (will likely need to run as ``root`` user or via ``sudo``).
+
+How are the Epiq DKMS modules loaded?
+-------------------------------------
+
+By default, the |libsidekiq| installation automatically attempts to load the needed kernel modules on system startup using the ``load_sidekiq_drivers.sh`` script (found in the ``drivers/`` directory of the |libsidekiq| install). With the addition of DKMS support, if one of the pre-built kernel modules cannot be found for the currently running kernel, the system will attempt to load the DKMS-based modules (if installed).

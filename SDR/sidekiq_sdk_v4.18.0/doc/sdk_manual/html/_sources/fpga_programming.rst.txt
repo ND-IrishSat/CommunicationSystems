@@ -1,0 +1,148 @@
+.. include:: replacements.rst
+
+.. _fpga_programming:
+
+FPGA Programming
+================
+
+Transport Layer Requirements
+----------------------------
+
+In order to make use of a given Sidekiq, it is imperative to have the
+FPGA configured with the correct transport implementation. For example,
+an application that is designed to use the PCIe transport interface
+requires the FPGA to be loaded with an image implementing the PCIe
+components necessary for I/Q streaming. By default, a Sidekiq is
+configured with a PCIe-capable FPGA image. Applications designed to make
+use of PCIe as the primary transport layer will therefore require no
+additional actions in order to properly function. If another transport
+layer is required, such as USB, and/or the original PCIe image was
+erased, Epiq Solutions provides pre-generated FPGA image files to each
+customer within the Sidekiq image that can be saved into on board flash
+memory or dynamically loaded into the FPGA RAM at run time. Currently,
+the following files are provided in ``sidekiq_image_current/fpga/``.
+
+-  ``sidekiq_image_mpcie_xport_pcie_latest.bin``: Configures the FPGA on a mini PCIe Sidekiq card for use over PCIe.
+-  ``sidekiq_image_mpcie_xport_usb_latest.bin``: Configures the FPGA on a mini PCIe Sidekiq card for use over USB.
+-  ``sidekiq_image_m2_xport_pcie_latest.bit``: Configures the FPGA on an m.2 Sidekiq card for use over PCIe.
+-  ``sidekiq_image_m2_xport_usb_latest.bit``: Configures the FPGA on an m.2 Sidekiq card for use over USB.
+-  ``sidekiq_image_x2_xport_pcie_latest.bin``: Configures the FPGA on Sidekiq X2 card for use over PCIe on the `HiTech Global K-800 FMC Carrier <https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html>`__
+-  ``sidekiq_image_x2_xcku115_xport_pcie_latest.bin``: Configures the FPGA on Sidekiq X2 card for use over PCIe on the `HiTech Global K-800 FMC Carrier (with Xilinx Kintex Ultrascale KU115) <https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html>`__
+-  ``sidekiq_image_x4_xport_pcie_latest.bin``: Configures the FPGA on Sidekiq X4 card for use over PCIe on the `HiTech Global K-800 FMC Carrier <https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html>`__
+-  ``sidekiq_image_x4_xcku115_xport_pcie_latest.bin``: Configures the FPGA on Sidekiq X4 card for use over PCIe on the `HiTech Global K-800 FMC Carrier (with Xilinx Kintex Ultrascale KU115) <https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html>`__
+-  ``sidekiq_image_m2_2280_xport_pcie_latest.bit``: Configures the FPGA on a Sidekiq Stretch card for use over PCIe.
+-  ``sidekiq_image_nv100_xport_pcie_latest.bit``: Configures the FPGA on a Sidekiq NV100 card for use over PCIe
+-  ``sidekiq_image_z3u_latest.bit``: Configures the FPGA on a Matchstiq Z3u for use over custom transport
+   
+Additionally, it is possible to create custom FPGA images for Sidekiq
+that implement user defined signal processing routines over either the
+PCIe or USB transport layer. For further details regarding custom FPGA
+images, refer to associated Sidekiq product's FPGA Developer’s Manual.
+
+Updating the FPGA
+-----------------
+
+The FPGA image can be loaded into the RAM (mPCIe / m.2 / Z2 / Z3u for full
+reconfiguration and Stretch for partial reconfiguration) or it can be
+loaded from the flash. The FPGA image is automatically loaded from
+flash when the Sidekiq is powered up. A new image (full or partial)
+can be loaded into RAM for Sidekiq mPCIe, m.2, Z2, Stretch, or Matchstiq Z3u
+via the ``prog_fpga`` test application or with the
+:code:`skiq_prog_fpga_from_file()` API.
+
+In addition to modifying just the runtime FPGA configuration, the FPGA
+image loaded from flash can be updated with the ``store_user_fpga``
+test application or via the :code:`skiq_save_fpga_config_to_flash()`
+function :sup:`*`. Additionally,
+the FPGA configuration can be reloaded via the
+:code:`skiq_prog_fpga_from_flash()` API (not supported for Sidekiq Z2 or
+Matchstiq Z3u).  The FPGA configuration that
+is stored in flash is automatically loaded from flash when the Sidekiq
+card is powered up.
+
+At this time, the Annapolis Micro Systems’ WILDSTAR (WB3XZD) FMC
+Carrier’s FPGA bitstream can only be updated by using Vivado and the
+Xilinx Virtual Cable interface. Please refer to the FPGA PDK
+documentation for further details.
+
+When developing an application that updates the FPGA, it is highly
+suggested to take steps to prevent function calls that write to the FPGA
+or flash memory (such as the :code:`skiq_prog_fpga_from_file()` or
+:code:`skiq_save_fpga_config_to_flash()` API calls) from being
+interrupted and causing a partial write to occur. For UNIX-based
+systems, this involves masking and unmasking the :code:`SIGINT` and :code:`SIGTERM`
+signals such that these signals – which would normally halt execution of
+the program – are delayed until after the FPGA programming is finished.
+Also, it is advised to temporarily mask the :code:`SIGINT` and :code:`SIGTERM`
+signals before calling the :code:`skiq_init()` API call. :code:`skiq_init()`
+may create additional threads that can receive and process signals
+unless specified by the parent thread (as threads inherit signal masks
+from their parent thread). See the ``prog_fpga.c`` test application
+source code for more details.
+
+:sup:`*` - storing to flash not supported for Sidekiq Z2 and Matchstiq Z3u.
+
+FPGA Images in Flash :sup:`*`
+-----------------------------
+
+All Sidekiq products’ flash memory have enough capacity to store at
+least two FPGA images: a golden (or fallback) image and a user image. As long as the
+user FPGA image is valid, this will be the image loaded from flash upon
+either power up or when the user requested that the FPGA image is
+reloaded from flash via the :code:`skiq_prog_fpga_from_flash()`
+function.
+
+If the user FPGA image stored in flash is not a valid configuration, the
+Sidekiq will automatically fallback to configure the FPGA with the golden image
+stored in flash. The golden FPGA image does not provide full Sidekiq
+capabilities. However, it does provide the ability to access the flash
+via the FPGA to store a new user FPGA image in flash. A new user FPGA
+image can be stored to flash via the ``store_user_fpga`` test
+application or via the :code:`skiq_save_fpga_config_to_flash()`
+function. A golden FPGA image must already be present in flash prior to
+updating the user flash image. The presence of the golden image in flash
+can be tested via the
+:code:`skiq_read_golden_fpga_present_in_flash()`. Updating an FPGA
+image saved in flash can be performed via the PCIe or USB interfaces as
+long as a valid golden image has already been programmed.
+
+The golden FPGA image is a fallback option in case the user FPGA image
+in flash is either corrupted or incomplete. There is no ability for the
+user to program their own golden FPGA bitstream. The golden FPGA image
+is programmed either in the factory or while applying a Sidekiq system
+update if a golden image has not already been saved to flash.
+
+:sup:`*` - storing to flash not supported for Sidekiq Z2 and Matchstiq Z3u.
+
+FPGA Configuration Flash Slots
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Starting in |libsidekiq| v4.12.0, for certain Sidekiq products, there are additional storage
+locations in the on-board flash for FPGA bitstreams.  This means that multiple FPGA bitstreams can
+be stored in flash and the FPGA can be configured from any slot that contains a valid bitstream.
+Each flash configuration slot contains the FPGA bitstream and has 64 bits of metadata associated
+with the slot.  The user may use this metadata to create a mapping between the stored bitstream and
+its intended purpose.  For example, the user can store an abbreviated hash of the bitstream in the
+metadata so that a full dump of the flash contents is not necessary when verifying what bitstream is
+stored in the config slot.
+
+There are six new API functions that provide access to the flash configuration slots and they are
+listed here with a brief description:
+
+- :code:`skiq_prog_fpga_from_flash_slot()` -- provides the caller the ability to configure the FPGA
+  from the specified slot
+- :code:`skiq_save_fpga_config_to_flash_slot()` -- stores an FPGA bitstream at the specified slot
+- :code:`skiq_verify_fpga_config_in_flash_slot()` -- verifies the contents of the flash
+  configuration slot against the specified :code:`FILE stream`
+- :code:`skiq_read_fpga_config_flash_slot_metadata()` -- reads the 64-bit metadata associated with
+  the specified flash configuration slot
+- :code:`skiq_find_fpga_config_flash_slot_metadata()` -- iterates through the available flash
+  configuration slots to find the specified metadata
+- :code:`skiq_read_fpga_config_flash_slots_avail()` -- provides the caller with the number of
+  available slots for a given card
+
+As of |libsidekiq| v4.12.0, there are three Sidekiq products that may have more than one
+configuration slot available.  The Sidekiq Stretch (M.2-2280) has **six** configuration slots
+available.  The Sidekiq X2 and Sidekiq X4, when part of the HTG-K800 FMC carrier (Xilinx KU060
+only), each have **two** configuration slots available.  The Sidekiq NV100 has **six** configuration
+slots available as of |libsidekiq| v4.17.0.

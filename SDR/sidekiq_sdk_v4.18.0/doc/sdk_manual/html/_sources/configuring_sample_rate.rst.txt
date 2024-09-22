@@ -1,0 +1,548 @@
+.. include:: replacements.rst
+
+.. _configuring_sample_rate:
+
+Configuring Sample Rate / Channel Bandwidth
+===========================================
+
+API Ordering Dependency
+-----------------------
+
+For all platforms, it's recommended to configure the sample rate before
+tuning the carrier or LO frequency.  Failure to do so may result in
+an invalid request for LO tuning due to the relationship between LO tune range
+and sample rate.  For example, tuning the LO frequency to 50MHz and then
+requesting a sample rate of 100Msps would result in error:
+
+.. code-block:: none
+
+  Info: configured Rx LO freq to 50000000 Hz
+  Error: failed to set Rx sample rate or bandwidth(using default from last config file)...status is -22
+
+Configuring Sample Rate / Channel Bandwidth on Multiple Handles
+---------------------------------------------------------------
+Libsidekiq offers multiple API functions to configure the receive sample rate and
+bandwidth, such as :code:`skiq_write_rx_sample_rate_and_bandwidth()` and
+:code:`skiq_write_rx_sample_rate_and_bandwidth_multi()`. When configuring
+multiple receive handles, the :code:`skiq_write_rx_sample_rate_and_bandwidth_multi()`
+function is preferred as it is more performant than calling
+:code:`skiq_write_rx_sample_rate_and_bandwidth()` multiple times.
+
+
+
+Sidekiq mPCIe, m.2, Stretch (m.2-2280), Z2, and Matchstiq Z3u only
+------------------------------------------------------------------
+
+This section describes the process of configuring the channel bandwidth
+in the Analog Devices AD9361/4 RFIC using predefined FIR filter
+coefficients, the dependency of sample rate on bandwidth, and the
+additional filter configuration settings used for a specific sample
+rate. It does not cover how the FIR is programmed but rather captures
+the selection criteria and characteristics of the FIR coefficients. The
+same procedure is for both configuration the receive channel bandwidth
+as well as the transmit channel bandwidth. The receive and transmit
+channel bandwidths can be configured independently, but the sample rate
+can not.
+
+The requested channel bandwidth along with the sample rate is used to
+select and configure the digital FIR coefficients. The ratio of
+requested channel bandwidth to sample rate is used to calculate the
+desired passband percentage of the FIR filter. If the desired passband
+percentage does not match any of the passband percentages of the
+precomputed FIR filters, the precomputed FIR filter with the next
+incremented step in the passband percentage is selected. In other words,
+if precomputed FIR coefficients in increments of 10% are available and
+a passband percentage of 65% is desired, then the FIR coefficients
+resulting in a passband of 70% would be selected.
+
+Sample Rate and FIR Selection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As mentioned in the overview, the selection of the FIR filter
+coefficients on the percentage of requested channel bandwidth to sample
+rate. Specifically, the passband percentage is computed as
+
+.. math::
+   passband\_percent = (bandwidth / sample\_rate) * 100
+
+********
+
+In addition to the calculation of the passband percentage, the sample
+rate also impacts decimation (or interpolation) factor built in to the
+FIR filter stage. The specific decimation / interpolation factor of the
+FIR as it relates to sample rate is shown in :ref:`table9`.
+
+.. _table9:
+
+.. table:: Decimation / Interpolation Factor
+    :align: center
+    :class: longtable
+    :widths: 30 20 30 20
+
+    +------------------------------+--------------------------------+-------------------------+--------------------------------+
+    | Sample Rate (in samples/sec) | FIR Decimation / Interpolation | Filter Lineup           | Total Decimation/Interpolation |
+    +==============================+================================+=========================+================================+
+    | 233000-13300000              | 4\*                            | RX/TX DEC3/INT3 enabled | RX 48, TX 24                   |
+    |                              |                                |                         |                                |
+    |                              |                                | RX/TX HB2 enabled       |                                |
+    |                              |                                |                         |                                |
+    |                              |                                | RX HB1 enabled          |                                |
+    +------------------------------+--------------------------------+-------------------------+--------------------------------+
+    | 13300000-23000000            | 2                              | RX/TX DEC3/INT3 enabled | RX 24, TX 12                   |
+    |                              |                                |                         |                                |
+    |                              |                                | RX/TX HB2 enabled       |                                |
+    |                              |                                |                         |                                |
+    |                              |                                | RX HB1 enabled          |                                |
+    +------------------------------+--------------------------------+-------------------------+--------------------------------+
+    | 23000000-40000000            | 2                              | RX/TX HB3 enabled       | RX 16, TX 8                    |
+    |                              |                                |                         |                                |
+    |                              |                                | RX/TX HB2 enabled       |                                |
+    |                              |                                |                         |                                |
+    |                              |                                | RX HB1 enabled          |                                |
+    +------------------------------+--------------------------------+-------------------------+--------------------------------+
+    | 40000000-46000000            | 2                              | RX/TX DEC3/INT3 enabled | RX 12, TX 6                    |
+    |                              |                                |                         |                                |
+    |                              |                                | RX HB2 enabled          |                                |
+    +------------------------------+--------------------------------+-------------------------+--------------------------------+
+    | 46000000-61440000            | 2                              | RX/TX HB3 enabled       | RX 8, TX 4                     |
+    |                              |                                |                         |                                |
+    |                              |                                | RX HB2 enabled          |                                |
+    +------------------------------+--------------------------------+-------------------------+--------------------------------+
+
+.. note:: When the TX FIR interpolation is configured to a value of 4,
+	  the TX FIR coefficients are automatically double relative to
+	  other settings.  This ensures a consistent output power
+	  level when moving from interpolation settings of 4 to 2
+	  (ex. changing sample rates from <13.3Msps to >13.3Msps).
+
+Since the decimation factor is part of the FIR filter configuration, the
+actual passband percentage is impacted by the decimation factor.
+Specifically, the actual passband percentage of a specific filter is
+
+.. math::
+   actual\_passband = filter\_passband * decimation\_factor
+
+The impact of the decimation factor is accounted for when selecting the
+predefined FIR filter based on the desired channel bandwidth.
+
+Number of Filter Taps
+~~~~~~~~~~~~~~~~~~~~~
+
+The number of taps available is limited by the RF IC and the configured
+sample rate. The RF IC can calculate 16 taps per clock cycle, and
+depending on the sample rate, the resulting number of taps available for
+the FIR is either 64, 96, or 128. The number of taps used for specific
+sample rates are shown in :ref:`table10`.
+
+.. _table10:
+
+.. table:: Number of Filter Taps
+    :align: center
+    :class: longtable
+
+    +------------------------------+---------------------+---------------------+
+    | Sample Rate (in samples/sec) | # of RX Filter Taps | # of TX Filter Taps |
+    +==============================+=====================+=====================+
+    | 233000 – 40000000            | 128                 | 128                 |
+    +------------------------------+---------------------+---------------------+
+    | 40000000 – 46000000          | 96                  | 96                  |
+    +------------------------------+---------------------+---------------------+
+    | 46000000 – 61440000          | 64                  | 64                  |
+    +------------------------------+---------------------+---------------------+
+
+Filter Selection Example
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Suppose a sample rate of 10Msps and a channel bandwidth of 6.5MHz is
+requested.
+
+.. math::
+   passband\_percent = (6500000 / 10000000) * 100 = 65
+
+With a sample rate of 10Msps, the decimation factor is 4. In order to
+achieve an actual passband of 6.5MHz, the FIR filter passband is
+calculated as
+
+.. math::
+   filter\_passband &= passband\_percent / decimation\_factor \\
+                    &= 65 / 4 \\
+                    &= 16.25
+
+However, there is not a FIR filter with a passband of 16.25. As a
+result, the filter selected is the next one available, greater than the
+requested passband. In this case, a filter passband of 16.5 is selected.
+
+Additionally, since the sample rate is <40Msps, the maximum of 128
+filter taps can be used. Therefore, the filter used in this case is
+:code:`fir_128_tap_165_passband`. The actual resulting bandwidth is
+calculated as follows
+
+.. math::
+   actual\_passband &= filter\_passband * decimation\_factor * sample\_rate \\
+                    &= 16.5 * 4 * 10000000 \\
+                    &= 6.6 \text{MHz}
+
+Custom Filter Coefficients
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ability to load custom FIR coefficients is supported through the
+:code:`skiq_write_rfic_rx_fir_coeffs()` /
+:code:`skiq_write_rfic_tx_fir_coeffs()` API functions. The decimation
+(interpolation) factor of the FIR and the number of taps available is
+determined by the sample rate and cannot be changed. Therefore, the
+sample rate must be configured prior to the custom FIR configuration.
+The FIR configuration parameters can be queried via the
+:code:`skiq_read_rfic_rx_fir_config()` /
+:code:`skiq_read_rfic_tx_fir_config()` APIs. If custom FIR
+coefficients are used, the bandwidth reported via
+:code:`skiq_read_rx_sample_rate_and_bandwidth()` /
+:code:`skiq_read_tx_sample_rate_and_bandwidth()` are no longer
+valid.
+
+Filter Passband Available
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The FIR filter passbands currently available are summarized in :ref:`table11`.
+Note the FIR passband listed is for a decimation factor of 1.
+
+.. _table11:
+
+.. table:: Available Filters
+    :align: center
+
+    +----------------+--------------+-----------+-------------------+
+    | Start Passband | End Passband | Step Size | Number of Filters |
+    +================+==============+===========+===================+
+    | 0.1%           | 0.1%         | N/A       | 1                 |
+    +----------------+--------------+-----------+-------------------+
+    | 0.5%           | 50%          | 0.5%      | 100               |
+    +----------------+--------------+-----------+-------------------+
+
+Analog Filtering
+~~~~~~~~~~~~~~~~
+
+In addition to the filtering described above, Sidekiqs based on the 
+AD9361/4 RFIC allow users to configure analog filters present on the 
+Rx/Tx paths.  These low pass filters are located right before the ADC for
+the Rx path and after the DAC for the Tx path.  By default, the analog filter
+bandwidth is automatically configured via :code:`skiq_write_rx_sample_rate_and_bandwidth()`,
+or :code:`skiq_write_tx_sample_rate_and_bandwidth()`, but users may override 
+the configuration by calling :code:`skiq_write_rx_analog_filter_bandwidth()`,
+or :code:`skiq_write_tx_analog_filter_bandwidth()` API functions after configuring
+the sample rate and bandwidth.
+
+Sidekiq mPCIe and Matchstiq Z3u
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When operating in dual channel mode, the maximum supported sample rate of Sidekiq 
+mPCIe and Matchstiq Z3u is limited to 30.72 Msps.  In single channel mode, the full
+maximum sample rate of 61.44 Msps is supported.
+
+Sidekiq X2 and X4
+-----------------
+
+The Sidekiq X2 and X4 RF transceivers support a wide variety of sample
+rate and bandwidth combinations out of the box with |libsidekiq|.  The
+following tables list the rates that are directly achievable and can
+be configured with the |libsidekiq| API.  In addition to the provided
+rates, both decimation and user generated profiles can be utilized to meet
+specific application needs.  Please contact Epiq Solutions via the
+support forums :ref:`[5] <ref5>` if there is more information required regarding
+capability and configuration of sample rates / bandwidth.
+
+Built-in Profiles
+~~~~~~~~~~~~~~~~~
+
+The next subsections capture the sample rate and bandwidth settings supported as of |libsidekiq|
+v4.12.0. These profiles and configuration parameters were generated using Analog Devices'
+AD9371/AD9379 Filter Wizard.
+
+Sidekiq X2 Built-in Profiles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following two tables show the full list of available receive and transmit sample rates available
+in |libsidekiq| v4.12.0 for a Sidekiq X2.  Some sample rates have been available in previous releases
+and are noted as such.
+
+.. csv-table:: Sidekiq X2 Receive Sample Rates
+    :widths: auto
+    :header: "RX Input Rate (Msps)", "RF Bandwidth (MHz)", "Supported Handle(s)", "Since"
+
+    245.76,200,B1,v4.10.0
+    245.76,100,B1,v4.10.0
+    153.6,100, A1/A2/B1,v4.10.0
+    122.88,100, A1/A2/B1,v4.10.0
+    100,82, A1/A2/B1,v4.10.0
+    73.728,"60.456 / 30.228", A1/A2/B1,v4.10.0
+    61.44,50, A1/A2/B1,v4.10.0
+    61.44,25, A1/A2/B1,v4.10.0
+    50,41, A1/A2/B1,v4.10.0
+    36.864,30.228,A1/A2,v4.10.0
+    30.72,"25 / 20 / 18",A1/A2,v4.10.0
+
+|
+
+.. csv-table:: Sidekiq X2 Transmit Sample Rates
+    :widths: auto
+    :header: "Tx Output Rate (Msps)", "RF Bandwidth (MHz)", "Supported Handle(s)", "Since"
+
+    153.6,100,A1/A2,v4.10.0
+    122.88,100,A1/A2,v4.10.0
+    100,82,A1/A2,v4.10.0
+    73.728,60.456,A1/A2,v4.10.0
+    61.44,50,A1/A2,v4.10.0
+    50,41,A1/A2,v4.10.0
+
+
+Sidekiq X4 Built-in Profiles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following two tables show the full list of available receive and transmit sample rates available
+in |libsidekiq| v4.12.0 for a Sidekiq X4.  Some sample rates have been available in previous releases
+and are noted as such.
+
+.. csv-table:: Sidekiq X4 Receive Sample Rates
+    :widths: auto
+    :header: "Rx Input Rate (Msps)", "RF Bandwidth (MHz)", "Supported Handle(s)", "Since"
+
+    500,"450 / 400",C1/D1,v4.11.1
+    491.52,"450 / 400",C1/D1,v4.11.1
+    250,200,    A1/A2/B1/B2/C1/D1,v4.10.0
+    250,100,    A1/A2/B1/B2/C1/D1,v4.11.1
+    245.76,200,    A1/A2/B1/B2/C1/D1,v4.9.0
+    245.76,100,    A1/A2/B1/B2/C1/D1,v4.11.1
+    200,164,    A1/A2/B1/B2/C1/D1,v4.12.0
+    153.6,100,    A1/A2/B1/B2/C1/D1,v4.11.1
+    122.88,100,    A1/A2/B1/B2/C1/D1,v4.9.0
+    122.88,"72 / 64 / 61.44",    A1/A2/B1/B2/C1/D1,v4.11.1
+    100,82,    A1/A2/B1/B2/C1/D1,v4.9.0
+    76.8,30.72,    A1/A2/B1/B2/C1/D1,v4.11.1
+    73.728,"60.456 / 30.228",    A1/A2/B1/B2/C1/D1,v4.11.1
+    61.44,50,    A1/A2/B1/B2/C1/D1,v4.9.0
+    61.44,25,    A1/A2/B1/B2/C1/D1,v4.11.1
+    50,41,    A1/A2/B1/B2/C1/D1,v4.10.1
+    50,20,    A1/A2/B1/B2/C1/D1,v4.11.1
+
+|
+
+.. csv-table:: Sidekiq X4 Transmit Sample Rates
+    :widths: auto
+    :header: "Tx Output Rate (Msps)", "RF Bandwidth (MHz)", "Supported Handle(s) [1]_", "Since"
+
+    500,"450 / 400",A1/A2/B1/B2,v4.12.0
+    491.52,"450 / 400",A1/A2/B1/B2,v4.12.0
+    250,200,A1/A2/B1/B2,v4.10.0
+    250,100,A1/A2/B1/B2,v4.11.1
+    245.76,200,A1/A2/B1/B2,v4.9.0
+    245.76,100,A1/A2/B1/B2,v4.11.1
+    200,164,A1/A2/B1/B2,v4.12.0
+    153.6,100,A1/A2/B1/B2,v4.11.1
+    122.88,100,A1/A2/B1/B2,v4.9.0
+    122.88,"72 / 64 / 61.44",A1/A2/B1/B2,v4.11.1
+    100,82,A1/A2/B1/B2,v4.9.0
+    76.8,30.72,A1/A2/B1/B2,v4.11.1
+    73.728,"60.456 / 30.228",A1/A2/B1/B2,v4.11.1
+    61.44,50,A1/A2/B1/B2,v4.9.0
+    61.44,25,A1/A2/B1/B2,v4.11.1
+    50,41,A1/A2/B1/B2,v4.10.1
+    50,20,A1/A2/B1/B2,v4.11.1
+
+
+.. [1] Streaming transmit samples over PCIe is only available for handle A1 or handle pairs
+   A1/A2 and A1/B1
+
+.. note:: Transmit only applications at rates >= 250Msps additionally requires
+     configuring RxC1 or RxD1 to the desired sample rate.
+
+Options for Sample Decimation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Starting with |libsidekiq| **v4.10.0** and FPGA bitstream **v3.12.0**,
+both Sidekiq X2 and Sidekiq X4 have build options that allow the use of
+sample decimation. The build options are defined in more detail in each
+product’s respective PDK documentation. The use of the decimator happens
+automatically when a receive sample rate is configured by the user. The
+sample rate selection algorithm attempts to find the best profile and
+decimation settings to meet the requested sample rate and RF bandwidth.
+The equivalent RF bandwidth after the decimation stage is the minimum of
+the RF bandwidth before the stage and the decimated sample rate. So an
+RF bandwidth of 40MHz for a signal sampled at 50Msps, will have an
+equivalent RF bandwidth of 25MHz after one stage of decimation since (50
+/ 2 < 40).
+
+The default build configuration for the decimation offers the
+functionality on RxA1 and RxA2 with up to 6 stages (i.e. decimate
+by 64) available. For example, if 50 Msamples/sec is available and the
+receive handle supports decimation of :math:`\frac{1}{2}`,
+:math:`\frac{1}{4}`, :math:`\frac{1}{8}`, :math:`\frac{1}{16}`,
+:math:`\frac{1}{32}`, and :math:`\frac{1}{64}`, then 25, 12.5, 6.25,
+3.125, 1.5625, and 0.78125 Msps are also available.
+
+Runtime Loaded User Generated Profiles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the built-in profiles, X2 and X4 users can create custom profiles using the Analog
+Devices profile generation tool.  At the time of the |libsidekiq| v4.17.0 release, there is no
+support for generating or using custom profiles with Sidekiq NV100.  The following sections outline
+the procedure for creating and importing a user-generated profile at runtime.
+
+Determine Dev Clock Settings for ADI Profile Tool
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the Sidekiq sample rate utility ``test_sample_rate`` test
+application (as shown below) to determine the device clock settings.
+Below is an example of running the application with a desired
+sample rate of 73.728 MHz.
+
+.. code-block:: none
+
+  $ /tmp/test_sample_rate -c 1 -r 73728000
+  Info: initializing card 1...
+  SKIQ[32448]: <INFO> libsidekiq 4.8.255-dev (g684832db)
+  test_sample_rate[32448]: <INFO> Sidekiq card 1 is serial number=7T25, hardware reserved (rev 1), product reserved (X2) (part ES020201-B2-00)
+  test_sample_rate[32448]: <INFO> Sidekiq card 1 FPGA v3.11.0, (date 18121917, FIFO size 64k)
+  test_sample_rate[32448]: <INFO> Sidekiq card 1 is configured for host reference clock
+  test_sample_rate[32448]: <INFO> Loading calibration data for Sidekiq X2, card 1
+  Info: exact sample rate requested (73728000 Hz) is possible!
+  Debug: VCXO 153600000 FPGA div 2
+
+  Info: Use dev clock frequency 147456000 with a divider of 2
+
+  test_sample_rate[32448]: <INFO> unlocking card 1
+
+Create New Profile
+^^^^^^^^^^^^^^^^^^
+
+Once the appropriate Dev Clock for Sidekiq has been determined, the AD9371 (Sidekiq X2)
+or ADRV9009 (Sidekiq X4) Filter Wizard can be used to generate a profile that can be
+loaded as outlined below.
+
+1. Launch the Filter Wizard tool (note: v1.10 is the currently
+   supported version for X2, v2.4 for X4).
+2. If using Sidekiq X4, set the ``Part Number`` field to ADRV9009 (n/a for X2).
+3. Configure the ``Tx Profile``, ``ORx Profile`` (:code:`skiq_rx_hdl_B1` for X2),
+   ``Rx Profile``, and ``SnRx Profile`` fields to the desired sample rate and
+   filter characteristics. Currently, RX / ORx / TX sample rates must
+   match. The below example uses a sample rate of 73.728 Msps.
+4. Press the ``Generate Profiles`` button and ensure that the
+   profiles are valid as indicated by the status bar.
+5. Configure the ``Ref Clock Divider`` and ``Device Clock (MHz)`` settings
+   to the values generated by the ``test_sample_rate`` application.
+   These fields are located in the bottom left hand side of the main
+   screen. In our example, the ``Ref Clock Divider`` is set to ``2`` and
+   the ``Device Clock`` is set to ``147.456 MHz``.
+6. Generate the profile file with the *Output Profiles to File* button.
+
+.. figure:: _static/adi_profile_generator.png
+   :width: 6.92520in
+
+   Analog Devices Profile Generator (Sidekiq X2)
+
+.. figure:: _static/adi_profile_generator_x4.png
+   :width: 6.92520in
+
+   Analog Devices Profile Generator (Sidekiq X4)
+
+Configure Sidekiq with Profile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To configure the radio with the profile created, after performing the
+initialization and default configuration with the :code:`skiq_init()` API, the
+:code:`skiq_prog_rfic_from_file()` API. This configures the radio with the sample
+rate defined in the profile as well as configuring the various filter settings.
+This process results in a full reset and re-initialization of the radio, so any
+previous radio configuration (outside of the sample rate and bandwidth) must be
+applied after configuring from the profile. It is recommended to perform the
+programming from the file immediately after initialization, prior to any
+radio configuration. Note that modifying the sample rate and/or
+bandwidth settings with the
+:code:`skiq_write_rx_sample_rate_and_bandwidth()` or
+:code:`skiq_write_tx_sample_rate_and_bandwidth()` will result
+any previously loaded profile to be overwritten.
+
+
+Sidekiq NV100
+-------------
+
+The Sidekiq NV100 RF transceivers support a wide variety of sample rate and bandwidth combinations
+out of the box with |libsidekiq|.  The following table lists the rates that are directly achievable
+and can be configured with the libsidekiq API.  Even though the NV100 has two receivers and two
+transmitters, there are clocking constraints between handles that restrict sample rate
+configuration.  As of |libsidekiq| v4.17.0, both receivers must be configured to the same sample
+rate.  The same restriction applies to both transmitters.
+
+Due to limitations of the interpolation/decimation rate supported in the datapath, the Sidekiq NV100
+(using the ADRV9004 RFIC) has a list of "dead" zones in which certain sample rates cannot be configured.
+Please see the "Dead Zone Frequency Ranges" table of the ADRV9001 User Guide :ref:`[15] <ref15>` for
+more information.  Please contact Epiq Solutions via the support forums :ref:`[5] <ref5>` if there
+are questions regarding capability and configuration of sample rates and RF bandwidths.  Users may
+also request additional sample rates via the support forums.
+
+Sidekiq NV100 Built-in Profiles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following table shows the full list of available receive and transmit sample rates available in
+libsidekiq v4.17.0 for a Sidekiq NV100.  If a sample rate is listed here, it is available for both
+receive and transmit paths.  At this time, all receivers and transmitters are configured for the
+same sample rate (unless the user is configuring from the list of disparate rates). However, the RF
+receive bandwidth is configurable per-handle between 5% and 80% in 0.5% increments.
+
+
+
+.. csv-table:: Sidekiq NV100 Sample Rates
+    :widths: auto
+    :header: "Rx/Tx Sample Rate (Msps)"
+
+    0.541667
+    1.92
+    2.4576
+    2.8
+    3.84
+    4
+    4.9152
+    5.6
+    7.68
+    9.8304
+    10
+    11.2
+    15.36
+    16
+    20
+    21.6667
+    22
+    23.04
+    30.72
+    40
+    61.44
+
+
+The following table shows the full list of disparate sample rates available in libsidekiq v4.17.0
+for a Sidekiq NV100.  If a sample rate combination is listed there, the receivers can be configured
+at the input rate while the transmitters can be configured at the output rate.
+
+.. csv-table:: Sidekiq NV100 Sample Rates
+    :widths: auto
+    :header: "Input Rate (Msps)", "Output Rate (Msps)"
+
+    1.4,5.6
+    11.2,5.6
+
+The RF receive bandwidth is configurable per-handle between 5% and 80% in 0.5% increments with
+additional values above 80% listed in the subsequent table.
+
+.. csv-table:: Sidekiq NV100 Supported Rx Bandwidth Percentages
+    :widths: auto
+    :header: "Bandwidth % of Sample Rate"
+
+    3
+    5
+    5.5
+    .
+    .  ( Between 5 and 80% possible in 0.5% increments )
+    .
+    75.5
+    80
+    86
+    89
+    95
+    96
+    99

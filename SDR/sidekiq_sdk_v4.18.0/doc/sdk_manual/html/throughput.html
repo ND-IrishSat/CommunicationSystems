@@ -1,0 +1,317 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Assessing Throughput Performance &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="DKMS" href="dkms.html" />
+    <link rel="prev" title="Developing for Alternative Host Platforms" href="alternative_hosts.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="assessing-throughput-performance">
+<span id="section-throughput"></span><h1>Assessing Throughput Performance<a class="headerlink" href="#assessing-throughput-performance" title="Permalink to this headline">¶</a></h1>
+<p>Since the Sidekiq card can be used in a wide variety of host systems,
+the throughput capabilities of the Sidekiq varies greatly. Included with
+the prebuilt Sidekiq test applications are a set of benchmarking test
+applications. These benchmarking applications can be used to determine
+the theoretical maximum throughput performance of a particular host
+system. Additionally, various Sidekiq parameters can be adjusted to
+observe impact in performance.</p>
+<div class="section" id="receive-performance">
+<h2>Receive Performance<a class="headerlink" href="#receive-performance" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">rx_benchmark</span></code> application provides insight into a receive-only
+application’s maximum theoretical benchmark on a specific host system.
+The user can specify the number of handles specified to use and whether
+the blocking receive capability is used. The application then monitors
+timestamp errors for each enabled channel to validate receive throughput
+performance.</p>
+<p>If a desired run time or minimum error count is desired, the
+<code class="docutils literal notranslate"><span class="pre">--threshold</span></code> and <code class="docutils literal notranslate"><span class="pre">--time</span></code> parameters can be used for the application.
+If the threshold criteria was met, a <code class="code docutils literal notranslate"><span class="pre">0</span></code> is returned by the application.</p>
+</div>
+<div class="section" id="receive-performance-example">
+<h2>Receive Performance Example<a class="headerlink" href="#receive-performance-example" title="Permalink to this headline">¶</a></h2>
+<p>Here is an example of running the benchmark application with both RX A1
+and A2 enabled at a rate of 20Msps for 5 seconds. The return code of
+<code class="code docutils literal notranslate"><span class="pre">0</span></code> indicates that the threshold criteria was met.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ ./rx_benchmark --card 0 --handle both --rate 20000000 --threshold 1 --time 5
+rx_benchmark[27478]: &lt;INFO&gt; libsidekiq v4.0.0, RF IC library 2.5.2
+rx_benchmark[27478]: &lt;INFO&gt; Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+rx_benchmark[27478]: &lt;INFO&gt; Sidekiq card 0 is configured for an internal reference clock
+rx_benchmark[27478]: &lt;INFO&gt; Sidekiq card 0 firmware v2.2
+rx_benchmark[27478]: &lt;INFO&gt; Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+rx_benchmark[27478]: &lt;INFO&gt; card 0: number of tx channels supported 1, number of rx channels supported 2
+Receive throughput: 148 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+Receive throughput: 153 MB/s (# RxA1 timestamp errors 0) (# RxA2 timestamp errors 0)
+rx_benchmark[27478]: &lt;INFO&gt; unlocking card 0
+$ echo $?
+0
+</pre></div>
+</div>
+<p>Here is an example of running the benchmark application with both RX A1
+and A2 enabled at a rate of 30Msps for 5 seconds. The return code of
+<code class="code docutils literal notranslate"><span class="pre">1</span></code> indicates that the threshold criteria was not met.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ ./rx_benchmark --card 0 --handle both --rate 30000000 --threshold 1 --time 5
+rx_benchmark[27504]: &lt;INFO&gt; libsidekiq v4.0.0, RF IC library 2.5.2
+rx_benchmark[27504]: &lt;INFO&gt; Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+rx_benchmark[27504]: &lt;INFO&gt; Sidekiq card 0 is configured for an internal reference clock
+rx_benchmark[27504]: &lt;INFO&gt; Sidekiq card 0 firmware v2.2
+rx_benchmark[27504]: &lt;INFO&gt; Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+rx_benchmark[27504]: &lt;INFO&gt; card 0: number of tx channels supported 1, number of rx channels supported 2
+Receive throughput: 191 MB/s (# RxA1 timestamp errors 4898) (# RxA2 timestamp errors 4902)
+Receive throughput: 198 MB/s (# RxA1 timestamp errors 9968) (# RxA2 timestamp errors 9981)
+Receive throughput: 198 MB/s (# RxA1 timestamp errors 15041) (# RxA2 timestamp errors 15063)
+Receive throughput: 198 MB/s (# RxA1 timestamp errors 20107) (# RxA2 timestamp errors 20148)
+Receive throughput: 198 MB/s (# RxA1 timestamp errors 25176) (# RxA2 timestamp errors 25228)
+rx_benchmark[27504]: &lt;INFO&gt; unlocking card 0
+$ echo $?
+1
+</pre></div>
+</div>
+</div>
+<div class="section" id="transmit-performance">
+<h2>Transmit Performance<a class="headerlink" href="#transmit-performance" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">tx_benchmark</span></code> application provides insight into a transmit-only
+application’s maximum theoretical benchmark on a specific host system.
+The user can specify the number of threads to use (<code class="code docutils literal notranslate"><span class="pre">1</span></code> implies
+synchronous transmit mode, more than <code class="code docutils literal notranslate"><span class="pre">1</span></code> selects asynchronous
+transmit mode) and the block size. This allows for a user to evaluate
+how different transmit configuration options impact the overall transmit
+throughput on a system.</p>
+<p>If a desired run time or minimum error count is desired, the
+<code class="docutils literal notranslate"><span class="pre">--threshold</span></code> and <code class="docutils literal notranslate"><span class="pre">--time</span></code> parameters can be used for the application.
+If the threshold criteria was met, a <code class="code docutils literal notranslate"><span class="pre">0</span></code> is returned by the
+application.</p>
+<div class="section" id="transmit-performance-example">
+<h3>Transmit Performance Example<a class="headerlink" href="#transmit-performance-example" title="Permalink to this headline">¶</a></h3>
+<p>Here is an example of running the <code class="docutils literal notranslate"><span class="pre">tx_benchmark</span></code> application in
+asynchronous transmit mode with 4 threads, a block size of 16380, and at
+a rate of 45Msps for 5 seconds. The return code of <code class="code docutils literal notranslate"><span class="pre">0</span></code> indicates that
+the threshold criteria was met.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ ./tx_benchmark --block-size 16380 --threshold 5 --time 5 --threads 4 --rate 45000000
+Info: number of samples is 16380 (65536 bytes)
+tx_benchmark[27680]: &lt;INFO&gt; libsidekiq v4.0.0, RF IC library 2.5.2
+tx_benchmark[27680]: &lt;INFO&gt; Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+tx_benchmark[27680]: &lt;INFO&gt; Sidekiq card 0 is configured for an internal reference clock
+tx_benchmark[27680]: &lt;INFO&gt; Sidekiq card 0 firmware v2.2
+tx_benchmark[27680]: &lt;INFO&gt; Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+tx_benchmark[27680]: &lt;INFO&gt; card 0: number of tx channels supported 1, number of rx channels supported 2
+Setting sample rate to 45000000
+Send throughput: 175 MB/s (# underruns 1)
+Send throughput: 171 MB/s (# underruns 1)
+Send throughput: 171 MB/s (# underruns 1)
+Send throughput: 171 MB/s (# underruns 1)
+Send throughput: 171 MB/s (# underruns 1)
+Sending complete
+Cleaning up
+tx_benchmark[27680]: &lt;INFO&gt; unlocking card 0
+$ echo $?
+0
+</pre></div>
+</div>
+<p>Here is an example of running the <code class="docutils literal notranslate"><span class="pre">tx_benchmark</span></code> application in
+synchronous transmit mode with 4 threads, a block size of 16380, and at
+a rate of 45Msps for 5 seconds. The return code of <code class="code docutils literal notranslate"><span class="pre">1</span></code> indicates that
+the threshold criteria was not met.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ ./tx_benchmark --block-size 16380 --threshold 5 --time 5 --threads 1 --rate 45000000
+Info: number of samples is 16380 (65536 bytes)
+tx_benchmark[27690]: &lt;INFO&gt; libsidekiq v4.0.0, RF IC library 2.5.2
+tx_benchmark[27690]: &lt;INFO&gt; Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+tx_benchmark[27690]: &lt;INFO&gt; Sidekiq card 0 is configured for an internal reference clock
+tx_benchmark[27690]: &lt;INFO&gt; Sidekiq card 0 firmware v2.2
+tx_benchmark[27690]: &lt;INFO&gt; Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+tx_benchmark[27690]: &lt;INFO&gt; card 0: number of tx channels supported 1, number of rx channels supported 2
+Setting sample rate to 45000000
+Send throughput: 159 MB/s (# underruns 5140)
+Send throughput: 152 MB/s (# underruns 11176)
+Send throughput: 154 MB/s (# underruns 16406)
+Send throughput: 155 MB/s (# underruns 21748)
+Send throughput: 155 MB/s (# underruns 27068)
+Sending complete
+Cleaning up
+tx_benchmark[27690]: &lt;INFO&gt; unlocking card 0
+$ echo $?
+1
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="transceive">
+<h2>Transceive<a class="headerlink" href="#transceive" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">xcv_benchmark</span></code> application provides insight into a transceiver
+application’s maximum theoretical benchmark on a specific host system.
+The user can specify the number of threads to use for transmission
+(<code class="code docutils literal notranslate"><span class="pre">1</span></code> implies synchronous transmit mode, more than <code class="code docutils literal notranslate"><span class="pre">1</span></code>
+selects asynchronous transmit mode), the transmit block size, and
+whether to receive samples with the blocking mode. This allows for a
+user to evaluate how different streaming configuration options impact
+the overall throughput on a specific host system. Both transmit
+underruns as well as receive timestamp errors are monitored to
+determine the performance of the system.</p>
+<p>If a desired run time or minimum error count is desired, the
+<code class="docutils literal notranslate"><span class="pre">--threshold</span></code> and <code class="docutils literal notranslate"><span class="pre">--time</span></code> parameters can be used for the application.
+If the threshold criteria was met, a <code class="code docutils literal notranslate"><span class="pre">0</span></code> is returned by the
+application.</p>
+<div class="section" id="transceive-performance-example">
+<h3>Transceive Performance Example<a class="headerlink" href="#transceive-performance-example" title="Permalink to this headline">¶</a></h3>
+<p>Here is an example of running the benchmark application in asynchronous
+transmit mode with 4 TX threads, a TX block size of 16380, using the
+blocking receive mode, and at a rate of 30Msps for 5 seconds. The return
+code of <code class="code docutils literal notranslate"><span class="pre">0</span></code> indicates that the threshold criteria was met.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ ./xcv_benchmark --threads 4 --block-size 16380 --blocking --rate 30000000 --time 5 --threshold 5
+xcv_benchmark[28256]: &lt;INFO&gt; libsidekiq v4.0.0, RF IC library 2.5.2
+xcv_benchmark[28256]: &lt;INFO&gt; Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+xcv_benchmark[28256]: &lt;INFO&gt; Sidekiq card 0 is configured for an internal reference clock
+xcv_benchmark[28256]: &lt;INFO&gt; Sidekiq card 0 firmware v2.2
+xcv_benchmark[28256]: &lt;INFO&gt; Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+xcv_benchmark[28256]: &lt;INFO&gt; card 0: number of tx channels supported 1, number of rx channels supported 2
+Send throughput: 117 MB/s (# underruns 3)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 3)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 3)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 3)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 3)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Waiting for packets to complete transfer, num_pkts 9210, num_complete 9160
+Packet send completed!
+xcv_benchmark[28256]: &lt;INFO&gt; unlocking card 0
+$ echo $?
+0
+</pre></div>
+</div>
+<p>Here is an example of running the benchmark application in asynchronous
+transmit mode with 1 TX thread (synchronous mode), a TX block size of
+16380, using the blocking receive mode, and at a rate of 30Msps for 5
+seconds. The return code of <code class="code docutils literal notranslate"><span class="pre">1</span></code> indicates that the threshold criteria
+was not met.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ ./xcv_benchmark --threads 1 --block-size 16380 --blocking --rate 30000000 --time 5 --threshold 5
+xcv_benchmark[28267]: &lt;INFO&gt; libsidekiq v4.0.0, RF IC library 2.5.2
+xcv_benchmark[28267]: &lt;INFO&gt; Sidekiq card 0 is serial number=30281, hardware MPCIE C, product SKIQ-MPCIE-001
+xcv_benchmark[28267]: &lt;INFO&gt; Sidekiq card 0 is configured for an internal reference clock
+xcv_benchmark[28267]: &lt;INFO&gt; Sidekiq card 0 firmware v2.2
+xcv_benchmark[28267]: &lt;INFO&gt; Sidekiq card 0 FPGA v3.3, (date 16122919, FIFO size 3)
+xcv_benchmark[28267]: &lt;INFO&gt; card 0: number of tx channels supported 1, number of rx channels supported 2
+Send throughput: 114 MB/s (# underruns 191)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 472)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 1048)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 1056)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Send throughput: 114 MB/s (# underruns 1534)
+Receive throughput: 115 MB/s (# timestamp errors 0)
+Packet send completed!
+xcv_benchmark[28267]: &lt;INFO&gt; unlocking card 0
+$ echo $?
+1
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Assessing Throughput Performance</a><ul>
+<li><a class="reference internal" href="#receive-performance">Receive Performance</a></li>
+<li><a class="reference internal" href="#receive-performance-example">Receive Performance Example</a></li>
+<li><a class="reference internal" href="#transmit-performance">Transmit Performance</a><ul>
+<li><a class="reference internal" href="#transmit-performance-example">Transmit Performance Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#transceive">Transceive</a><ul>
+<li><a class="reference internal" href="#transceive-performance-example">Transceive Performance Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="alternative_hosts.html" title="previous chapter">Developing for Alternative Host Platforms</a></li>
+      <li>Next: <a href="dkms.html" title="next chapter">DKMS</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/throughput.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/throughput.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

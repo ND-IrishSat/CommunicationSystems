@@ -1,0 +1,237 @@
+.. _sw_errata:
+
+Software Errata
+===============
+
+For a complete and up-to-date list of Software Errata, please visit
+https://support.epiqsolutions.com/viewtopic.php?f=115&t=2536
+
+Errata ``SW1``
+--------------
+
+Issue Description
+^^^^^^^^^^^^^^^^^
+
+The HTG-K800 FMC carrier's flash contents may fail to program
+successfully (~7%). When the flash fails to program in this manner,
+the user bitstream will subsequently fail to configure the FPGA and
+the fallback FPGA bitstream is ignored. If a user encounters this
+issue, currently the only means of recovery is to overwrite the
+carrier card flash contents using the JTAG pod.
+
+Affected Product(s):
+^^^^^^^^^^^^^^^^^^^^
+
+ - Sidekiq X2 PDK (Thunderbolt 3 Chassis)
+
+Impact Version(s):
+^^^^^^^^^^^^^^^^^^
+
+ - libsidekiq v4.2.x
+ - libsidekiq v4.4.x
+ - libsidekiq v4.6.0
+
+Resolution:
+^^^^^^^^^^^
+
+When using the ``store_user_fpga`` test application, use the
+``--verify`` command line option to verify the bitstream is correct
+after programming it to flash. In the software API, use the
+:code:`skiq_verify_fpga_config_from_flash()` function after using
+:code:`skiq_save_fpga_config_to_flash()` and check that the return
+code of :code:`skiq_verify_fpga_config_from_flash()` is 0.
+
+Fixed in:
+^^^^^^^^^
+
+libsidekiq v4.7.0 contains a fix for this intermittent flash erase /
+programming behavior. However, as with any unattended update
+procedure, it is still recommended that the verification step be
+performed where critical operations are in use.
+
+
+Errata ``SW2``
+--------------
+
+Issue Description
+^^^^^^^^^^^^^^^^^
+
+The expected locations of the fallback (aka golden) and user
+bitstreams have been updated in the HTG-K800 FMC carrier card's flash
+starting in libsidekiq v4.7.0 and later.
+
+Affected Product(s):
+^^^^^^^^^^^^^^^^^^^^
+
+ - Sidekiq X2 PDK (Thunderbolt 3 Chassis)
+
+Affected API Function(s):
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ - :code:`skiq_save_fpga_config_to_flash`
+
+Impact Version(s):
+^^^^^^^^^^^^^^^^^^
+
+ - libsidekiq v4.2.x
+ - libsidekiq v4.4.x
+ - libsidekiq v4.6.x
+
+Resolution:
+^^^^^^^^^^^
+
+In order to better support FPGA bitstream fallback and to support
+full-sized FPGA bitstreams, it was necessary to change the locations
+of the fallback and user bitstreams.
+
+The ``sidekiq_hardware_updater_for_v4.7.0.sh`` script will take care
+of flashing the fallback and user bitstreams to their new locations
+(only if needed).
+
+After the bitstreams are relocated, if an application compiled against
+an impacted version (see above) of libsidekiq uses
+:code:`skiq_save_fpga_config_to_flash()`, an error will be emitted
+stating that "*golden FPGA not present, cannot update user FPGA
+image*". A user must use libsidekiq v4.7.0 or later in conjunction
+with relocated bitstreams in order to store a user bitstream to
+non-volatile memory.
+
+If a user wishes to revert the relocation, they may run a
+``sidekiq_hardware_updater`` from a release prior to v4.7.0.
+
+
+Errata ``SW3``
+--------------
+
+Issue Description:
+^^^^^^^^^^^^^^^^^^
+
+A flash transaction on the HTG-K800 FMC carrier can fail
+intermittently and without detection. A user may see the warning
+message "*Quad SPI operation bit needed assertion*" emitted, however
+the software does not react correctly to address the warning.
+
+Affected Product(s):
+^^^^^^^^^^^^^^^^^^^^
+
+ - Sidekiq X2 PDK (Thunderbolt 3 Chassis)
+ - Sidekiq X4 PDK (Thunderbolt 3 Chassis)
+
+Affected API Function(s):
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ - skiq_save_fpga_config_to_flash
+ - skiq_verify_fpga_config_from_flash
+
+Affected Test Application(s) / Utilities:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ - sidekiq_hardware_updater.sh
+ - store_user_fpga
+
+Impact Version(s):
+^^^^^^^^^^^^^^^^^^
+
+ - libsidekiq v4.2.x
+ - libsidekiq v4.4.x
+ - libsidekiq v4.6.x
+ - libsidekiq v4.7.x
+ - libsidekiq v4.8.x
+ - libsidekiq v4.9.0 through v4.9.3
+
+Resolution:
+^^^^^^^^^^^
+
+.. DANGER:: **Do not use** the ``sidekiq_hardware_updater.sh`` utility
+	    prior to **v4.9.4** to upgrade or downgrade an X2 PDK or X4
+	    PDK system. **Only** use the updaters and installers from
+	    the System Update ``v4.9.4 20190503`` and later
+
+.. DANGER:: **Do not use** the ``store_user_fpga`` test application
+            prior to **v4.9.4** on an X2 PDK or X4 PDK system. Use the
+            ``store_user_fpga`` test application from the **v4.9.4** SDK or
+            the run-time/complete installer from the System Update
+            ``v4.9.4 20190503`` and later
+
+If your application uses either of the affected API functions, you
+must update to libsidekiq SDK v4.9.4 or there is a risk of incorrect
+flash behavior (corruption).
+
+Errata ``SW4``
+--------------
+
+Issue Description:
+^^^^^^^^^^^^^^^^^^
+
+Memory allocated for :code:`skiq_tx_block_t` may not be aligned on a memory page
+boundary.  When a misaligned :code:`skiq_tx_block_t` is transferred to the FPGA,
+it is mishandled, resulting in corrupt samples inadvertently added to
+the sample block being transmitted.
+
+Affected Product(s):
+^^^^^^^^^^^^^^^^^^^^
+
+ - Sidekiq X4 HTG platforms with 8 lane PCIe support (HTG-K800, HTG-K810)
+ - FPGA bitstreams >= v3.14.1
+
+Affected API Function(s) / Macros:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ - :code:`skiq_tx_block_allocate`
+ - :code:`skiq_tx_block_allocate_by_bytes`
+ - :code:`SKIQ_TX_BLOCK_INITIALIZER`
+ - :code:`SKIQ_TX_BLOCK_INITIALIZER_BY_BYTES`
+ - :code:`SKIQ_TX_BLOCK_INITIALIZER_BY_WORDS`
+
+Affected Test Application(s) / Utilities:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ - ``tx_samples``, ``tx_benchmark``, ``xcv_benchmark``
+
+Impact Version(s):
+^^^^^^^^^^^^^^^^^^
+
+ - libsidekiq v4.7.0 through v4.16.2
+
+Resolution:
+^^^^^^^^^^^
+
+Libsidekiq v4.17.0 will page align memory when allocating for Tx blocks.  By
+default, a page size of 4K is used, but can be overridden by :code:`#defining
+SKIQ_TX_BLOCK_MEMORY_ALIGN`.  If an application uses any of the affected API
+functions, it *must* be updated to libsidekiq SDK v4.17.0 or there is a risk
+of incorrect data being transmitted by the FPGA.
+
+Errata ``SW5``
+--------------
+
+Issue Description:
+^^^^^^^^^^^^^^^^^^
+
+When transmitting on timestamps, four samples are erroneously sent when the
+packet is received, regardless of the specified timestamp.  This can be four
+samples from a previous packet, or samples from the current packet.
+
+Affected Product(s):
+^^^^^^^^^^^^^^^^^^^^
+
+ - Sidekiq X2 PDK (Thunderbolt 3 Chassis)
+ - Sidekiq X4 PDK (Thunderbolt 3 Chassis) and Sidekiq X4 PCIe Blade
+
+Affected Test Application(s) / Utilities:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ - ``tx_samples``, ``tx_samples_async``, ``fdd_rx_tx_samples``, ``tdd_rx_tx_samples``
+
+Impact Version(s):
+^^^^^^^^^^^^^^^^^^
+
+ - FPGA bitstreams version v3.14.1 through v3.15.1
+
+Resolution:
+^^^^^^^^^^^
+
+If transmit on timestamp is utilized, please use a FPGA bitstream
+with a version prior to v3.14.1 when this defect was introduced or
+version v3.16.1 and later when the issue was resolved.
+

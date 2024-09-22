@@ -1,0 +1,68 @@
+.. _power_consumption:
+
+Power consumption states (mPCIe, m.2)
+=====================================
+
+As of libsidekiq v3.5.0, the Sidekiq has three distinct power
+consumption states: Idle, RX, and RX/TX. Each state is entered / exited
+automatically by way of existing API function calls and initialization
+levels. Using an initialization level of
+:code:`skiq_xport_init_level_full` in a call to :code:`skiq_init()` brings
+the RFIC out of low power mode and into the RX state. However, using an
+initialization level of :code:`skiq_xport_init_level_basic` in a call to
+:code:`skiq_init()` does not change the RFIC power state.
+
+The Sidekiq transmit line-up stays powered down after a call to
+:code:`skiq_init()` until :code:`skiq_write_tx_LO_freq()` is called for the
+first time. It will then only be powered down (along with the rest of
+the RFIC) on a call to :code:`skiq_exit()`. :ref:`table12` shows the different power
+consumption states and their associated transitions.
+
+.. figure:: _static/sidekiq_power_state_graph.png
+   :alt: Sidekiq power state transitions
+   :align: center
+   :width: 6.92520in
+   :height: 3.57910in
+
+   Sidekiq power state transitions
+
+There can be significant power consumption savings related to the three
+distinct states. outlines a typical example of both a miniPCIe Sidekiq
+card and an m.2 Sidekiq card in the various power consumption states.
+
+.. note:: These power consumption measurements will vary based on
+	  sample rate, transmit LO frequency, and transmit
+	  attenuation.
+
+The Idle state measurements were performed after a clean application
+shutdown.  The RX state measurements were performed using
+``rx_benchmark`` with a sample rate of 45Msps. The RX/TX state
+measurements were performed using ``tx_samples_async`` in four
+different configurations:
+
+ -  fc=850MHz, tx\_atten=0, sample\_rate=10MHz, bw=10MHz, block-size=16380
+ -  fc=850MHz, tx\_atten=359, sample\_rate=10MHz, bw=10MHz, block-size=16380
+ -  fc=3.85GHz, tx\_atten=0, sample\_rate=10MHz, bw=10MHz, block-size=16380
+ -  fc=3.85GHz, tx\_atten=359, sample\_rate=10MHz, bw=10MHz, block-size=16380
+
+In libsidekiq version 3.4.1 and before, the Idle state's power
+consumption varied depending on the previous state (RX or "RX / TX")
+since the RFIC did not enter a low power state.
+
+.. _table12:
+
+.. table:: Sidekiq Power State Consumption (in Watts)
+    :align: center
+
+    +--------------------+----------------------+--------------+--------------+--------------+
+    | Hardware           | libsidekiq version   | Idle         | RX           | RX / TX      |
+    +====================+======================+==============+==============+==============+
+    | Sidekiq miniPCIe   | v3.4.1 and before    | 2.0 to 2.3   | 2.2          | 2.1 to 2.4   |
+    +                    +----------------------+--------------+--------------+--------------+
+    |                    | v3.5.0 and after     | 1.1          | 2.0          | 2.1 to 2.4   |
+    +--------------------+----------------------+--------------+--------------+--------------+
+    | Sidekiq m.2        | v3.4.1 and before    | 2.4 to 2.6   | 2.5          | 2.4 to 2.8   |
+    +                    +----------------------+--------------+--------------+--------------+
+    |                    | v3.5.0 and after     | 1.4          | 2.25         | 2.4 to 2.7   |
+    +--------------------+----------------------+--------------+--------------+--------------+
+

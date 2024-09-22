@@ -1,0 +1,240 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Troubleshooting a Sidekiq Installed in a New Host * &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Frequently Asked Questions" href="faq.html" />
+    <link rel="prev" title="Software Errata" href="sw_errata.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="troubleshooting-a-sidekiq-installed-in-a-new-host">
+<span id="troubleshooting"></span><h1>Troubleshooting a Sidekiq Installed in a New Host <sup>*</sup><a class="headerlink" href="#troubleshooting-a-sidekiq-installed-in-a-new-host" title="Permalink to this headline">¶</a></h1>
+<p>The following subsections address common issues when attempting to use a
+Sidekiq card in a new host system. If there are any questions on these
+steps or if additional problems are encountered, contact Epiq Solutions
+support, <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>.</p>
+<div class="section" id="observing-the-led-state-sidekiq-mpcie-and-sidekiq-m-2-only">
+<h2>Observing The LED State (Sidekiq mPCIe and Sidekiq m.2 only)<a class="headerlink" href="#observing-the-led-state-sidekiq-mpcie-and-sidekiq-m-2-only" title="Permalink to this headline">¶</a></h2>
+<p>If the Sidekiq card is not appearing when running the <code class="docutils literal notranslate"><span class="pre">version_test</span></code>
+application, basic hardware functionality can be determined by
+monitoring the state of the LEDs on the Sidekiq card. This can be done
+independent of the drivers or kernel version.</p>
+<p>With the Sidekiq installed in the host system, the host can be powered
+on and the 2 LEDs on the card described as User LED #1 (near the edge
+of the board) and User LED #2 (towards the middle of the board). These
+LED locations are highlighted in Figure 2 of the Hardware User’s
+Manual.</p>
+<p>When powering up the host, LED #2 turn on and quickly off, and then
+about a half second later, turn back on. This LED reflects the state
+of the FPGA configuration being loaded. At some point, either at the
+same time or later during the boot process, LED #1 should also turn
+on. This LED reflects the state of the PCIe link. If LED 1 is on, then
+the PCIe link has been established successfully. If both LEDs are on,
+then there is a good chance that the hardware will enumerate correctly
+on the host.</p>
+<p>If the LEDs do not behave as described above, contact Epiq Solutions
+support, <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>, with information on what the behavior of the LEDs are
+and the host system being used.</p>
+</div>
+<div class="section" id="verifying-the-hardware-interfaces-detected-in-linux">
+<h2>Verifying the Hardware Interfaces Detected in Linux<a class="headerlink" href="#verifying-the-hardware-interfaces-detected-in-linux" title="Permalink to this headline">¶</a></h2>
+<p>Once the host completes booting into Linux, the USB and PCIe interfaces
+(if present) of the Sidekiq card can be detected (independent of kernel
+or driver versions). The USB interface can be checked by running <code class="docutils literal notranslate"><span class="pre">lsusb</span></code>.
+The output of <code class="docutils literal notranslate"><span class="pre">lsusb</span></code> from the Sidekiq PDK laptop is shown below.
+The line highlighted below is a Sidekiq mPCIe card.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Bus 001 Device 002: ID 8087:8008 Intel Corp.
+Bus 002 Device 002: ID 8087:8000 Intel Corp.
+<span class="hll">Bus 003 Device 002: ID 04b4:1004 Cypress Semiconductor Corp.
+</span>Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 003: ID 0c45:64d0 Microdia
+Bus 002 Device 003: ID 8087:07da Intel Corp.
+Bus 002 Device 004: ID 0a5c:5801 Broadcom Corp. BCM5880 Secure Applications Processor
+</pre></div>
+</div>
+<p>Not all host systems connect the USB interface on the miniPCIe or M.2 connector
+to the processor. If <em>lsusb</em> does not show the Sidekiq card, it is
+possible that the host system being used does not have the USB routed
+properly. If this is observed, contact Epiq Solutions support,
+<a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>, with information on the host system being used.
+Also note that Sidekiq mPCIe and Sidekiq m.2 have USB interfaces whereas
+other Sidekiq products do not.</p>
+<table border="1" class="docutils align-center" id="id1">
+<caption><span class="caption-number">Table 32 </span><span class="caption-text">Sidekiq PCIe PID/VID Identifiers</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="65%" />
+<col width="35%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>Product</strong></th>
+<th class="head"><strong>PID / VID</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Sidekiq mPCIe</td>
+<td><code class="docutils literal notranslate"><span class="pre">19AA:E004</span></code></td>
+</tr>
+<tr class="row-odd"><td>Sidekiq m.2</td>
+<td><code class="docutils literal notranslate"><span class="pre">19AA:7021</span></code></td>
+</tr>
+<tr class="row-even"><td>Sidekiq Stretch (m.2-2280)</td>
+<td><code class="docutils literal notranslate"><span class="pre">19AA:2280</span></code></td>
+</tr>
+<tr class="row-odd"><td>Sidekiq NV100</td>
+<td><code class="docutils literal notranslate"><span class="pre">19AA:2280</span></code></td>
+</tr>
+<tr class="row-even"><td>Sidekiq X2</td>
+<td><code class="docutils literal notranslate"><span class="pre">19AA:5832</span></code></td>
+</tr>
+<tr class="row-odd"><td>Sidekiq X4</td>
+<td><code class="docutils literal notranslate"><span class="pre">19AA:5832</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>The PCIe interface can be checked by running <code class="docutils literal notranslate"><span class="pre">lspci</span></code>. The output of
+<code class="docutils literal notranslate"><span class="pre">lspci</span></code> executed on the Sidekiq PDK laptop is shown below, where a
+Sidekiq mPCIe card is highlighted.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>00:00.0 Host bridge: Intel Corporation Xeon E3-1200 v3/4th Gen Core Processor DRAM Controller
+00:01.0 PCI bridge: Intel Corporation Xeon E3-1200 v3/4th Gen Core Processor PCI Express x16 Controller
+00:02.0 VGA compatible controller: Intel Corporation 4th Gen Core Processor Integrated Graphics Controller
+00:03.0 Audio device: Intel Corporation Xeon E3-1200 v3/4th Gen Core Processor HD Audio Controller
+00:14.0 USB controller: Intel Corporation 8 Series/C220 Series Chipset Family USB xHCI
+00:16.0 Communication controller: Intel Corporation 8 Series/C220 Series Chipset Family MEI Controller #1
+00:16.3 Serial controller: Intel Corporation 8 Series/C220 Series Chipset Family KT Controller
+00:19.0 Ethernet controller: Intel Corporation Ethernet Connection I217-LM
+00:1a.0 USB controller: Intel Corporation 8 Series/C220 Series Chipset Family USB EHCI #2
+00:1b.0 Audio device: Intel Corporation 8 Series/C220 Series Chipset High Definition Audio Controller
+00:1c.0 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #1
+00:1c.2 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #3
+00:1c.4 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #5
+00:1c.5 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #6
+00:1c.6 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #7
+00:1c.7 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #8
+00:1d.0 USB controller: Intel Corporation 8 Series/C220 Series Chipset Family USB EHCI #1
+00:1f.0 ISA bridge: Intel Corporation QM87 Express LPC Controller
+00:1f.2 RAID bus controller: Intel Corporation 82801 Mobile SATA Controller [RAID mode]
+00:1f.3 SMBus: Intel Corporation 8 Series/C220 Series Chipset Family SMBus Controller
+01:00.0 Display controller: Advanced Micro Devices, Inc. [AMD/ATI]
+<span class="hll">02:00.0 Signal processing controller: Device 19aa:e004
+</span>03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6235
+0e:00.0 SD Host controller: O2 Micro, Inc. SD/MMC Card Reader Controller
+</pre></div>
+</div>
+<p>If the PCIe interface is not present in the <code class="docutils literal notranslate"><span class="pre">lspci</span></code> output, contact Epiq Solutions
+support, <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>, with information on the host system being
+used.</p>
+<p>If both the USB and PCIe interfaces are detected by Linux properly, then
+it is likely that the Sidekiq card will work properly with the host
+system.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The Sidekiq X2, X4, and Stretch will not be present on the host’s USB.</p>
+</div>
+</div>
+<div class="section" id="checking-kernel-and-drivers">
+<h2>Checking Kernel and Drivers<a class="headerlink" href="#checking-kernel-and-drivers" title="Permalink to this headline">¶</a></h2>
+<p>The Sidekiq drivers are automatically loaded on bootup through either a systemd or init.d script
+depending on the host operating system.  In a systemd configuration, the service script is located
+at <code class="docutils literal notranslate"><span class="pre">/lib/systemd/system/sidekiq.service</span></code> where as the init.d script is located at
+<code class="docutils literal notranslate"><span class="pre">/etc/init.d/sidekiq</span></code>. In order for proper behavior, the kernel version used must match the kernel
+versions listed in <a class="reference internal" href="alternative_hosts.html#developing-for-alternative-host-platforms"><span class="std std-ref">Developing for Alternative Host Platforms</span></a>. To request an alternative
+kernel or further details on driver validation, contact Epiq Solutions support, <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>.</p>
+<p><sup>*</sup> - this section does not apply to Sidekiq Z2 and Matchstiq Z3u</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Troubleshooting a Sidekiq Installed in a New Host <sup>*</sup></a><ul>
+<li><a class="reference internal" href="#observing-the-led-state-sidekiq-mpcie-and-sidekiq-m-2-only">Observing The LED State (Sidekiq mPCIe and Sidekiq m.2 only)</a></li>
+<li><a class="reference internal" href="#verifying-the-hardware-interfaces-detected-in-linux">Verifying the Hardware Interfaces Detected in Linux</a></li>
+<li><a class="reference internal" href="#checking-kernel-and-drivers">Checking Kernel and Drivers</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="sw_errata.html" title="previous chapter">Software Errata</a></li>
+      <li>Next: <a href="faq.html" title="next chapter">Frequently Asked Questions</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/troubleshooting.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/troubleshooting.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

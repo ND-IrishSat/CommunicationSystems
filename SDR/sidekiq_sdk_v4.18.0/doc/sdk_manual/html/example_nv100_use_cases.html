@@ -1,0 +1,181 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Example NV100 Use Cases: Rx &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sidekiq API" href="sidekiq_api.html" />
+    <link rel="prev" title="Example X4 Use Cases: Rx" href="example_x4_use_cases.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="example-nv100-use-cases-rx">
+<span id="example-nv100-use-cases"></span><h1>Example NV100 Use Cases: Rx<a class="headerlink" href="#example-nv100-use-cases-rx" title="Permalink to this headline">¶</a></h1>
+<p>This section outlines common use cases possible with Sidekiq NV100, demonstrating how
+they can be achieved with the supplied test applications.  For users developing an
+application from scratch, the equivalent sequence of API calls is provided.  See
+the <code class="code docutils literal notranslate"><span class="pre">rx_samples_minimal.c</span></code> and <code class="code docutils literal notranslate"><span class="pre">rx_samples.c</span></code> sample applications in
+the <code class="code docutils literal notranslate"><span class="pre">test_apps/</span></code> directory for example usage.</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">Receiving at high sample rates can be RAM &amp; disk intensive.  Performance is dependent on the host platform.</p>
+</div>
+<div class="section" id="receive-single-channel-up-to-50mhz-ibw">
+<h2>Receive: single channel, up to 50MHz IBW<a class="headerlink" href="#receive-single-channel-up-to-50mhz-ibw" title="Permalink to this headline">¶</a></h2>
+<p>The following example captures samples at 61.44Msps with a bandwidth of 50MHz,
+at a center frequency of 850MHz.</p>
+<p><code class="code docutils literal notranslate"><span class="pre">test_apps/rx_samples_minimal</span> <span class="pre">-c</span> <span class="pre">0</span> <span class="pre">-d</span> <span class="pre">/tmp/iq_output</span> <span class="pre">-f</span> <span class="pre">850000000</span> <span class="pre">-r</span> <span class="pre">61440000</span> <span class="pre">-b</span> <span class="pre">50000000</span> <span class="pre">--handle=A1</span></code></p>
+<ul class="simple">
+<li>where handle can be any of the following: <code class="code docutils literal notranslate"><span class="pre">A1,A2,B1</span></code></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">libsidekiq will use the provided sample rate and bandwidth arguments to select the RFIC profile best
+meeting the constraints. Please contact Epiq Solutions if additional rates are desired.</p>
+</div>
+<p>The same can be achieved using the following sequence of API functions:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>skiq_init(card)
+skiq_write_rx_sample_rate_and_bandwidth_multi(card, handles[], nr_handles, rate[], bandwidth[])
+skiq_write_rx_LO_freq(card, handle, frequency)
+skiq_start_rx_streaming_multi_immediate()
+while(receiving)
+   skiq_receive(card, handle, rx_block, len)
+skiq_stop_rx_streaming_multi_immediate()
+skiq_exit()
+</pre></div>
+</div>
+</div>
+<div class="section" id="receive-two-phase-coherent-channels-up-to-50mhz-ibw">
+<h2>Receive: two phase coherent channels, up to 50MHz IBW<a class="headerlink" href="#receive-two-phase-coherent-channels-up-to-50mhz-ibw" title="Permalink to this headline">¶</a></h2>
+<p>The following example captures samples at 61.44Msps with a bandwidth of 50MHz,
+at a center frequency of 850MHz with a sample alignment of ±1 sample.</p>
+<p><code class="code docutils literal notranslate"><span class="pre">test_apps/rx_samples_on_trigger</span> <span class="pre">-c</span> <span class="pre">0</span> <span class="pre">-d</span> <span class="pre">/tmp/iq_output</span> <span class="pre">-f</span> <span class="pre">750000000</span> <span class="pre">-r</span> <span class="pre">50000000</span> <span class="pre">--handle=A1,A2</span> <span class="pre">-b</span> <span class="pre">50000000</span> <span class="pre">--trigger-src=synced</span></code></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>skiq_init(card)
+skiq_write_rx_sample_rate_and_bandwidth_multi(card, handles, nr_handles, rates, bandwidths)
+skiq_write_chan_mode(chan_mode_dual)
+skiq_write_rx_LO_freq(card, handle #1 or handle #2)
+skiq_start_rx_streaming_multi_synced()
+while(receiving)
+   skiq_receive(card, handle, rx_block, len)
+skiq_stop_rx_streaming_multi_synced()
+skiq_exit()
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There is a difference in the signal path between J1 and J2 on the RFE of the NV100 that results in a frequency dependent
+fixed phase delay that can be calibrated out by the user.</p>
+</div>
+<p>Libsidekiq 4.18.0 enables a software calibration option that removes sample alignment jitter between RxA1 and RxA2.
+Contact customer support for instructions and an example application that demonstrates the calibration routine.</p>
+</div>
+<div class="section" id="receive-two-independently-tunable-channels-same-sample-rate-up-to-50mhz-ibw">
+<h2>Receive: two independently tunable channels, same sample rate, up to 50MHz IBW<a class="headerlink" href="#receive-two-independently-tunable-channels-same-sample-rate-up-to-50mhz-ibw" title="Permalink to this headline">¶</a></h2>
+<p>The following example captures samples for two channels at 61.44Msps with a
+bandwidth of 50MHz, tuned to 750MHz and 850MHz respectively.</p>
+<p><code class="code docutils literal notranslate"><span class="pre">test_apps/rx_samples_minimal</span> <span class="pre">-c</span> <span class="pre">0</span> <span class="pre">-d</span> <span class="pre">/tmp/iq_output</span> <span class="pre">-f</span> <span class="pre">750000000,850000000</span> <span class="pre">-r</span> <span class="pre">61440000,61440000</span> <span class="pre">-b</span> <span class="pre">50000000,50000000</span> <span class="pre">--handle=A1,B1</span></code></p>
+<p>The same can be achieved using the following sequence of API functions:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>skiq_init(card)
+skiq_write_rx_sample_rate_and_bandwidth_multi(card, handles, nr_handles, rates, bandwidths)
+skiq_write_rx_LO_freq(card, handle #1)
+skiq_write_rx_LO_freq(card, handle #2)
+skiq_start_rx_streaming_multi_immediate()
+ while(receiving)
+   skiq_receive(card, handle, rx_block, len)
+skiq_stop_rx_streaming_multi_immediate()
+skiq_exit()
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Example NV100 Use Cases: Rx</a><ul>
+<li><a class="reference internal" href="#receive-single-channel-up-to-50mhz-ibw">Receive: single channel, up to 50MHz IBW</a></li>
+<li><a class="reference internal" href="#receive-two-phase-coherent-channels-up-to-50mhz-ibw">Receive: two phase coherent channels, up to 50MHz IBW</a></li>
+<li><a class="reference internal" href="#receive-two-independently-tunable-channels-same-sample-rate-up-to-50mhz-ibw">Receive: two independently tunable channels, same sample rate, up to 50MHz IBW</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="example_x4_use_cases.html" title="previous chapter">Example X4 Use Cases: Rx</a></li>
+      <li>Next: <a href="sidekiq_api.html" title="next chapter">Sidekiq API</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/example_nv100_use_cases.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/example_nv100_use_cases.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

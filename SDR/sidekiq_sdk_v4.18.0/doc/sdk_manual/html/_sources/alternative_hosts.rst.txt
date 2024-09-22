@@ -1,0 +1,724 @@
+.. include:: replacements.rst
+
+.. _section_alternative_host:
+
+Developing for Alternative Host Platforms
+=========================================
+
+Sidekiq can be used on a wide variety of host platforms. The following
+sections provide a brief overview of how to use |libsidekiq| on the
+various platforms. For detailed information on a specific host platform,
+please contact Epiq Solutions' Support, :ref:`[5] <ref5>`.
+
+Supported Architectures
+-----------------------
+
+The Sidekiq SDK currently supports host platforms with the following CPU
+architectures: 64-bit x86, 32-bit x86, ARM Cortex A9 (specifically
+validated on Freescale's i.MX6), and 64-bit ARM (specifically validated
+on NVIDIA's Jetson TX1/TX2/Xavier). Prebuilt test applications for each
+of the architectures are located within their own subdirectory under the
+``prebuilt_apps`` directory of the SDK and also available for download,
+:ref:`[5] <ref5>`. For example, the binaries for a 64-bit x86
+processor is located at: ``sidekiq_sdk_current/prebuilt_apps/x86_64.gcc``.
+
+Building Test Applications
+--------------------------
+
+The Sidekiq SDK provides versions of |libsidekiq| for each of the
+supported architectures. Additionally, the test applications can be
+compiled for any of the these architectures. The steps for building a
+specific host platform are as follows:
+
+1. Change to the directory where the SDK was previously uncompressed.
+
+.. parsed-literal::
+
+   $ cd /home/sidekiq/sidekiq_sdk_v\ |release|\ /
+
+2. Change directories to the ``test_apps`` directory and run make, using
+   ``BUILD_CONFIG`` to specify the host target.
+
+As of Sidekiq SDK release v3.0.0, a libc version of 2.11 or greater is
+required on x86 64-bit and 32-bit platforms. Using a previous version of
+libc may result in linking errors during build. Verification of the
+version of libc on the build system can be performed by locating
+libc.so.6, executing it, and taking note of the version. As a point of
+reference, Ubuntu 12.04 and later, as well as CentOS 6.7 and later
+currently satisfy this requirement.
+
+Deploying Applications
+~~~~~~~~~~~~~~~~~~~~~~
+
+As of Sidekiq SDK release v4.0.0, both glib-2.0 and libusb open source
+libraries are leveraged within |libsidekiq|. As of Sidekiq SDK release
+v4.17.5, the libtirpc open source library is also leveraged within
+|libsidekiq|. Correspondingly, the glib-2.0 (LGPL) and libusb (LGPL)
+license agreements are maintained by linking to them dynamically and the
+libtirpc (BSD) license agreement is maintained by acknowledging it in this
+documentation. There are two approaches to deploying applications built
+against |libsidekiq|, glib-2.0, libusb, and libtirpc: one approach is used
+when the application is executed on the build machine (i.e. the SDK is
+installed), while the other approach is used when the application is
+executed on a target machine (i.e. the SDK is not installed).
+
+In the first approach, the SDK contains all of the requisite dynamic
+libraries in the directory
+``$SDK/lib/support/$BUILD_CONFIG/usr/lib/epiq``. The
+``$SDK/test_apps/Makefile`` has all of the necessary flags for building
+and executing on the build machine. After final linking, applications
+reference the glib-2.0, libusb, and libtirpc libraries in the SDK's preceding
+support directory.
+
+In the second approach, the necessary glib-2.0, libusb, and libtirpc libraries are
+required to be installed on the target machine at a known location:
+``/usr/lib/epiq``. The SDK provides these libraries as packages for all
+supported platforms in the form of DEB and RPM files. Use :ref:`table5`
+to determine which package should be installed on the target machine.
+
+.. note:: A run-time package is not required for the Matchstiq S10 as
+	  long as the unit is updated to support Sidekiq SDK release
+	  v3.0.0, v4.0.0 for libusb, or v4.17.5 for libtirpc as the libraries
+    are included by default.
+
+With the introduction of glib-2.0, libusb, and libtirpc as support libraries, there
+are additional linker flags required when building and linking with
+|libsidekiq|. All of the required flags are captured in the
+``test_apps/Makefile``, but are repeated here for clarity. *These flags
+are used whenever deploying applications to a target machine.* Depending
+on the ``BUILD_CONFIG``, use these compiler flags (assuming SDK
+references its current location):
+
+.. _table5:
+
+.. table:: Linker Flags for glib-2.0, libusb, and libtirpc when deploying applications on target machines
+    :class: longtable
+    :align: center
+    :widths: 30 70
+
+    +---------------------------------------------+-----------------------------------------------------------+
+    | BUILD_CONFIG                                | Linker Flags                                              |
+    +=============================================+===========================================================+
+    | **x86\_64.gcc**                             | ::                                                        |
+    |                                             |                                                           |
+    |                                             |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -lglib-2.0 -lusb-1.0 -ltirpc -lpthread -lrt -lm \     |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+    | **x86\_32.gcc**                             | ::                                                        |
+    |                                             |                                                           |
+    |                                             |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -lglib-2.0 -lusb-1.0 -ltirpc -lpthread -lrt -lm \     |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+    | **aarch64.gcc6.3**                          | ::                                                        |
+    |                                             |                                                           |
+    |                                             |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -lglib-2.0 -lusb-1.0 -ltirpc -lpthread -lrt -lm \     |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+    | **arm\_cortex-a9.gcc4.8\_gnueabihf\_linux** | ::                                                        |
+    |                                             |                                                           |
+    |                                             |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -lglib-2.0 -lusb-1.0 -ltirpc -lpthread -lrt -lm \     |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+    | **arm\_cortex-a9.gcc4.8\_uclibc\_openwrt**  | ::                                                        |
+    |                                             |                                                           |
+    |                                             |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -lglib-2.0 -lintl -liconv -lusb-1.0 -ltirpc \         |
+    |                                             |     -lpthread -lrt -lm \                                  |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+    | **arm\_cortex-a9.gcc4.9.2\_gnueabi**        | ::                                                        |
+    |                                             |                                                           |
+    |                                             |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -liio -lz -lxml2 -ltirpc -lpthread -lrt -lm \         |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+    | **arm\_cortex-a9.gcc7.2.1\_gnueabihf**      | ::                                                        |
+    |                                             |                                                           |
+    | *(supported starting in v4.9.5)*            |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -liio -ltirpc -lpthread -lrt -lm \                    |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+    | **arm\_cortex-a9.gcc5.2\_glibc\_openwrt**   | ::                                                        |
+    |                                             |                                                           |
+    |                                             |    -L $(SDK)/lib/support/$(BUILD_CONFIG)/usr/lib/epiq \   |
+    |                                             |     -lglib-2.0 -lintl -liconv -lusb-1.0 -ltirpc \         |
+    |                                             |     -lpthread -lrt -lm \                                  |
+    |                                             |     -Wl,--enable-new-dtags \                              |
+    |                                             |     -Wl,-rpath,/usr/lib/epiq                              |
+    +---------------------------------------------+-----------------------------------------------------------+
+
+
+.. _table6:
+
+.. table:: Run-time Library Packages
+    :class: longtable
+    :align: center
+    :widths: 15 25 60
+
+    +-------------------------+-----------------+-----------------------------------------------------------+
+    | Distro Packaging Type   | BUILD\_CONFIG   | Run-time Library Package                                  |
+    +=========================+=================+===========================================================+
+    | Debian                  | x86\_64.gcc     | sidekiq-shared-libs-x86-64.gcc\_\ |release|\_amd64.deb    |
+    +                         +-----------------+-----------------------------------------------------------+
+    |                         | x86\_32.gcc     | sidekiq-shared-libs-x86-32.gcc\_\ |release|\_amd64.deb    |
+    +-------------------------+-----------------+-----------------------------------------------------------+
+    | Redhat (RPM)            | x86\_64.gcc     | sidekiq-shared-libs-x86\_64.gcc-\ |release|-1.x86\_64.rpm |
+    +                         +-----------------+-----------------------------------------------------------+
+    |                         | x86\_32.gcc     | sidekiq-shared-libs-x86\_32.gcc-\ |release|-1.x86\_64.rpm |
+    +-------------------------+-----------------+-----------------------------------------------------------+
+
+
+.. note:: A developer may replace glib-2.0, libusb, or libtirpc at their discretion
+	  with the understanding that |libsidekiq| is built and tested with glib
+	  version 2.42.1, libusb-1.0.20, and libtirpc-1.3.3.
+
+Additional Dependencies
+-----------------------
+
+In order for a Sidekiq card to be functional on a specific host
+platform, there are additional drivers (``dmadriver.ko``, ``skiq_platform_device.ko``, and
+``pci_manager.ko``) that |libsidekiq| depends on. The driver modules are
+pre-installed on the Sidekiq PDK laptop and any updates are included
+with the system update. If an alternative host platform is being
+targeted, please contact Epiq Solutions Support, :ref:`[5] <ref5>`,
+for driver availability and support for the alternative host platform.
+
+.. note:: In order to use the GPS / UART functionality of a Sidekiq
+          Stretch, the user must also make certain that
+          ``sidekiq_uart.ko`` and ``sidekiq_gps.ko`` are available for
+          the target platform.
+
+Sidekiq Stretch UART
+~~~~~~~~~~~~~~~~~~~~
+
+The Sidekiq Stretch's on-board GPS can provide NMEA-0183 messages through a UART
+device on the host system.  When both the ``sidekiq_uart.ko`` kernel module and
+the ``dmadriver.ko`` (v5.3.0 or later) kernel module are loaded, a UART
+character device file is available as ``/dev/ttySKIQ_UART<card>`` where
+``<card>`` is the Stretch's card index.  This device file may be used directly
+in any application (whether it uses |libsidekiq| or not) to receive NMEA-0183
+messages.  This device file may also be used in conjunction with ``gpsd`` and
+``gpsmon``.
+
+Sidekiq Stretch GPS sysfs
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Control and status monitoring of Sidekiq Stretch's on-board GPS is provided
+through several sysfs entries on the host system.  When both the
+``sidekiq_uart.ko`` kernel module and the ``dmadriver.ko`` (v5.3.0 or later)
+kernel module are loaded, several sysfs entries are available in
+``/sys/fs/skiq_gps/<card>`` where ``<card>`` is the Stretch's card index.  These
+entries are accessible from any application, whether it uses |libsidekiq| or
+not.  A short summary of the available entries as of v0.0.2 of ``sidekiq_gps``
+are as follows:
+
+- ``ant_bias_en`` -- enables (1) or disables (0) the antenna bias (see the
+  Sidekiq Stretch Hardware User's Manual for more details)
+- ``has_fix`` -- GPS has a fix (1) or does not have a fix (0)
+- ``power_en_n`` -- enables (0) or disables (1) power to the GPS module
+- ``reset`` -- controls the RESET line to the GPS module - (1) holds the device
+  in reset, while (0) allows it to run
+
+Setting up Sidekiq on New Host PC
+---------------------------------
+
+The following is a brief overview of how to configure a new host PC with
+Sidekiq. For details on configuring a Windows Host PC, refer to
+:ref:`windows`.
+
+Linux Host PC Requirements
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following are requirements for the Host PC.
+
+-  Must be running Linux.
+-  Must use a 64-bit processor.
+-  Must be running supported kernel version (see below tables)
+
+   -  In CentOS 7.6, the 3.10.0-957 kernel series (base through 12.2
+      releases) have incorrectly marked a required kernel symbol related
+      to DMA transactions as GPL. At this time, we are unable to provide
+      kernel modules for this kernel series as our DMA driver has a
+      proprietary license. *UPDATE*: Starting with release 21.2, the
+      3.10.0-957 kernel series has fixed this issue. The EL Repo has
+      fixed this issue starting with release 5.1 in the 3.10.0-957
+      kernel series.
+
+.. table:: Supported Ubuntu Kernels
+    :class: longtable
+    :align: center
+    :widths: 30 70
+
+    +-----------------------------------------------------------------------------------------+
+    | Ubuntu (x86 64-bit)                                                                     |
+    +===================================+=====================================================+
+    | **Low Latency Kernels**           | **Generic Kernels**                                 |
+    |                                   |                                                     |
+    | - 4.4.0-116-lowlatency            | - 4.4.0-21-generic through 4.4.0-210-generic        |
+    | - 5.3.0-45-lowlatency             | - 4.8.0-34-generic through 4.8.0-58-generic         |
+    |                                   | - 4.10.0-14-generic through 4.10.0-42-generic       |
+    |                                   | - 4.11.0-13-generic and 4.11.0-14-generic           |
+    |                                   | - 4.12.0-13-generic                                 |
+    |                                   | - 4.13.0-16-generic through 4.13.0-45-generic       |
+    |                                   | - 4.15.0-13-generic through 4.15.0-208-generic      |
+    |                                   | - 4.18.0-13-generic through 4.18.0-25-generic       |
+    |                                   | - 5.0.0-15-generic through 5.0.0-63-generic         |
+    |                                   | - 5.3.0-19-generic through 5.3.0-76-generic         |
+    |                                   | - 5.4.0-26-generic through 5.4.0-170-generic        |
+    |                                   | - 5.8.0-23-generic through 5.8.0-63-generic         |
+    |                                   | - 5.11.0-16-generic through 5.11.0-18-generic       |
+    |                                   | - 5.11.0-22-generic through 5.11.0-49-generic       |
+    |                                   | - 5.13.0-21-generic through 5.13.0-52-generic       |
+    |                                   | - 5.15.0-25-generic through 5.15.0-92-generic       |
+    |                                   | - 5.19.0-28-generic through 5.19.0-50-generic       |
+    |                                   | - 6.2.0-25-generic through 6.2.0-39-generic         |
+    |                                   | - 6.5.0-14-generic through 6.5.0-15-generic         |
+    |                                   | - 4.13.0-1031-oem                                   |
+    |                                   | - 4.15.0-1043-oem                                   |
+    |                                   | - 4.19.0-041900rc3-generic                          |
+    +-----------------------------------+-----------------------------------------------------+
+
+|
+
+.. table:: Supported CentOS 6.x Kernels
+    :align: center
+
+    +----------------------------------------------+
+    | CentOS 6.x                                   |
+    +==============================================+
+    | - 2.6.32-279.el6.x86\_64 series up to 22.1   |
+    | - 2.6.32-358.el6.x86\_64 series up to 23.2   |
+    | - 2.6.32-431.el6.x86\_64 series up to 29.2   |
+    | - 2.6.32-504.el6.x86\_64 series up to 30.3   |
+    | - 2.6.32-573.el6.x86\_64 series up to 26.1   |
+    | - 2.6.32-642.el6.x86\_64 series up to 15.1   |
+    | - 2.6.32-696.el6.x86\_64 series up to 30.1   |
+    | - 2.6.32-754.el6.x86\_64 series up to 33.1   |
+    | - 3.10.83-1.el6.elrepo.x86\_64               |
+    | - 3.10.92-1.el6.elrepo.x86\_64               |
+    +----------------------------------------------+
+
+|
+
+.. table:: Supported CentOS 7.x Kernels
+    :align: center
+
+    +-------------------------------------------------------------+
+    | CentOS 7.x                                                  |
+    +=============================================================+
+    | - 3.10.0-123.el7.x86\_64 series up to 20.1                  |
+    | - 3.10.0-229.el7.x86\_64 series up to 20.1                  |
+    | - 3.10.0-327.el7.x86\_64 series up to 36.3                  |
+    | - 3.10.0-514.el7.x86\_64 series up to 26.2                  |
+    | - 3.10.0-693.el7.x86\_64 series up to 21.1                  |
+    | - 3.10.0-862.el7.x86\_64 series up to 14.4                  |
+    | - 3.10.0-957.el7.x86\_64 series from **21.2 to 27.2**       |
+    | - 3.10.0-957.el7.centos.plus.x86\_64 from **5.1 to 27.2**   |
+    | - 3.10.0-1062.el7.x86\_64 series up to 18.1                 |
+    | - 3.10.0-1062.1.1.el7.centos.plus.x86\_64 series up to 18.1 |
+    | - 3.10.0-1127.el7.x86\_64 series up to 19.1                 |
+    | - 3.10.0-1127.el7.centos.plus.x86\_64 series up to 19.1     |
+    | - 3.10.0-1160.el7.x86\_64 series up to 42.2                 |
+    | - 3.10.0-1160.el7.centos.plus.x86\_64 series up to 42.2     |
+    | - 4.4.39-1.el7.elrepo.x86\_64                               |
+    | - 4.4.139-1.el7.elrepo.x86\_64                              |
+    | - 4.4.198-1.el7.elrepo.x86\_64                              |
+    | - 4.16.9-1.el7.elrepo.x86\_64                               |
+    | - 5.1.15-1.el7.elrepo.x86\_64                               |
+    +-------------------------------------------------------------+
+
+|
+
+.. table:: Supported CentOS 8.x Kernels
+    :align: center
+
+    +-------------------------------------------------------------------+
+    | CentOS 8.x                                                        |
+    +===================================================================+
+    | - 4.18.0-80.el8.x86\_64                                           |
+    | - 4.18.0-80.1.2.el8_0.x86\_64 series up to 11.2                   |
+    | - 4.18.0-147.el8.x86\_64                                          |
+    | - 4.18.0-147.0.3.el8\_1.x86\_64 series up to 8.1                  |
+    | - 4.18.0-147.3.1.el8\_1.centos.plus.x86\_64                       |
+    | - 4.18.0-147.5.1.el8\_1.centos.plus.x86\_64                       |
+    | - 4.18.0-193.el8.x86\_64                                          |
+    | - 4.18.0-193.1.2.el8\_2.x86\_64 series up to 19.1                 |
+    | - 4.18.0-193.6.3.el8\_2.centos.plus.x86\_64 series up to 19.1     |
+    | - 4.18.0-240.el8.x86\_64                                          |
+    | - 4.18.0-240.1.1.el8\_3.x86\_64 series up to 22.1                 |
+    | - 4.18.0-240.1.1.el8\_3.centos.plus.x86\_64 series up to 22.1     |
+    | - 4.18.0-305.3.1.el8.x86\_64 series up to 19.1                    |
+    | - 4.18.0-305.3.1.el8.centos.plus.x86\_64 series up to 19.1        |
+    | - 4.18.0-305.25.1.el8\_4.centos.plus.x86\_64                      |
+    | - 4.18.0-348.el8.x86\_64                                          |
+    | - 4.18.0-348.2.1.el8\_5.x86\_64                                   |
+    +-------------------------------------------------------------------+
+
+|
+
+.. table:: Supported Fedora and Debian Kernels
+    :align: center
+
+    +------------------------------+--------------------+
+    | Fedora                       | Debian             |
+    +==============================+====================+
+    | - 3.17.4-301.fc21.x86\_64    | - 3.16.0-4-amd64   |
+    | - 4.13.12-200.fc26.x86\_64   |                    |
+    | - 4.13.9-200.fc26.x86\_64    |                    |
+    | - 4.13.9-300.fc27.x86\_64    |                    |
+    | - 4.14.3-300.fc27.x86\_64    |                    |
+    | - 4.14.5-300.fc27.x86\_64    |                    |
+    | - 5.0.9-301.fc30.x86\_64     |                    |
+    +------------------------------+--------------------+
+
+|
+
+.. table:: Supported NVIDIA Jetson TX1 / TX2 Kernels
+    :align: center
+
+    +--------------------------------+--------------------------------+
+    | NVIDIA Jetson TX1              | NVIDIA Jetson TX2              |
+    +================================+================================+
+    | - JetPack 3.1 (L4T R28.1)      | - JetPack 3.1 (L4T R28.1)      |
+    | - JetPack 3.2.1 (L4T R28.2)    | - JetPack 3.2.1 (L4T R28.2.1)  |
+    | - JetPack 3.3 (L4T R28.2)      | - JetPack 3.3 (L4T R28.2.1)    |
+    | - JetPack 4.4.1 (L4T R32.4.4)  | - JetPack 4.2 (L4T R32.1)      |
+    | - JetPack 4.5 (L4T R32.5)      | - JetPack 4.2.1 (L4T R32.2)    |
+    | - JetPack 4.5.1 (L4T R32.5.1)  | - JetPack 4.2.2 (L4T R32.2.1)  |
+    | - JetPack 4.6 (L4T R32.6.1)    | - JetPack 4.2.3 (L4T R32.2.1)  |
+    | - JetPack 4.6.1 (L4T R32.7.1)  | - JetPack 4.3 (L4T R32.3.1)    |
+    | - JetPack 4.6.2 (L4T R32.7.2)  | - JetPack 4.4 (L4T R32.4.3)    |
+    | - JetPack 4.6.3 (L4T R32.7.3)  | - JetPack 4.4.1 (L4T R32.4.4)  |
+    |                                | - JetPack 4.5 (L4T R32.5)      |
+    |                                | - JetPack 4.5.1 (L4T R32.5.1)  |
+    |                                | - JetPack 4.6 (L4T R32.6.1)    |
+    |                                | - JetPack 4.6.1 (L4T R32.7.1)  |
+    |                                | - JetPack 4.6.2 (L4T R32.7.2)  |
+    |                                | - JetPack 4.6.3 (L4T R32.7.3)  |
+    +--------------------------------+--------------------------------+
+
+|
+
+.. table:: Supported NVIDIA Jetson Xavier/Orin Kernels
+    :align: center
+
+    +--------------------------------+
+    | NVIDIA Jetson Xavier/Orin      |
+    +================================+
+    | - JetPack 4.1.1 (L4T R31.1)    |
+    | - JetPack 4.2 (L4T R32.1)      |
+    | - JetPack 4.2.1 (L4T R32.2)    |
+    | - JetPack 4.2.2 (L4T R32.2.1)  |
+    | - JetPack 4.2.3 (L4T R32.2.1)  |
+    | - JetPack 4.3 (L4T R32.3.1)    |
+    | - JetPack 4.4 (L4T R32.4.3)    |
+    | - JetPack 4.4.1 (L4T R32.4.4)  |
+    | - JetPack 4.5 (L4T R32.5)      |
+    | - JetPack 4.5.1 (L4T R32.5.1)  |
+    | - JetPack 4.6 (L4T R32.6.1)    |
+    | - JetPack 4.6.1 (L4T R32.7.1)  |
+    | - JetPack 4.6.2 (L4T R32.7.2)  |
+    | - JetPack 4.6.3 (L4T R32.7.3)  |
+    | - JetPack 5.0.0 (L4T R34.1.0)  |
+    | - JetPack 5.0.1 (L4T R34.1.1)  |
+    | - JetPack 5.0.2 (L4T R35.1.0)  |
+    | - JetPack 5.1.0 (L4T R35.2.1)  |
+    | - JetPack 5.1.1 (L4T R35.3.1)  |
+    +--------------------------------+
+
+
+Configuring A New Host
+~~~~~~~~~~~~~~~~~~~~~~
+
+1) Install Sidekiq card in new host PC
+2) Download and install the latest Sidekiq update from Epiq Solutions
+   support forum, :ref:`[5] <ref5>`. Refer to :ref:`Installation Procedure` for
+   details on what the update procedure installs.
+3) Download and install ERA for Epiq Solutions support forum, :ref:`[5] <ref5>`.
+
+Developing for the Matchstiq S1x and S2x
+----------------------------------------
+
+The Matchstiq S1x and S2x platforms (see
+https://epiqsolutions.com/rf-transceiver/matchstiq-s/ for more details) are small
+form factor software defined radio platforms that have internal Sidekiq
+card(s). This means |libsidekiq| is used to develop custom applications
+for the Matchstiq S1x platform.
+
+The Sidekiq SDK already supports the processor architecture of the
+Matchstiq S1x and S2x platforms, however a cross-compiler is needed to support
+building custom applications. The toolchain may be downloaded from the Epiq
+Solutions Support forum using the following link:
+
+.. centered::
+    https://support.epiqsolutions.com/viewtopic.php?p=6395
+
+The toolchain is offered in either a Debian or RPM format and is
+installed at a specific location on the development machine and
+symlinked as expected by the Sidekiq SDK. The toolchain was created by
+OpenWRT's ImageBuilder framework.
+
+To verify correct toolchain installation, navigate to the Sidekiq SDK
+directory and compile the test applications specifying a ``BUILD_CONFIG``
+of ``arm_cortex-a9.gcc5.2_glibc_openwrt``. The applications may then be
+copied to the Matchstiq S1x or S2x unit and executed (as shown in the next code
+block). Before executing applications on the Matchstiq, it is
+imperative no other application is using the Sidekiq card.
+
+First, copy the executable to the Matchstiq using the *scp* command.
+
+.. parsed-literal::
+
+  linux$ cd sidekiq_sdk_v\ |release|\ /test_apps
+
+  linux$ make BUILD_CONFIG=arm_cortex-a9.gcc5.2_glibc_openwrt
+
+  ...
+  <build output truncated>
+  ...
+
+  linux$ scp bin/version_test root@192.168.2.140:/tmp/
+
+Then, shell into the Matchstiq and execute the application.
+
+.. parsed-literal::
+
+  linux$ ssh root@192.168.2.140
+  root@OpenWrt-sn760B:~# /tmp/version_test
+  1 card(s) found: 0 in use, 1 available!
+  Card IDs currently used     : 
+  Card IDs currently available: 0 
+  Info: initializing 1 card(s)...
+  SKIQ[20100]: <INFO> libsidekiq v\ |release|\  (gd0f29444f)
+  version_test[20100]: <INFO> Sidekiq card 0 is serial number=45822, hardware MPCIE C (rev C), product SKIQ-MPCIE-002 (PCIe) (part ES004206-C0-00)
+  version_test[20100]: <INFO> Sidekiq card 0 firmware v2.9
+  version_test[20100]: <INFO> Sidekiq card 0 FPGA v3.13.1, (date 20060518, FIFO size 16k)
+  version_test[20100]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  version_test[20100]: <INFO> Loading calibration data for Sidekiq PCIe, card 0
+  ***********************************************************
+  * libsidekiq v\ |release|
+  ***********************************************************
+  ***********************************************************
+  * Sidekiq Card 0
+    Card
+          accelerometer present: true
+          part type: PCIe
+          part info: ES004206-C0-00
+          serial: 45822
+          xport: PCIe
+          GPSDO: not supported by card
+    FPGA
+          version: 3.13.1
+          git hash: 0x0a4725c4
+          build date (yymmddhh): 20060518
+          tx fifo size: 16k samples
+    FW
+          version: 2.9
+    RF
+          reference clock: internal
+          reference clock frequency: 40000000 Hz
+
+  version_test[20100]: <INFO> Unlocking card 0
+
+Developing for the NVIDIA Jetson TX1/TX2/Xavier
+-----------------------------------------------
+
+The Sidekiq SDK already supports the processor architecture of the
+NVIDIA Jetson, however a cross-compiler is needed to support building
+custom applications. The toolchain may be downloaded from Linaro using
+the following link:
+
+.. centered::
+    https://releases.linaro.org/components/toolchain/binaries/6.3-2017.05/aarch64-linux-gnu/
+
+To verify correct toolchain installation, navigate to the Sidekiq SDK
+directory and compile the test applications specifying a ``BUILD_CONFIG``
+of ``aarch64.gcc6.3``. The applications may then be copied to the NVIDIA
+Jetson unit and executed.
+
+.. note:: On the NVIDIA Jetson TX1 / TX2 platform, FPGA programming or
+	  kernel module reloading causes a kernel panic after PCI
+	  coherent memory is exhausted. In its default configuration,
+	  it may happen in as few as two times. Refer to `this post
+	  <https://devtalk.nvidia.com/default/topic/1023501/pci_alloc_consistent-memory-leak-on-tx2-/>`__
+	  for details on how to patch the Jetson's TX2 kernel.
+
+Developing for the Sidekiq Z2
+-----------------------------
+
+The Sidekiq Z2 platform (see
+https://epiqsolutions.com/rf-transceiver/sidekiq-z2/ for more details) is a
+small form factor Linux system (including ARM CPU and Xilinx FPGA using
+the Zynq) and software defined radio platform that utilizes |libsidekiq|
+for SDR functionality. This means |libsidekiq| is used to develop custom
+applications for the Sidekiq Z2 platform.
+
+The Sidekiq SDK already supports the processor architecture of the
+Sidekiq Z2, however a cross-compiler is needed to support building
+custom applications. The Z2 is loaded with a Board Support Package
+(BSP); depending on which version of the Z2 BSP is targeted, a different
+cross-compiler and toolchain are required. Please note that as of
+version 3.0.0 of the Z2 BSP, the cross-compiler has changed and
+applications compiled for the 2.0.0 BSP will not work on the 3.0.0 BSP
+(and vice-versa). Both toolchains may be downloaded from the Epiq
+Solutions Support forum:
+
+.. table::
+    :align: center
+
+    +-------------------------+---------------------------------------------------------------+
+    | Z2 BSP v2.0 and below   | https://support.epiqsolutions.com/viewtopic.php?f=148&t=2455  |
+    +-------------------------+---------------------------------------------------------------+
+    | Z2 BSP v3.0 and above   | https://support.epiqsolutions.com/viewtopic.php?f=148&t=3189  |
+    +-------------------------+---------------------------------------------------------------+
+
+The toolchains are offered in either a Debian or RPM format and are
+installed at a specific location on the development machine and
+symlinked as expected by the Sidekiq SDK. These toolchain were
+downloaded from the Xilinx SDK and packaged by Epiq for distribution.
+
+To verify correct toolchain installation, navigate to the Sidekiq SDK
+directory and compile the test applications specifying a ``BUILD_CONFIG``
+of ``arm_cortex-a9.gcc4.9.2_gnueabi`` (for v2.0.0 or below of the BSP)
+or ``arm_cortex-a9.gcc7.2.1_gnueabihf`` (for v3.0.0 and above of the
+BSP). The applications may then be copied to the Sidekiq Z2 unit and
+executed (as shown in the next code block). Before executing
+applications on the Sidekiq Z2, it is imperative no other application is
+using the Sidekiq card.
+
+First, copy the executable to the Sidekiq Z2 using ``scp``.
+
+.. parsed-literal::
+
+  linux$ cd sidekiq_sdk_v\ |release|/test_apps
+  linux$ make BUILD_CONFIG=arm_cortex-a9.gcc7.2.1_gnueabihf
+  ...
+  <build output truncated>
+  ...
+  linux$ scp bin/version_test root@192.168.3.1:/tmp/
+
+Then, shell into the Sidekiq Z2 and execute the application.
+
+.. parsed-literal::
+
+  linux$ ssh root@192.168.3.1
+
+  root@sidekiqz2:~# /tmp/version_test
+  SKIQ[1163]: <INFO> Need to perform full initialization
+  SKIQ[1163]: <INFO> Performing detection of cards
+  SKIQ[1163]: <INFO> Sidekiq card detection completed successfully!
+  SKIQ[1163]: <INFO> Preliminary initialization complete, continue full initialization
+  1 card(s) found: 0 in use, 1 available!
+  Card IDs currently used     : 
+  Card IDs currently available: 0 
+  Info: initializing 1 card(s)...
+  SKIQ[1163]: <INFO> libsidekiq v\ |release|\  (gddb0a7bf7)
+  version_test[1163]: <INFO> Sidekiq card 0 is serial number=8028, Z2 (rev B) (part ES023201-B0-00)
+  version_test[1163]: <WARNING> FPGA capabilities indicate no support for reading/writing flash for card 0
+  version_test[1163]: <INFO> Sidekiq card 0 FPGA v3.14.1, (date 21042019, FIFO size unknown)
+  version_test[1163]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  version_test[1163]: <INFO> Loading calibration data for Sidekiq Z2, card 0
+  ***********************************************************
+  * libsidekiq v\ |release|
+  ***********************************************************
+  ***********************************************************
+  * Sidekiq Card 0
+    Card
+          accelerometer present: false
+          part type: Z2
+          part info: ES023201-B0-00
+          serial: 8028
+          xport: custom
+          GPSDO: not supported by card
+    FPGA
+          version: 3.14.1
+          git hash: 0x0cb0dec6
+          build date (yymmddhh): 21042019
+          tx fifo size: unknown
+    RF
+          reference clock: internal
+          reference clock frequency: 40000000 Hz
+
+  version_test[1163]: <INFO> Unlocking card 0
+
+Developing for the Matchstiq Z3u
+--------------------------------
+
+The Matchstiq Z3u platform (see
+https://epiqsolutions.com/rf-transceiver/matchstiq-z for more details) is a small
+form factor software defined radio platform that has a wideband transceiver supported
+via |libsidekiq|. This means |libsidekiq| is used to develop custom applications
+for the Matchstiq Z3u platform.
+
+The Sidekiq SDK already supports the processor architecture of the Matchstiq Z3u
+platforms, however a cross-compiler is needed to support building custom applications.
+A minimum of Sidekiq SDK v4.15.0 is required for any Matchstiq Z3u development.
+The toolchain may be downloaded from Linaro using the following link:
+
+.. centered::
+    https://releases.linaro.org/components/toolchain/binaries/6.3-2017.05/aarch64-linux-gnu/
+
+To verify correct toolchain installation, navigate to the Sidekiq SDK
+directory and compile the test applications specifying a ``BUILD_CONFIG``
+of ``aarch64.gcc6.3``. The applications may then be copied to the Matchstiq Z3u unit
+and executed.
+
+First, copy the executable from the host to the Matchstiq Z3u using ``scp``.
+
+.. parsed-literal::
+
+  host$ cd sidekiq_sdk_v\ |release|/test_apps
+  host$ make BUILD_CONFIG=aarch64.gcc6.3
+  ...
+  <build output truncated>
+  ...
+  host$ scp bin/version_test sidekiq@192.168.0.15:/tmp/
+
+Then, shell into the Sidekiq Z3u and execute the application.
+
+.. parsed-literal::
+
+  host$ ssh sidekiq@192.168.0.15
+
+  sidekiq@z3u:~$ /tmp/version_test
+  1 card(s) found: 0 in use, 1 available!
+  Card IDs currently used    :
+  Card IDs currently available: 0
+  Info: initializing 1 card(s)...
+  SKIQ[3396]: <INFO> libsidekiq v4.15.0
+  version_test[3396]: <INFO> Sidekiq card 0 is serial number=9X0J, Z3U (rev B) (part ES032201-B0-00)
+  version_test[3396]: <WARNING> FPGA capabilities indicate no support for reading/writing flash for card 0
+  version_test[3396]: <INFO> Sidekiq card 0 FPGA v3.14.0, (date 20081217, FIFO size unknown)
+  version_test[3396]: <INFO> Sidekiq card 0 is configured for an internal reference clock
+  version_test[3396]: <INFO> Loading calibration data for Sidekiq Z3U, card 0
+  ***********************************************************
+  * libsidekiq v4.15.0
+  ***********************************************************
+  ***********************************************************
+  * Sidekiq Card 0
+    Card
+        accelerometer present: true
+        part type: Z3U
+        part info: ES032201-B0-00
+        serial: 9X0J
+        xport: custom
+    FPGA
+        version: 3.14.0
+        git hash: 0x1eefb308
+        build date (yymmddhh): 20081217
+        tx fifo size: unknown
+    RF
+        reference clock: internal
+        reference clock frequency: 40000000 Hz
+  version_test[3396]: <INFO> Unlocking card 0

@@ -1,0 +1,16 @@
+.. raw:: latex
+
+    \begin{landscape}
+
+Sidekiq Z2 Block Diagram
+========================
+
+.. figure:: _static/sidekiq_z2_block_diagram.png
+   :alt: Sidekiq Z2 block diagram showing how libsidekiq + user applications fit in the system
+   :align: center
+
+   Sidekiq Z2 block diagram showing how libsidekiq + user applications fit in the system
+
+.. raw:: latex
+
+    \end{landscape}

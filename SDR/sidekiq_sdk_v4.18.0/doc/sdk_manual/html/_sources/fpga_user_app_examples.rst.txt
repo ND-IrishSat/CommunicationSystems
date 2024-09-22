@@ -1,0 +1,41 @@
+.. _fpga_user_app_examples:
+
+FPGA user\_app examples
+=====================================
+
+Transmitting samples from FPGA memory
+-------------------------------------
+
+Starting with FPGA PDK reference v3.12.0, the FPGA offers a way to allow
+signal playback (transmit) from its internal memories (BRAM) independent
+of transport. There is an accompanying test application
+(``tx_samples_from_FPGA_RAM``) included in the Sidekiq SDK bundle to
+showcase this FPGA user\_app interface. It uses FPGA user registers and
+libsidekiq public API functions to load samples from file(s) to each
+desired transmit handle's associated FPGA memory and begin playing back
+those circular sample buffers. On the Sidekiq X4, this test application
+and the user\_app interface may be used to demonstrate transmitting 4
+channels in a phase coherent manner.
+
+The software test application relies on support from the FPGA user\_app
+to have those Tx Internal Memory Interfaces at the appropriate addresses
+and sizes. If a user changes the user\_app implementation, it is up to
+them to make changes in the software test application accordingly.
+
+The ``tx_samples_from_FPGA_RAM`` application takes most of the same
+arguments that the ``tx_samples`` application does. The ``--source``
+argument copies the sample contents from the file into ALL specified
+transmit handles, effectively transmitting the sample waveform. The
+``--prefix`` argument is a convenience argument to specify a file prefix
+used to copy sample contents from different files into their
+corresponding transmit handles' internal memory interface in the FPGA
+user\_app.
+
+Section 7.3.7 of the Sidekiq X2 / X4 FPGA Developers Manual (v3.12.0)
+discusses this transmit memory interface from the FPGA's point of view.
+At v3.12.0 of the PDK, this user\_app addition is only available with
+stock Sidekiq X2 / X4 FPGA bitstreams and may be disabled during
+synthesis if desired by an FPGA developer. It is up to the user to
+ensure that both sides of this interface are working should any changes
+be made. This addition may not be enabled by default in future PDKs.
+

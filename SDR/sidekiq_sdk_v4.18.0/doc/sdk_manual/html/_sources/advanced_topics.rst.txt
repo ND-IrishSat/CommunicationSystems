@@ -1,0 +1,162 @@
+.. include:: replacements.rst
+
+.. _section_advanced_topics:
+
+Advanced Topics
+===============
+
+Adjusting the DMA Ring Buffer Packet Count (Linux only)
+-------------------------------------------------------
+
+Sidekiq radios that use the PCI / Thunderbolt bus as a transport interact with
+the kernel running on the host system through the DMA Driver kernel module. This
+kernel module handles the memory transfer of I/Q samples from the radio directly into
+the host's memory using Direct Memory Access (DMA); the kernel module preallocates
+a chunk of host memory and organizes it into a ring buffer, each element of which
+contains a "packet" of I/Q sample data from the radio.
+
+By default, the number of I/Q sample data packets is set to:
+
+* 1024 for Matchstiq S1x / S2x radios
+
+* 2048 for all other PCI / Thunderbolt based radios
+
+(Please note that Sidekiq Z2 and Matchstiq Z3u do not use the DMA Driver kernel module)
+
+Each ring buffer entry is 4096 bytes, so this effectively means that the DMA Driver on
+a host using 2048 ring buffer packets has 8MB of I/Q sample buffer space before the
+sample buffer runs out of space and overflows (leading to the
+:code:`skiq_rx_status_error_overrun` condition when calling :code:`skiq_receive()`).
+If the specified receive sample rate is fairly low and the application using the
+Sidekiq reads samples frequently enough, this may be a reasonable amount of buffer
+space. However, higher sample rate applications may require more available buffer
+space in order to capture samples without frequent overruns. For example, with a
+100Msps sample rate the default 8MB ring buffer can hold roughly 20 ms worth of
+I/Q sample data; the user application must consistently read samples from the radio
+at a faster rate than this to ensure that there are no overruns in the sample buffer.
+
+One option to help prevent overruns is to increase the sample buffer size, which
+can be done by increasing the number of entries in the DMA ring buffer; this can be
+done by specifying the :code:`RingBufferPacketCount` module parameter when loading the
+DMA Driver module. Using the :code:`modinfo` command, here is an example of the module
+parameters of the DMA Driver on an x86 host::
+
+    username@host:~/sidekiq_image_current/driver/5.4.0-39-generic$ modinfo dmadriver.ko
+    filename:       /home/username/sidekiq_image_current/driver/5.4.0-39-generic/dmadriver.ko
+    version:        5.4.1.0
+    description:    Northwest Logic PCI Express DMA Driver
+    license:        Proprietary
+    author:         Pro Code Works, LLC
+    srcversion:     AE21B1718769B0830391B7C
+    alias:          pci:v000019AAd00002280sv*sd*bc*sc*i*
+    alias:          pci:v000019AAd00005832sv*sd*bc*sc*i*
+    alias:          pci:v000019AAd00007021sv*sd*bc*sc*i*
+    alias:          pci:v000019AAd00007011sv*sd*bc*sc*i*
+    alias:          pci:v000019AAd0000E004sv*sd*bc*sc*i*
+    depends:        skiq_platform_device
+    retpoline:      Y
+    name:           dmadriver
+    vermagic:       5.4.0-39-generic SMP mod_unload
+    parm:           UseMSI:Use MSI [1 = TRUE|0 = FALSE] (default 1) (int)
+    parm:           UseMSIX:Use MSIX [1 = TRUE|0 = FALSE] (default 0) (int)
+    parm:           UseMSIMulti:Use MSI Multi-Vector [1 = TRUE|0 = FALSE] (default 1) (int)
+    parm:           UseIntCtrl:Use Interrupt Control [1 = TRUE|0 = FALSE] (default 1) (int)
+    parm:           DMADescriptorsPerEngine:Number of DMA Descriptors per Engine (int)
+    parm:           RingBufferPacketCount:Number of packets in the ring buffer (default 2048)
+
+(Note that the :code:`RingBufferPacketCount` parameter displays the default number of
+ring buffer entries selected for the host.)
+
+In order to increase the number of ring buffer entries, this number can be
+increased. For example::
+
+    username@host:~/$ sudo insmod $HOME/sidekiq_image_current/driver/$(uname -r)/dmadriver.ko RingBufferPacketCount=16384
+
+Setting :code:`RingBufferPacketCount=16384` increases the sample buffer size by eight
+times over the default settings (to 64MB) and provides approximately 160 ms of
+I/Q sample buffer space (given the 100Msps example given above). However, this
+also dramatically increases the amount of dedicated kernel memory needed on the
+host system (as DMA operations happen in kernel space), which may not be available
+on certain hosts. If the :code:`RingBufferPacketCount` value is set too high, the
+desired amount of buffer space may not be able to be allocated which can result in
+the module loading but failing to allocate the requested amount of memory. This error
+will show up in the system logs:
+
+.. code-block:: none
+    :emphasize-lines: 19, 20, 21
+
+    [  735.453649] DMAD: NorthWest Logic PCI Express DMA Driver 5.4.2.0
+    [  735.453650] DMAD:   Build (Sep 30 2020-21:54:17)
+    [  735.453650] DMAD:  Message logging enabled.
+    [  735.453675] DMAD: Config: Setting ring buffer packet count to 128000
+    [  735.453676] DMAD: Warning: DMADescriptorsPerEngine value (8192) too low for ring buffer packet count; expanding to 512000
+    [  735.456140] DMAD: Config: Device name is DMAD0
+    [  735.456170] DMAD 0000:02:00.0: enabling device (0000 -> 0002)
+    [  735.458788] DMAD: Config: Bar 0, pMemRangePhys=0xdf010000, BarCfg=0xdf010000
+    [  735.458789] DMAD: Config: BAR[0] Set to Register Type at Addr 0x000000000dd1c813
+    [  735.458790] DMAD: Config: BAR[0] Register 32-bit PhysAddr=0xDF010000 VirtAddr=000000000dd1c813 Len=0x10000
+    [  735.458791] DMAD: Config: Bar 1, pMemRangePhys=0xdf002000, BarCfg=0xdf002000
+    [  735.458791] DMAD: Config: BAR[1] Set to Mem Type
+    [  735.458792] DMAD: Config: BAR[1] Memory   32-bit PhysAddr=0xDF002000 VirtAddr=00000000a2c89dac Len=0x2000
+    [  735.458793] DMAD: Config: Bar 2, pMemRangePhys=0xdf000000, BarCfg=0xdf000000
+    [  735.458793] DMAD: Config: BAR[2] Set to Mem Type
+    [  735.458794] DMAD: Config: BAR[2] Memory   32-bit PhysAddr=0xDF000000 VirtAddr=000000000b4b9284 Len=0x2000
+    [  735.458803] DMAD: Config: Found a Packet Send Type DMA Engine
+    [  735.458803] DMAD: Config: Allocating 512000 descriptors sizeof 32
+    [  735.458865] DMAD: ERROR: Unable to allocate 16384000 DMA descriptors for DMA channel 0
+    [  735.458865] DMAD: ERROR: DMA initialization for adapter 0 failed, cannot use device
+    [  735.458940] DMAD: ERROR: Unable to attach to adapter
+
+If this error occurs, it is likely that the PCI transport will be inaccessible and
+the Sidekiq card will fail to be detected over PCI (on Sidekiq mPCIe and m.2 cards,
+the USB transport will still continue to function). However, as the DMA Driver is
+a separate component, no warning about this condition will be shown from |libsidekiq|;
+therefore, when experimenting with this parameter, it is important to verify through
+the system logs that the DMA Driver module loaded without errors. When this error
+occurs, It is recommended to unload the driver (via the :code:`rmmod dmadriver`)
+command and attempt to reload it using a smaller value for
+:code:`RingBufferPacketCount`.
+
+Be aware that the following message in the system logs is not fatal, but it does
+indicate that the :code:`DMADescriptorsPerEngine` parameter is being automatically
+adjusted to accommodate the specified :code:`RingBufferPacketCount` parameter::
+
+    username@host:~/$ dmesg
+    ...
+    [1307015.430356] DMAD: Config: Setting ring buffer packet count to 8192
+    [1307015.430356] DMAD: Warning: DMADescriptorsPerEngine value (8192) too low for ring buffer packet count; expanding to 32768
+
+As this is an advanced configuration setting, as of |libsidekiq| v4.15.0
+there is no default way to adjust the number of ring buffer entries when
+the DMA Driver is loaded on system startup. One option is to unload and
+reload the DMA Driver kernel module with the desired ring buffer size
+after system startup. Another option would be to modify the
+``.../sidekiq_image_current/driver/load_sidekiq_driver.sh`` file to
+include the :code:`RingBufferPacketCount` parameter when loading the DMA
+Driver (it is highly recommended to make a backup copy of this script before
+editing it).
+
+Configuring Sidekiq Drivers Using a Driver Configuration File
+-------------------------------------------------------------
+
+As of the |libsidekiq| v4.17.2 System Release, driver parameters can be
+automatically set using a per-module configuration file [1]_.  The
+:code:`modinfo -F parm <module_name>` command lists modifiable parameters
+which can be loaded from a configuration file.  The man page for
+:code:`modinfo` can be used for more info.  The name of the configuration
+file should match that of the module being configured; for instance,
+configuration options for the 'dmadriver' module should be placed into
+'dmadriver.conf'.  The configuration file needs to be saved in the
+``.../sidekiq_image_current/driver/driver_config`` folder.  Two examples of configuring
+module parameters can be found within the preinstalled example configuration file
+(``.../sidekiq_image_current/driver/driver_config/sidekiq_drivers.conf.example``)::
+
+    ### x86 device driver example configuration
+    options dmadriver DMADescriptorsPerEngine=8192
+    options dmadriver RingBufferPacketCount=2048
+
+    ### ARM device driver example configuration
+    options dmadriver DMADescriptorsPerEngine=4096
+    options dmadriver RingBufferPacketCount=1024
+
+.. [1] This functionality is not available on Matchstiq S1x and S2x products.

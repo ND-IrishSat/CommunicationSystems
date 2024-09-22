@@ -1,0 +1,238 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>FPGA Programming &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Power consumption states (mPCIe, m.2)" href="power_consumption.html" />
+    <link rel="prev" title="Detailed RF Port Configuration" href="rf_port_config.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fpga-programming">
+<span id="id1"></span><h1>FPGA Programming<a class="headerlink" href="#fpga-programming" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="transport-layer-requirements">
+<h2>Transport Layer Requirements<a class="headerlink" href="#transport-layer-requirements" title="Permalink to this headline">¶</a></h2>
+<p>In order to make use of a given Sidekiq, it is imperative to have the
+FPGA configured with the correct transport implementation. For example,
+an application that is designed to use the PCIe transport interface
+requires the FPGA to be loaded with an image implementing the PCIe
+components necessary for I/Q streaming. By default, a Sidekiq is
+configured with a PCIe-capable FPGA image. Applications designed to make
+use of PCIe as the primary transport layer will therefore require no
+additional actions in order to properly function. If another transport
+layer is required, such as USB, and/or the original PCIe image was
+erased, Epiq Solutions provides pre-generated FPGA image files to each
+customer within the Sidekiq image that can be saved into on board flash
+memory or dynamically loaded into the FPGA RAM at run time. Currently,
+the following files are provided in <code class="docutils literal notranslate"><span class="pre">sidekiq_image_current/fpga/</span></code>.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_mpcie_xport_pcie_latest.bin</span></code>: Configures the FPGA on a mini PCIe Sidekiq card for use over PCIe.</li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_mpcie_xport_usb_latest.bin</span></code>: Configures the FPGA on a mini PCIe Sidekiq card for use over USB.</li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_m2_xport_pcie_latest.bit</span></code>: Configures the FPGA on an m.2 Sidekiq card for use over PCIe.</li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_m2_xport_usb_latest.bit</span></code>: Configures the FPGA on an m.2 Sidekiq card for use over USB.</li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_x2_xport_pcie_latest.bin</span></code>: Configures the FPGA on Sidekiq X2 card for use over PCIe on the <a class="reference external" href="https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html">HiTech Global K-800 FMC Carrier</a></li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_x2_xcku115_xport_pcie_latest.bin</span></code>: Configures the FPGA on Sidekiq X2 card for use over PCIe on the <a class="reference external" href="https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html">HiTech Global K-800 FMC Carrier (with Xilinx Kintex Ultrascale KU115)</a></li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_x4_xport_pcie_latest.bin</span></code>: Configures the FPGA on Sidekiq X4 card for use over PCIe on the <a class="reference external" href="https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html">HiTech Global K-800 FMC Carrier</a></li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_x4_xcku115_xport_pcie_latest.bin</span></code>: Configures the FPGA on Sidekiq X4 card for use over PCIe on the <a class="reference external" href="https://www.xilinx.com/products/boards-and-kits/1-96z8ax.html">HiTech Global K-800 FMC Carrier (with Xilinx Kintex Ultrascale KU115)</a></li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_m2_2280_xport_pcie_latest.bit</span></code>: Configures the FPGA on a Sidekiq Stretch card for use over PCIe.</li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_nv100_xport_pcie_latest.bit</span></code>: Configures the FPGA on a Sidekiq NV100 card for use over PCIe</li>
+<li><code class="docutils literal notranslate"><span class="pre">sidekiq_image_z3u_latest.bit</span></code>: Configures the FPGA on a Matchstiq Z3u for use over custom transport</li>
+</ul>
+<p>Additionally, it is possible to create custom FPGA images for Sidekiq
+that implement user defined signal processing routines over either the
+PCIe or USB transport layer. For further details regarding custom FPGA
+images, refer to associated Sidekiq product’s FPGA Developer’s Manual.</p>
+</div>
+<div class="section" id="updating-the-fpga">
+<h2>Updating the FPGA<a class="headerlink" href="#updating-the-fpga" title="Permalink to this headline">¶</a></h2>
+<p>The FPGA image can be loaded into the RAM (mPCIe / m.2 / Z2 / Z3u for full
+reconfiguration and Stretch for partial reconfiguration) or it can be
+loaded from the flash. The FPGA image is automatically loaded from
+flash when the Sidekiq is powered up. A new image (full or partial)
+can be loaded into RAM for Sidekiq mPCIe, m.2, Z2, Stretch, or Matchstiq Z3u
+via the <code class="docutils literal notranslate"><span class="pre">prog_fpga</span></code> test application or with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_prog_fpga_from_file()</span></code> API.</p>
+<p>In addition to modifying just the runtime FPGA configuration, the FPGA
+image loaded from flash can be updated with the <code class="docutils literal notranslate"><span class="pre">store_user_fpga</span></code>
+test application or via the <code class="code docutils literal notranslate"><span class="pre">skiq_save_fpga_config_to_flash()</span></code>
+function <sup>*</sup>. Additionally,
+the FPGA configuration can be reloaded via the
+<code class="code docutils literal notranslate"><span class="pre">skiq_prog_fpga_from_flash()</span></code> API (not supported for Sidekiq Z2 or
+Matchstiq Z3u).  The FPGA configuration that
+is stored in flash is automatically loaded from flash when the Sidekiq
+card is powered up.</p>
+<p>At this time, the Annapolis Micro Systems’ WILDSTAR (WB3XZD) FMC
+Carrier’s FPGA bitstream can only be updated by using Vivado and the
+Xilinx Virtual Cable interface. Please refer to the FPGA PDK
+documentation for further details.</p>
+<p>When developing an application that updates the FPGA, it is highly
+suggested to take steps to prevent function calls that write to the FPGA
+or flash memory (such as the <code class="code docutils literal notranslate"><span class="pre">skiq_prog_fpga_from_file()</span></code> or
+<code class="code docutils literal notranslate"><span class="pre">skiq_save_fpga_config_to_flash()</span></code> API calls) from being
+interrupted and causing a partial write to occur. For UNIX-based
+systems, this involves masking and unmasking the <code class="code docutils literal notranslate"><span class="pre">SIGINT</span></code> and <code class="code docutils literal notranslate"><span class="pre">SIGTERM</span></code>
+signals such that these signals – which would normally halt execution of
+the program – are delayed until after the FPGA programming is finished.
+Also, it is advised to temporarily mask the <code class="code docutils literal notranslate"><span class="pre">SIGINT</span></code> and <code class="code docutils literal notranslate"><span class="pre">SIGTERM</span></code>
+signals before calling the <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code> API call. <code class="code docutils literal notranslate"><span class="pre">skiq_init()</span></code>
+may create additional threads that can receive and process signals
+unless specified by the parent thread (as threads inherit signal masks
+from their parent thread). See the <code class="docutils literal notranslate"><span class="pre">prog_fpga.c</span></code> test application
+source code for more details.</p>
+<p><sup>*</sup> - storing to flash not supported for Sidekiq Z2 and Matchstiq Z3u.</p>
+</div>
+<div class="section" id="fpga-images-in-flash">
+<h2>FPGA Images in Flash <sup>*</sup><a class="headerlink" href="#fpga-images-in-flash" title="Permalink to this headline">¶</a></h2>
+<p>All Sidekiq products’ flash memory have enough capacity to store at
+least two FPGA images: a golden (or fallback) image and a user image. As long as the
+user FPGA image is valid, this will be the image loaded from flash upon
+either power up or when the user requested that the FPGA image is
+reloaded from flash via the <code class="code docutils literal notranslate"><span class="pre">skiq_prog_fpga_from_flash()</span></code>
+function.</p>
+<p>If the user FPGA image stored in flash is not a valid configuration, the
+Sidekiq will automatically fallback to configure the FPGA with the golden image
+stored in flash. The golden FPGA image does not provide full Sidekiq
+capabilities. However, it does provide the ability to access the flash
+via the FPGA to store a new user FPGA image in flash. A new user FPGA
+image can be stored to flash via the <code class="docutils literal notranslate"><span class="pre">store_user_fpga</span></code> test
+application or via the <code class="code docutils literal notranslate"><span class="pre">skiq_save_fpga_config_to_flash()</span></code>
+function. A golden FPGA image must already be present in flash prior to
+updating the user flash image. The presence of the golden image in flash
+can be tested via the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_golden_fpga_present_in_flash()</span></code>. Updating an FPGA
+image saved in flash can be performed via the PCIe or USB interfaces as
+long as a valid golden image has already been programmed.</p>
+<p>The golden FPGA image is a fallback option in case the user FPGA image
+in flash is either corrupted or incomplete. There is no ability for the
+user to program their own golden FPGA bitstream. The golden FPGA image
+is programmed either in the factory or while applying a Sidekiq system
+update if a golden image has not already been saved to flash.</p>
+<p><sup>*</sup> - storing to flash not supported for Sidekiq Z2 and Matchstiq Z3u.</p>
+<div class="section" id="fpga-configuration-flash-slots">
+<h3>FPGA Configuration Flash Slots<a class="headerlink" href="#fpga-configuration-flash-slots" title="Permalink to this headline">¶</a></h3>
+<p>Starting in libsidekiq v4.12.0, for certain Sidekiq products, there are additional storage
+locations in the on-board flash for FPGA bitstreams.  This means that multiple FPGA bitstreams can
+be stored in flash and the FPGA can be configured from any slot that contains a valid bitstream.
+Each flash configuration slot contains the FPGA bitstream and has 64 bits of metadata associated
+with the slot.  The user may use this metadata to create a mapping between the stored bitstream and
+its intended purpose.  For example, the user can store an abbreviated hash of the bitstream in the
+metadata so that a full dump of the flash contents is not necessary when verifying what bitstream is
+stored in the config slot.</p>
+<p>There are six new API functions that provide access to the flash configuration slots and they are
+listed here with a brief description:</p>
+<ul class="simple">
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_prog_fpga_from_flash_slot()</span></code> – provides the caller the ability to configure the FPGA
+from the specified slot</li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_save_fpga_config_to_flash_slot()</span></code> – stores an FPGA bitstream at the specified slot</li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_verify_fpga_config_in_flash_slot()</span></code> – verifies the contents of the flash
+configuration slot against the specified <code class="code docutils literal notranslate"><span class="pre">FILE</span> <span class="pre">stream</span></code></li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_fpga_config_flash_slot_metadata()</span></code> – reads the 64-bit metadata associated with
+the specified flash configuration slot</li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_find_fpga_config_flash_slot_metadata()</span></code> – iterates through the available flash
+configuration slots to find the specified metadata</li>
+<li><code class="code docutils literal notranslate"><span class="pre">skiq_read_fpga_config_flash_slots_avail()</span></code> – provides the caller with the number of
+available slots for a given card</li>
+</ul>
+<p>As of libsidekiq v4.12.0, there are three Sidekiq products that may have more than one
+configuration slot available.  The Sidekiq Stretch (M.2-2280) has <strong>six</strong> configuration slots
+available.  The Sidekiq X2 and Sidekiq X4, when part of the HTG-K800 FMC carrier (Xilinx KU060
+only), each have <strong>two</strong> configuration slots available.  The Sidekiq NV100 has <strong>six</strong> configuration
+slots available as of libsidekiq v4.17.0.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FPGA Programming</a><ul>
+<li><a class="reference internal" href="#transport-layer-requirements">Transport Layer Requirements</a></li>
+<li><a class="reference internal" href="#updating-the-fpga">Updating the FPGA</a></li>
+<li><a class="reference internal" href="#fpga-images-in-flash">FPGA Images in Flash <sup>*</sup></a><ul>
+<li><a class="reference internal" href="#fpga-configuration-flash-slots">FPGA Configuration Flash Slots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="rf_port_config.html" title="previous chapter">Detailed RF Port Configuration</a></li>
+      <li>Next: <a href="power_consumption.html" title="next chapter">Power consumption states (mPCIe, m.2)</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fpga_programming.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/fpga_programming.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

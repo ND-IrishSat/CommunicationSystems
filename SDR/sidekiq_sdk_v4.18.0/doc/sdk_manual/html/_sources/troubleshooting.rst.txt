@@ -1,0 +1,140 @@
+.. _troubleshooting:
+
+Troubleshooting a Sidekiq Installed in a New Host :sup:`*`
+==========================================================
+
+The following subsections address common issues when attempting to use a
+Sidekiq card in a new host system. If there are any questions on these
+steps or if additional problems are encountered, contact Epiq Solutions
+support, :ref:`[5] <ref5>`.
+
+Observing The LED State (Sidekiq mPCIe and Sidekiq m.2 only)
+------------------------------------------------------------
+
+If the Sidekiq card is not appearing when running the ``version_test``
+application, basic hardware functionality can be determined by
+monitoring the state of the LEDs on the Sidekiq card. This can be done
+independent of the drivers or kernel version.
+
+With the Sidekiq installed in the host system, the host can be powered
+on and the 2 LEDs on the card described as User LED #1 (near the edge
+of the board) and User LED #2 (towards the middle of the board). These
+LED locations are highlighted in Figure 2 of the Hardware User's
+Manual.
+
+When powering up the host, LED #2 turn on and quickly off, and then
+about a half second later, turn back on. This LED reflects the state
+of the FPGA configuration being loaded. At some point, either at the
+same time or later during the boot process, LED #1 should also turn
+on. This LED reflects the state of the PCIe link. If LED 1 is on, then
+the PCIe link has been established successfully. If both LEDs are on,
+then there is a good chance that the hardware will enumerate correctly
+on the host.
+
+If the LEDs do not behave as described above, contact Epiq Solutions
+support, :ref:`[5] <ref5>`, with information on what the behavior of the LEDs are
+and the host system being used.
+
+Verifying the Hardware Interfaces Detected in Linux 
+----------------------------------------------------
+
+Once the host completes booting into Linux, the USB and PCIe interfaces
+(if present) of the Sidekiq card can be detected (independent of kernel
+or driver versions). The USB interface can be checked by running ``lsusb``.
+The output of ``lsusb`` from the Sidekiq PDK laptop is shown below.
+The line highlighted below is a Sidekiq mPCIe card.
+
+.. code-block:: none
+  :emphasize-lines: 3
+
+  Bus 001 Device 002: ID 8087:8008 Intel Corp.
+  Bus 002 Device 002: ID 8087:8000 Intel Corp.
+  Bus 003 Device 002: ID 04b4:1004 Cypress Semiconductor Corp.
+  Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+  Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+  Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+  Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+  Bus 001 Device 003: ID 0c45:64d0 Microdia
+  Bus 002 Device 003: ID 8087:07da Intel Corp.
+  Bus 002 Device 004: ID 0a5c:5801 Broadcom Corp. BCM5880 Secure Applications Processor
+
+Not all host systems connect the USB interface on the miniPCIe or M.2 connector
+to the processor. If *lsusb* does not show the Sidekiq card, it is
+possible that the host system being used does not have the USB routed
+properly. If this is observed, contact Epiq Solutions support,
+:ref:`[5] <ref5>`, with information on the host system being used.
+Also note that Sidekiq mPCIe and Sidekiq m.2 have USB interfaces whereas
+other Sidekiq products do not.
+
+.. table:: Sidekiq PCIe PID/VID Identifiers
+    :align: center
+
+    +----------------------------+---------------+
+    | **Product**                | **PID / VID** |
+    +============================+===============+
+    | Sidekiq mPCIe              | ``19AA:E004`` |
+    +----------------------------+---------------+
+    | Sidekiq m.2                | ``19AA:7021`` |
+    +----------------------------+---------------+
+    | Sidekiq Stretch (m.2-2280) | ``19AA:2280`` |
+    +----------------------------+---------------+
+    | Sidekiq NV100              | ``19AA:2280`` |
+    +----------------------------+---------------+
+    | Sidekiq X2                 | ``19AA:5832`` |
+    +----------------------------+---------------+
+    | Sidekiq X4                 | ``19AA:5832`` |
+    +----------------------------+---------------+
+
+The PCIe interface can be checked by running ``lspci``. The output of
+``lspci`` executed on the Sidekiq PDK laptop is shown below, where a
+Sidekiq mPCIe card is highlighted.
+
+.. code-block:: none
+  :emphasize-lines: 22
+
+  00:00.0 Host bridge: Intel Corporation Xeon E3-1200 v3/4th Gen Core Processor DRAM Controller
+  00:01.0 PCI bridge: Intel Corporation Xeon E3-1200 v3/4th Gen Core Processor PCI Express x16 Controller
+  00:02.0 VGA compatible controller: Intel Corporation 4th Gen Core Processor Integrated Graphics Controller
+  00:03.0 Audio device: Intel Corporation Xeon E3-1200 v3/4th Gen Core Processor HD Audio Controller   
+  00:14.0 USB controller: Intel Corporation 8 Series/C220 Series Chipset Family USB xHCI
+  00:16.0 Communication controller: Intel Corporation 8 Series/C220 Series Chipset Family MEI Controller #1
+  00:16.3 Serial controller: Intel Corporation 8 Series/C220 Series Chipset Family KT Controller
+  00:19.0 Ethernet controller: Intel Corporation Ethernet Connection I217-LM
+  00:1a.0 USB controller: Intel Corporation 8 Series/C220 Series Chipset Family USB EHCI #2
+  00:1b.0 Audio device: Intel Corporation 8 Series/C220 Series Chipset High Definition Audio Controller
+  00:1c.0 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #1
+  00:1c.2 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #3
+  00:1c.4 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #5
+  00:1c.5 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #6
+  00:1c.6 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #7
+  00:1c.7 PCI bridge: Intel Corporation 8 Series/C220 Series Chipset Family PCI Express Root Port #8
+  00:1d.0 USB controller: Intel Corporation 8 Series/C220 Series Chipset Family USB EHCI #1
+  00:1f.0 ISA bridge: Intel Corporation QM87 Express LPC Controller
+  00:1f.2 RAID bus controller: Intel Corporation 82801 Mobile SATA Controller [RAID mode]
+  00:1f.3 SMBus: Intel Corporation 8 Series/C220 Series Chipset Family SMBus Controller
+  01:00.0 Display controller: Advanced Micro Devices, Inc. [AMD/ATI]
+  02:00.0 Signal processing controller: Device 19aa:e004
+  03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6235
+  0e:00.0 SD Host controller: O2 Micro, Inc. SD/MMC Card Reader Controller
+
+If the PCIe interface is not present in the ``lspci`` output, contact Epiq Solutions
+support, :ref:`[5] <ref5>`, with information on the host system being
+used.
+
+If both the USB and PCIe interfaces are detected by Linux properly, then
+it is likely that the Sidekiq card will work properly with the host
+system.
+
+.. note:: The Sidekiq X2, X4, and Stretch will not be present on the host's USB.
+
+Checking Kernel and Drivers
+---------------------------
+
+The Sidekiq drivers are automatically loaded on bootup through either a systemd or init.d script
+depending on the host operating system.  In a systemd configuration, the service script is located
+at ``/lib/systemd/system/sidekiq.service`` where as the init.d script is located at
+``/etc/init.d/sidekiq``. In order for proper behavior, the kernel version used must match the kernel
+versions listed in :ref:`Developing for Alternative Host Platforms`. To request an alternative
+kernel or further details on driver validation, contact Epiq Solutions support, :ref:`[5] <ref5>`.
+
+:sup:`*` - this section does not apply to Sidekiq Z2 and Matchstiq Z3u

@@ -1,0 +1,495 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Document Revision History &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Links" href="references.html" />
+    <link rel="prev" title="Sidekiq Software Development Manual" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="document-revision-history">
+<h1>Document Revision History<a class="headerlink" href="#document-revision-history" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable colwidths-given docutils align-center">
+<colgroup>
+<col width="15%" />
+<col width="15%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Date</th>
+<th class="head">Revision</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>04/28/2014</td>
+<td>0.1</td>
+<td>Initial version</td>
+</tr>
+<tr class="row-odd"><td>05/01/2014</td>
+<td>0.2</td>
+<td>Updates after comments</td>
+</tr>
+<tr class="row-even"><td>05/27/2014</td>
+<td>0.3</td>
+<td>Updates for SDK v0.9</td>
+</tr>
+<tr class="row-odd"><td>06/10/2014</td>
+<td>0.4</td>
+<td>Updates for SDK v0.10, system update 20140606</td>
+</tr>
+<tr class="row-even"><td>08/18/2014</td>
+<td>0.5</td>
+<td>Updates for SDK v0.14, system update 20140818</td>
+</tr>
+<tr class="row-odd"><td>10/13/2014</td>
+<td>0.6</td>
+<td>Updates for SDK v1.1, system update 20141013</td>
+</tr>
+<tr class="row-even"><td>01/09/2015</td>
+<td>0.7</td>
+<td>Updates for SDK v1.6, system update 20150109</td>
+</tr>
+<tr class="row-odd"><td>09/03/2015</td>
+<td>1.0</td>
+<td>Updates for SDK v2.0, system update 20150908</td>
+</tr>
+<tr class="row-even"><td>11/03/2015</td>
+<td>1.1</td>
+<td>Updates for SDK v2.3, system update 20151103</td>
+</tr>
+<tr class="row-odd"><td>03/25/2016</td>
+<td>1.2</td>
+<td><p class="first">Updates for Matchstiq S10 platform</p>
+<ul class="last simple">
+<li>Added Sections 10.5, 10.5.1, and 10.5.2</li>
+<li>Updates in Section 10.2 to indicate libc2.12 BUILD_CONFIG no
+longer required.</li>
+<li>Updated for glib and deployment in Section 10.2.1</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>04/20/2016</td>
+<td>1.2</td>
+<td>Updates for SDK v3.0.0, system update v3.0.0 20160413</td>
+</tr>
+<tr class="row-odd"><td>05/30/2016</td>
+<td>1.3</td>
+<td>Updates for SDK v3.0.3</td>
+</tr>
+<tr class="row-even"><td>06/20/2016</td>
+<td>1.4</td>
+<td>Updates for SDK v3.1.0</td>
+</tr>
+<tr class="row-odd"><td>07/07/2016</td>
+<td>1.5</td>
+<td><p class="first">Updates for SDK v3.2.0</p>
+<ul class="last simple">
+<li>Migrated Appendix 6 to external document set</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>07/11/2016</td>
+<td>1.5-develop</td>
+<td>Adding information regarding RF IC control output in metadata</td>
+</tr>
+<tr class="row-odd"><td>08/04/2016</td>
+<td>1.5-develop</td>
+<td>Updated channel bandwidth configuration</td>
+</tr>
+<tr class="row-even"><td>08/04/2016</td>
+<td>1.5-develop</td>
+<td>Add information regarding blocking receive feature</td>
+</tr>
+<tr class="row-odd"><td>08/10/2016</td>
+<td>1.6</td>
+<td>Generic update for v3.3.0</td>
+</tr>
+<tr class="row-even"><td>09/27/2016</td>
+<td>1.6-develop</td>
+<td>RF port configuration update</td>
+</tr>
+<tr class="row-odd"><td>09/29/2016</td>
+<td>1.7</td>
+<td>Miscellaneous updates for v3.4.0</td>
+</tr>
+<tr class="row-even"><td>01/05/2017</td>
+<td>1.8</td>
+<td><p class="first">Updates for SDK v3.5.0</p>
+<ul class="last simple">
+<li>Details on USB RX streaming (new transport) and FAQ</li>
+<li>Details on logging function registration</li>
+<li>Details on ref_clock test application and FAQ</li>
+<li>Removed references to manual RFIC initialization as it now
+takes place during skiq_init() call.</li>
+<li>Added to list of supported Linux kernels</li>
+<li>Added reference to mxSidekiq, a MATLAB extension for
+controlling Sidekiq and transferring data with Sidekiq</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>05/08/2017</td>
+<td>2.0</td>
+<td><p class="first">Updates for SDK v4.0.0</p>
+<ul class="last simple">
+<li>Updates for libusb and deployment in Section 10.2.1</li>
+<li>skiq_init() and other general v4.0.0 updates</li>
+<li>Updated section 9.10 for skiq_receive() and new
+skiq_rx_block_t type definition</li>
+<li>Updated section 9.13 for skiq_transmit() and new
+skiq_tx_block_t type definition</li>
+<li>Updated Tables 6 and 7 with new supported kernel versions
+which include 4.8 and 4.10 series kernels</li>
+<li>Added accessing performance appendix</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>06/27/2017</td>
+<td>2.1</td>
+<td>Adding preliminary Sidekiq X2 details</td>
+</tr>
+<tr class="row-odd"><td>09/22/2017</td>
+<td>2.2</td>
+<td><p class="first">Updates for SDK v4.2.0</p>
+<ul class="last simple">
+<li>Details on supported Sidekiq power consumption states in
+Appendix 9</li>
+<li>Updated Tables 6 and 7 with new supported kernel versions
+which include 4.11 and 4.12 series kernels</li>
+<li>Updated Sidekiq X2 diagram</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>02/14/2018</td>
+<td>2.3</td>
+<td><p class="first">Updates for SDK v4.4.0</p>
+<ul class="last simple">
+<li>Added details on Sidekiq X2 Sample Rate / Bandwidth Settings</li>
+<li>Updated Sidekiq mPCIe and m.2 Channel Bandwidth settings</li>
+<li>Corrected Rx IQ Packet Structure in Figure 5</li>
+<li>Section 10.2.1: Added compiler flags for BUILD_CONFIGs:
+aarch64.gcc6.3 and arm_cortex-a9.gcc4.9.2_gnueabi</li>
+<li>Added Section 9.10.3: Using receive calibration offsets</li>
+<li>Updated supported kernel versions in Tables 7 and 8</li>
+<li>Added Section 10.6 Developing for the NVIDIA Jetson TX1/TX2</li>
+<li>Added Appendix 10 – Windows Sidekiq Development</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>06/13/2018</td>
+<td>2.4-develop</td>
+<td><p class="first">Updates for SDK v4.6.0</p>
+<ul class="last simple">
+<li>Fixed tables in Appendix 1</li>
+<li>Added more details on FPGA programming in Appendix 4</li>
+<li>Added Section 9.7: RF Port Configuration</li>
+<li>Added Section 9.16.1 to describe new API functions for
+working with multiple handles when starting and stopping
+receive streaming</li>
+<li>Added Section 9.19 on TX quadrature calibration details</li>
+<li>Added Section 9.20 on Receive Stream Mode details</li>
+<li>Added Section 10.7: Developing for the Sidekiq Z2</li>
+<li>Updated supported kernel versions in Tables 7 and 8.  Added a
+lot more driver support for CentOS distributions.</li>
+<li>Added introduction to Windows support in Appendix 10: Windows
+10 is now supported.  Sidekiq X2 is also supported.</li>
+<li>Added details regarding new TX timestamps allowed late mode</li>
+<li>Added appendix for detailed RF port configuration</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>06/15/2018</td>
+<td>2.4</td>
+<td>Finalize updates for SDK v4.6.0</td>
+</tr>
+<tr class="row-odd"><td>09/21/2018</td>
+<td>2.5-develop</td>
+<td><p class="first">Updates for SDK v4.7.0</p>
+<ul class="last simple">
+<li>Added Balanced mode description to Section 9.20</li>
+<li>Added preliminary Sidekiq X4 details</li>
+<li>Added details on 1PPS source selection</li>
+<li>Added details on additional reference clock configuration</li>
+<li>Updated X2 Architecture Diagram</li>
+<li>Updated supported kernel versions in Tables 7 and 8</li>
+<li>Added section 9.10.4 on using I/Q phase and amplitude
+calibration</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>09/24/2018</td>
+<td>2.5</td>
+<td>Finalize updates for SDK v4.7.0</td>
+</tr>
+<tr class="row-odd"><td>01/30/2019</td>
+<td>2.6-develop</td>
+<td><p class="first">Updates for SDK v4.9.0</p>
+<ul class="last simple">
+<li>Updated Sidekiq X4 Architecture Diagram</li>
+<li>Added details on new Sidekiq X2 profiles</li>
+<li>Added details on creating/loading runtime profile for Sidekiq
+X2</li>
+<li>Added RFIC control output details for Sidekiq X2 and Sidekiq
+X4</li>
+<li>Updated support kernel versions in Tables 7 and 8
+- Added support for NVIDIA Jetson platforms (JetPack / L4T)</li>
+<li>Updated Section 14.2 to include information about Annapolis
+Micro Systems’ WILDSTAR FMC Carrier</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>02/05/2019</td>
+<td>2.6</td>
+<td>Finalize updates for SDK v4.9.0</td>
+</tr>
+<tr class="row-odd"><td>07/25/2019</td>
+<td>2.7</td>
+<td><p class="first">Updates for SDK v4.10.0</p>
+<ul class="last simple">
+<li>Table 3: SDK Tarball Files, update to include
+tx_samples_from_FPGA_RAM</li>
+<li>Add Section 9.8: include information for adjusting the
+ordering complex samples (I/Q) for both TX/RX</li>
+<li>Section 9.12.1: Include text on special case for dual channel
+transmit and the TX FIFO size limit</li>
+<li>Section 10.2.1: Add compiler flags for BUILD_CONFIG:
+arm_cortex-a9.gcc7.2.1_gnueabihf</li>
+<li>Tables 7 and 8: update supported kernel versions</li>
+<li>Section 11.1.3: Fixed typo in decimation factor example</li>
+<li>Section 11.2.1.1: Add section to discuss Options for Sample
+Decimation (in X2 and X4)</li>
+<li>Section 20.4: add subsections to discuss MinGW-64 versus
+Visual Studio usage</li>
+<li>Table 14: RF Port Mapping, update Sidekiq X4 C1/D1 entries</li>
+<li>Appendix 12 – FPGA user_app examples, added Section 22.1:
+Transmitting samples from FPGA memory</li>
+<li>Appendix 13 – Release History, update release notes for
+v4.9.1 through v4.9.5 and v4.10.0</li>
+<li>Added Frequency Hopping section 9.5.1</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>10/15/2019</td>
+<td>2.8</td>
+<td><p class="first">Updates for SDK v4.11.0</p>
+<ul class="last simple">
+<li>Transition to using Sphinx for documentation, revision
+history references no longer apply</li>
+<li>Add new product information for Sidekiq Stretch (M.2-2280)</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>02/03/2020</td>
+<td>2.9</td>
+<td><p class="first">Updates for SDK v4.12.0</p>
+<ul class="last simple">
+<li>Update supported kernel versions</li>
+<li>Add subsection on “FPGA Configuration Flash Slots”</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>06/30/2020</td>
+<td>2.10</td>
+<td><p class="first">Updates for SDK v4.13.0</p>
+<ul class="last simple">
+<li>Update supported kernel versions</li>
+<li>Add subsection on “Sidekiq X4 - Methods of LO frequency
+tuning”</li>
+<li>Add note regarding Sidekiq X4 and TxA1/TxB1 transmit
+capability</li>
+<li>Update section on “Dynamic Use of Sidekiq Cards”</li>
+<li>Update code example for Frequency Hopping</li>
+<li>Added RX Calibration to “Automatic Calibration”</li>
+<li>Add FAQ regarding timestamp slips within products using
+the AD9361 RFIC</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>10/13/2020</td>
+<td>2.11</td>
+<td><p class="first">Updates for SDK v4.14.0</p>
+<ul class="last simple">
+<li>Update supported kernel versions</li>
+<li>Add information on new exit handler in the “Exit” section of
+“Developing Apps”</li>
+<li>Add “Hotplug” section to “Developing Apps”</li>
+<li>Update “Clock and Time Management Resources” section of
+“Developing Apps” to expand on reference clock switching</li>
+<li>Update information on sample rate/tuning function call order</li>
+<li>Add Sidekiq X4 specific section “Pin Control enable of RFIC
+signal paths”</li>
+<li>Update “Configuring Sample Rate / Channel Bandwidth” with
+more information on generating profiles for Sidekiq X4</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>2/3/2021</td>
+<td>2.12</td>
+<td><p class="first">Updated for SDK v4.15.0</p>
+<ul class="last simple">
+<li>Update supported kernel versions</li>
+<li>Add “Advanced Topics” section to “Hosts &amp; Platforms”</li>
+<li>Update “Clock and Time Management Resources” section of
+“Developing Apps” to include information on the use of the
+GPSDO in Sidekiq Stretch (m.2-2280)</li>
+<li>Add Matchstiq Z3u details</li>
+<li>Add “Example X4 Use Cases” section to demonstrate typical Rx
+usage scenarios</li>
+<li>Add “DKMS” section describing how DKMS is used with Sidekiq
+kernel modules</li>
+<li>Update “Detailed RF Port Configuration” section</li>
+<li>Update “Sidekiq X4 Built-in Profiles” section</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>5/28/2021</td>
+<td>2.13</td>
+<td><p class="first">Updated for SDK v4.16.0</p>
+<ul class="last simple">
+<li>Add “Using Libsidekiq Remotely” section describing the
+network transport (currently Z3u &amp; Z2 only)</li>
+<li>Add “Tx Timestamp Clock Source selection” section to
+“Developing Apps”</li>
+<li>Update “Clock and Time Management Resources” section to
+include Matchstiq Z3u details</li>
+<li>Update Sidekiq X4 diagram</li>
+<li>Update “Number of Filter Taps” table for AD9631/4 parts in
+“Configuring Sample Rate / Channel Bandwidth”</li>
+<li>Update code examples in “Developing Apps”</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>10/14/2021</td>
+<td>2.14</td>
+<td><p class="first">Updated for SDK v4.17.0</p>
+<ul class="last simple">
+<li>Add Sidekiq NV100 details</li>
+<li>Correct filter line-up for last entry in the Decimation /
+Interpolation Factor table</li>
+<li>Add “Analog Filtering” section describing how to override the
+analog filtering settings on AD936x-based products</li>
+<li>Update supported kernel versions</li>
+<li>Add <code class="docutils literal notranslate"><span class="pre">read_gpsdo.c</span></code> to the list of included example apps</li>
+<li>Add paragraph in the “Clock and Time Management Resources”
+section describing how some Sidekiq products support changing
+the reference clock frequency at run-time with the libsidekiq
+API</li>
+<li>Updated the network transport’s unsupported API functions</li>
+<li>Add SW4 and SW5 Errata</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>3/07/2022</td>
+<td>2.15</td>
+<td><p class="first">Updated for SDK v4.17.2</p>
+<ul class="last simple">
+<li>Update supported kernel versions</li>
+<li>Add table listing NV100 supported Rx bandwidth percentages</li>
+<li>Add note regarding NV100 sample rate dead-zones and a
+reference to the ADRV9001 User’s Guide</li>
+<li>Fix incorrect tx_hdl listed in the RF port mapping for NV100</li>
+<li>Update SW5 Errata to indicate resolution in FPGA v3.16.1</li>
+<li>Correct X4 Tx sample rates table, removing C1/D1 and add a
+note for configuring Rx handles at rates &gt;= 200Msps</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>2/02/2024</td>
+<td>2.20</td>
+<td><p class="first">Updated for SDK v4.18.0</p>
+<ul class="last simple">
+<li>Update supported kernel versions</li>
+<li>Include additional use case examples for capturing phase
+coherent data for Sidekiq X4 and Sidekiq NV100</li>
+<li>Add note describing user calibration for adjusting sample
+shifts</li>
+<li>Add a table describing the LO mapping for Sidekiq NV100</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Sidekiq Software Development Manual</a></li>
+      <li>Next: <a href="references.html" title="next chapter">Links</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/revision_history.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/revision_history.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,10 @@
+.. _sidekiq_api:
+
+Sidekiq API
+===========
+
+The Doxygen output is included in the SDK bundle as HTML and
+PDF. Please refer to ``sidekiq_sdk_current/doc/html`` or
+``sidekiq_sdk_current/doc/Sidekiq_API_``\ |version|\ ``.0.pdf``
+for information regarding the API.
+

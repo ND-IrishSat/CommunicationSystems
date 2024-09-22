@@ -1,0 +1,245 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Frequently Asked Questions &#8212; Sidekiq Software Development Manual 4.18.x documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Known Issues / Limitations" href="issues.html" />
+    <link rel="prev" title="Troubleshooting a Sidekiq Installed in a New Host *" href="troubleshooting.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="frequently-asked-questions">
+<span id="faq"></span><h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
+<p><strong>Q:</strong> What is the maximum rate that I/Q samples can be received from the
+FPGA to the CPU without dropping any data?</p>
+<p><strong>A:</strong> Assuming no other application is executing on the CPU, and only
+simple operations are being performed on the received data (such as
+storing it in to a RAM buffer), the DMA-based FPGA to CPU interface
+using the PCIe transport can support a data transfer rate of ~50
+Msamples/sec with mPCIe and can reach 61.44 Msamples/sec with m.2. A sample rate of 50
+Msamples/sec equates to approximately 200 MB/sec, which approaches the
+limit of the single lane, Gen 1 PCIe interface. For USB, most systems can
+expect to run without issues at a data rate of ~10 Msamples/sec assuming
+that the bus is not used with any other USB devices at
+the time of sample capture. Note that the maximum throughput for both
+PCIe and USB is <strong>highly dependent</strong> on the host platform. For Sidekiq Z2,
+RX streaming on the card can achieve a sample rate of approximately 35
+Msamples/sec (depending on CPU use by other applications).</p>
+<p></p>
+<p><strong>Q:</strong> What is the maximum rate that I/Q samples can be transferred between
+the RF receiver and the FPGA?</p>
+<p><strong>A:</strong> The digital interface between the A/D converters in each RF receiver and
+the FPGA support operation up to 61.44 Msamples/sec on Sidekiq mPCIe, m.2,
+Z2, and NV100, 153.6 Msamples/sec (or 245.76 Msps on RxB1) on Sidekiq X2, and 250
+Msamples/sec (or 500 Msps on RxC1 and RxD1) on Sidekiq X4. However, since this
+rate of data is not always sustainable between the FPGA and the CPU, the FPGA
+must perform some level of custom processing to reduce this data flow.</p>
+<p></p>
+<p><strong>Q:</strong> Does the hardware support the ability to configure the FPGA registers
+and stream sample data across only the USB interface?</p>
+<p><strong>A:</strong> Yes, the Sidekiq mPCIe and m.2 hardware does support streaming sample
+data across the USB interface, but software currently only supports receiving
+data. Development is in progress to fully support transmit over USB. For
+further details please contact Epiq Solutions <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>.</p>
+<p></p>
+<p><strong>Q:</strong> Can CPU architecture X or Linux kernel version Y be used with
+Sidekiq?</p>
+<p><strong>A:</strong> Please contact Epiq Solutions’ support (<a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>) for any
+host platform inquiries.</p>
+<p></p>
+<p><strong>Q:</strong> Either <code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">failed</span> <span class="pre">calibration</span> <span class="pre">for</span> <span class="pre">reg</span> <span class="pre">0x247,</span> <span class="pre">bit_pos</span> <span class="pre">1,</span>
+<span class="pre">exiting</span></code> or <code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">failed</span> <span class="pre">calibration</span> <span class="pre">for</span> <span class="pre">reg</span> <span class="pre">0x05e,</span> <span class="pre">bit_pos</span> <span class="pre">7,</span>
+<span class="pre">exiting</span></code> is occurring when running an application. What could be the
+cause of this?</p>
+<p><strong>A:</strong> These errors most commonly occur if the Sidekiq is configured to use an
+external reference clock and that reference clock is not present or inadequate. The
+specifications for the external reference clock requirements are
+outlined in the Sidekiq Hardware User’s manual. The reference clock
+configuration can be checked with the
+<code class="code docutils literal notranslate"><span class="pre">skiq_read_ref_clock_select()</span></code> API and modified with the
+<code class="docutils literal notranslate"><span class="pre">ref_clock</span></code> test application provided.</p>
+<p></p>
+<p><strong>Q:</strong> Is GNU Radio supported?</p>
+<p><strong>A:</strong> Yes, please refer to <a class="reference internal" href="references.html#ref7"><span class="std std-ref">[7]</span></a>. There are two general
+options for <code class="docutils literal notranslate"><span class="pre">gr-sidekiq</span></code> that are available. The preferred method is to
+use libsidekiq to perform the interfacing to the radio. This version is
+the most full featured implementation and is available on the master
+branch. For embedded platforms (such as the Matchstiq S10) not running
+GNU radio natively, a source-only block that interfaces with the SRFS
+application running on the embedded platform is available on the
+<code class="docutils literal notranslate"><span class="pre">srfs</span></code> branch. This relies on the socket interface presented by
+the SRFS application to both configure the radio and stream samples.</p>
+<p></p>
+<p><strong>Q:</strong> Is MATLAB supported?</p>
+<p><strong>A:</strong> MATLAB is not currently supported with libsidekiq, though MATLAB may
+be used with the Z2 (using the IIO network interface and the Analog Devices BSP).
+For more information, please refer to Epiq Solutions support <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>.</p>
+<p></p>
+<p><strong>Q:</strong> It appears as though signal frequencies close to DC are being attenuated. Is
+there any way to disable this?</p>
+<p><strong>A:</strong> The Sidekiq FPGA performs a DC offset correction using a simple leaky
+integrator. This is enabled by default but can be disabled through the
+API call <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_dc_offset_corr()</span></code>. Additionally, there is
+DC offset correction provided by the RF IC. Disabling the RF IC DC
+offset correction and tracking is not currently supported.</p>
+<p></p>
+<p><strong>Q:</strong> Why am I encountering various errors when configuring the FPGA to a
+different transport layer?</p>
+<p><strong>A:</strong> When programming the FPGA with a bitstream that implements the USB
+transport layer, errors will be generated if the Sidekiq was previously
+configured and initialized to operate with PCIe. Likewise errors will
+occur when transitioning from USB to PCIe. This is expected behavior due
+to libsidekiq being initialized to operate under constraints that are no
+longer valid. In order to avoid further errors, it is advised to reboot the host.</p>
+<p></p>
+<p><strong>Q:</strong> Can I disable any prints/logging from the Sidekiq library?</p>
+<p><strong>A:</strong> Yes, <code class="code docutils literal notranslate"><span class="pre">NULL</span></code> can be passed to the <code class="code docutils literal notranslate"><span class="pre">skiq_register_logging()</span></code> API to
+completely disable any log messages. Refer to <a class="reference internal" href="developing_apps.html#logging"><span class="std std-ref">Logging</span></a> for more details.</p>
+<p></p>
+<p><strong>Q:</strong> What should the bandwidth be configured to?</p>
+<p><strong>A:</strong> The bandwidth typically depends on the end application and the desired
+characteristics of the signal being received or transmitted. However, in
+general, it is recommended to limit the bandwidth to a maximum of
+approximately 80% of the sample rate.</p>
+<p></p>
+<p><strong>Q:</strong> How is the gain configured?</p>
+<p><strong>A:</strong> The gain index, as an index into the configured gain table, is
+configured with <code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_gain()</span></code>. The approximate mapping of
+in dB is described in the API description of
+<code class="code docutils literal notranslate"><span class="pre">skiq_write_rx_gain()</span></code>. Additionally, for a more precise mapping in
+dB based on a per unit calibration is available. For details on using
+the per unit calibrated data, refer to section <a class="reference internal" href="developing_apps.html#using-receive-calibration-offsets"><span class="std std-ref">Using receive calibration offsets</span></a>.</p>
+<p></p>
+<p><strong>Q:</strong> My timestamps are slipping, should this be happening?</p>
+<p><strong>A:</strong> Products that use the AD9361 RFIC will have timestamp slips when using API
+functions that need to deactivate the sample clock in order to make updates to the radio
+configuration. This occurs when: updating the LO frequency, updating the sample rate, and
+running the transmit quadrature calibration. It is recommended to use the system clock -
+which is not subject to interruptions - if a consistent time source is needed. For a list
+of functions that affect or are affected by the timestamp please refer to Timestamp slips
+within AD9361 Products, in the libsidekiq API documentation.</p>
+<p></p>
+<p><strong>Q:</strong> The server card is not detected when using the network transport, what could be the cause?</p>
+<p><strong>A:</strong> In order to use the Network Transport, the <code class="code docutils literal notranslate"><span class="pre">SKIQ_DAEMON_IP</span></code> environment variable must be
+configured to the server’s IP address.  Additionally, the <code class="code docutils literal notranslate"><span class="pre">SKIQ_DAEMON_PORT</span></code> environment variable
+must be configured to the port number of the <code class="code docutils literal notranslate"><span class="pre">skiq_daemon</span></code>.  If the environment variables are
+configured and the server card still is not detected, ensure that the <code class="code docutils literal notranslate"><span class="pre">skiq_daemon</span></code> application
+is running on the server.</p>
+<p></p>
+<p><strong>Q:</strong> The <code class="docutils literal notranslate"><span class="pre">version_test</span></code> application indicates an FPGA bitstream version of <code class="code docutils literal notranslate"><span class="pre">v0.0.0</span></code>, what could be the cause?</p>
+<p><strong>A:</strong> This can happen on Sidekiq mPCIe or Sidekiq m.2 cards if libsidekiq
+detects a card’s USB interface, but is having trouble interfacing with the card
+over PCIe.  There could be a few underlying reasons that cause trouble
+interfacing over PCIe.  If all of these do not help, please contact Epiq
+Solutions support, <a class="reference internal" href="references.html#ref5"><span class="std std-ref">[5]</span></a>, with information on the host system being
+used.</p>
+<ul class="simple">
+<li>PCIe presence:<ul>
+<li>It may simply be that the host system is not detecting the card over PCIe.
+Check by using <code class="code docutils literal notranslate"><span class="pre">lspci</span> <span class="pre">-d</span> <span class="pre">19aa:</span></code> to see if there’s the same number of
+entries for the expected number of Sidekiq cards.</li>
+</ul>
+</li>
+<li>Device driver:<ul>
+<li>Check to see if the <code class="docutils literal notranslate"><span class="pre">dmadriver.ko</span></code> kernel module is loaded:<ul>
+<li>Running “<code class="code docutils literal notranslate"><span class="pre">lsmod</span></code>”</li>
+<li>Running “<code class="code docutils literal notranslate"><span class="pre">grep</span> <span class="pre">dmadriver</span> <span class="pre">/proc/modules</span></code>”</li>
+<li>Look through “<code class="code docutils literal notranslate"><span class="pre">dmesg</span></code>” looking for entries beginning with “<code class="code docutils literal notranslate"><span class="pre">DMAD</span></code>”</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Card manager cache:<ul>
+<li>The card manager stores information it discovered about Sidekiq cards in a
+shared memory cache and prior to libsidekiq v4.14.0, the card manager
+would only update its cache during the very first application execution.  If
+applications that use libsidekiq prior to v4.14.0 are the only ones in
+use, try rebooting the system to clear and refresh the card manager cache.
+If there’s a mix of applications on the system, try using the applications
+built against libsidekiq v4.14.0 or later.</li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/epiq_logo_dark.png" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="troubleshooting.html" title="previous chapter">Troubleshooting a Sidekiq Installed in a New Host <sup>*</sup></a></li>
+      <li>Next: <a href="issues.html" title="next chapter">Known Issues / Limitations</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/faq.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;All material in this document is copyrighted by Epiq Solutions 2014-2024.  All trademarks are property of their respective owners.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/faq.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

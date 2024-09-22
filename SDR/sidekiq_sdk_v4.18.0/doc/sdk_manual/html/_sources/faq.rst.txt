@@ -1,0 +1,210 @@
+.. include:: replacements.rst
+
+.. |vspace| raw:: latex
+
+    \vspace{5mm}
+
+
+.. _faq:
+
+Frequently Asked Questions
+==========================
+
+**Q:** What is the maximum rate that I/Q samples can be received from the
+FPGA to the CPU without dropping any data?
+
+**A:** Assuming no other application is executing on the CPU, and only
+simple operations are being performed on the received data (such as
+storing it in to a RAM buffer), the DMA-based FPGA to CPU interface
+using the PCIe transport can support a data transfer rate of ~50
+Msamples/sec with mPCIe and can reach 61.44 Msamples/sec with m.2. A sample rate of 50
+Msamples/sec equates to approximately 200 MB/sec, which approaches the
+limit of the single lane, Gen 1 PCIe interface. For USB, most systems can
+expect to run without issues at a data rate of ~10 Msamples/sec assuming
+that the bus is not used with any other USB devices at
+the time of sample capture. Note that the maximum throughput for both
+PCIe and USB is **highly dependent** on the host platform. For Sidekiq Z2,
+RX streaming on the card can achieve a sample rate of approximately 35
+Msamples/sec (depending on CPU use by other applications).
+
+|vspace|
+
+**Q:** What is the maximum rate that I/Q samples can be transferred between
+the RF receiver and the FPGA?
+
+**A:** The digital interface between the A/D converters in each RF receiver and
+the FPGA support operation up to 61.44 Msamples/sec on Sidekiq mPCIe, m.2,
+Z2, and NV100, 153.6 Msamples/sec (or 245.76 Msps on RxB1) on Sidekiq X2, and 250
+Msamples/sec (or 500 Msps on RxC1 and RxD1) on Sidekiq X4. However, since this
+rate of data is not always sustainable between the FPGA and the CPU, the FPGA
+must perform some level of custom processing to reduce this data flow.
+
+|vspace|
+
+**Q:** Does the hardware support the ability to configure the FPGA registers
+and stream sample data across only the USB interface?
+
+**A:** Yes, the Sidekiq mPCIe and m.2 hardware does support streaming sample
+data across the USB interface, but software currently only supports receiving
+data. Development is in progress to fully support transmit over USB. For
+further details please contact Epiq Solutions :ref:`[5] <ref5>`.
+
+|vspace|
+
+**Q:** Can CPU architecture X or Linux kernel version Y be used with
+Sidekiq?
+
+**A:** Please contact Epiq Solutions' support (:ref:`[5] <ref5>`) for any
+host platform inquiries.
+
+|vspace|
+
+**Q:** Either ``Error: failed calibration for reg 0x247, bit_pos 1,
+exiting`` or ``Error: failed calibration for reg 0x05e, bit_pos 7,
+exiting`` is occurring when running an application. What could be the
+cause of this?
+
+**A:** These errors most commonly occur if the Sidekiq is configured to use an
+external reference clock and that reference clock is not present or inadequate. The
+specifications for the external reference clock requirements are
+outlined in the Sidekiq Hardware User's manual. The reference clock
+configuration can be checked with the
+:code:`skiq_read_ref_clock_select()` API and modified with the
+``ref_clock`` test application provided.
+
+.. note: modifying the reference clock configuration is not available
+   with Sidekiq mPCIe revision B hardware.
+
+.. note: the reference clock configuration is persistent through power
+   cycle and has a limited number of configuration update cycles.
+   There is no need to run ``ref_clock`` unless the user is modifying
+   the configuration.
+
+|vspace|
+
+**Q:** Is GNU Radio supported?
+
+**A:** Yes, please refer to :ref:`[7] <ref7>`. There are two general
+options for ``gr-sidekiq`` that are available. The preferred method is to
+use libsidekiq to perform the interfacing to the radio. This version is
+the most full featured implementation and is available on the master
+branch. For embedded platforms (such as the Matchstiq S10) not running
+GNU radio natively, a source-only block that interfaces with the SRFS
+application running on the embedded platform is available on the
+``srfs`` branch. This relies on the socket interface presented by
+the SRFS application to both configure the radio and stream samples.
+
+|vspace|
+
+**Q:** Is MATLAB supported?
+
+**A:** MATLAB is not currently supported with libsidekiq, though MATLAB may
+be used with the Z2 (using the IIO network interface and the Analog Devices BSP).
+For more information, please refer to Epiq Solutions support :ref:`[5] <ref5>`.
+
+|vspace|
+
+**Q:** It appears as though signal frequencies close to DC are being attenuated. Is
+there any way to disable this?
+
+**A:** The Sidekiq FPGA performs a DC offset correction using a simple leaky
+integrator. This is enabled by default but can be disabled through the
+API call :code:`skiq_write_rx_dc_offset_corr()`. Additionally, there is
+DC offset correction provided by the RF IC. Disabling the RF IC DC
+offset correction and tracking is not currently supported.
+
+|vspace|
+
+**Q:** Why am I encountering various errors when configuring the FPGA to a
+different transport layer?
+
+**A:** When programming the FPGA with a bitstream that implements the USB
+transport layer, errors will be generated if the Sidekiq was previously
+configured and initialized to operate with PCIe. Likewise errors will
+occur when transitioning from USB to PCIe. This is expected behavior due
+to libsidekiq being initialized to operate under constraints that are no
+longer valid. In order to avoid further errors, it is advised to reboot the host.
+
+|vspace|
+
+**Q:** Can I disable any prints/logging from the Sidekiq library?
+
+**A:** Yes, :code:`NULL` can be passed to the :code:`skiq_register_logging()` API to
+completely disable any log messages. Refer to :ref:`Logging` for more details.
+
+|vspace|
+
+**Q:** What should the bandwidth be configured to?
+
+**A:** The bandwidth typically depends on the end application and the desired
+characteristics of the signal being received or transmitted. However, in
+general, it is recommended to limit the bandwidth to a maximum of
+approximately 80% of the sample rate.
+
+|vspace|
+
+**Q:** How is the gain configured?
+
+**A:** The gain index, as an index into the configured gain table, is
+configured with :code:`skiq_write_rx_gain()`. The approximate mapping of
+in dB is described in the API description of
+:code:`skiq_write_rx_gain()`. Additionally, for a more precise mapping in
+dB based on a per unit calibration is available. For details on using
+the per unit calibrated data, refer to section :ref:`Using receive calibration offsets`.
+
+|vspace|
+
+**Q:** My timestamps are slipping, should this be happening?
+
+**A:** Products that use the AD9361 RFIC will have timestamp slips when using API
+functions that need to deactivate the sample clock in order to make updates to the radio
+configuration. This occurs when: updating the LO frequency, updating the sample rate, and
+running the transmit quadrature calibration. It is recommended to use the system clock - 
+which is not subject to interruptions - if a consistent time source is needed. For a list
+of functions that affect or are affected by the timestamp please refer to Timestamp slips
+within AD9361 Products, in the libsidekiq API documentation.
+
+|vspace|
+
+**Q:** The server card is not detected when using the network transport, what could be the cause?
+
+**A:** In order to use the Network Transport, the :code:`SKIQ_DAEMON_IP` environment variable must be 
+configured to the server's IP address.  Additionally, the :code:`SKIQ_DAEMON_PORT` environment variable
+must be configured to the port number of the :code:`skiq_daemon`.  If the environment variables are 
+configured and the server card still is not detected, ensure that the :code:`skiq_daemon` application
+is running on the server.
+
+|vspace|
+
+**Q:** The ``version_test`` application indicates an FPGA bitstream version of :code:`v0.0.0`, what could be the cause?
+
+**A:** This can happen on Sidekiq mPCIe or Sidekiq m.2 cards if libsidekiq
+detects a card's USB interface, but is having trouble interfacing with the card
+over PCIe.  There could be a few underlying reasons that cause trouble
+interfacing over PCIe.  If all of these do not help, please contact Epiq
+Solutions support, :ref:`[5] <ref5>`, with information on the host system being
+used.
+
+- PCIe presence:
+
+  - It may simply be that the host system is not detecting the card over PCIe.
+    Check by using :code:`lspci -d 19aa:` to see if there's the same number of
+    entries for the expected number of Sidekiq cards.
+
+- Device driver:
+
+  - Check to see if the ``dmadriver.ko`` kernel module is loaded:
+
+    - Running ":code:`lsmod`"
+    - Running ":code:`grep dmadriver /proc/modules`"
+    - Look through ":code:`dmesg`" looking for entries beginning with ":code:`DMAD`"
+
+- Card manager cache:
+
+  - The card manager stores information it discovered about Sidekiq cards in a
+    shared memory cache and prior to |libsidekiq| v4.14.0, the card manager
+    would only update its cache during the very first application execution.  If
+    applications that use |libsidekiq| prior to v4.14.0 are the only ones in
+    use, try rebooting the system to clear and refresh the card manager cache.
+    If there's a mix of applications on the system, try using the applications
+    built against |libsidekiq| v4.14.0 or later.

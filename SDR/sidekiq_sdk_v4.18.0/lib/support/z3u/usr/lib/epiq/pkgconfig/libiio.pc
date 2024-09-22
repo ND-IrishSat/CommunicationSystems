@@ -1,0 +1,12 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${prefix}//usr/lib/epiq
+includedir=${prefix}/include
+
+Name: libiio
+Description: Library for interfacing IIO devices
+Version: 0.19
+
+Requires:
+Libs: -L${libdir} -liio
+Cflags: -I${includedir}

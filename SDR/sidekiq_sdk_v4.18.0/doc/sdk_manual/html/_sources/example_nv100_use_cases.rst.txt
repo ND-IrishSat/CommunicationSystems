@@ -1,0 +1,88 @@
+.. _example_nv100_use_cases:
+
+Example NV100 Use Cases: Rx
+===========================
+
+This section outlines common use cases possible with Sidekiq NV100, demonstrating how
+they can be achieved with the supplied test applications.  For users developing an
+application from scratch, the equivalent sequence of API calls is provided.  See 
+the :code:`rx_samples_minimal.c` and :code:`rx_samples.c` sample applications in 
+the :code:`test_apps/` directory for example usage.
+
+.. caution:: Receiving at high sample rates can be RAM & disk intensive.  Performance is dependent on the host platform.
+
+Receive: single channel, up to 50MHz IBW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example captures samples at 61.44Msps with a bandwidth of 50MHz,
+at a center frequency of 850MHz.
+
+:code:`test_apps/rx_samples_minimal -c 0 -d /tmp/iq_output -f 850000000 -r 61440000 -b 50000000 --handle=A1`
+
+* where handle can be any of the following: :code:`A1,A2,B1`
+
+.. note:: libsidekiq will use the provided sample rate and bandwidth arguments to select the RFIC profile best
+     meeting the constraints. Please contact Epiq Solutions if additional rates are desired. 
+
+The same can be achieved using the following sequence of API functions:
+
+.. code-block:: none
+
+   skiq_init(card)
+   skiq_write_rx_sample_rate_and_bandwidth_multi(card, handles[], nr_handles, rate[], bandwidth[])
+   skiq_write_rx_LO_freq(card, handle, frequency)
+   skiq_start_rx_streaming_multi_immediate()
+   while(receiving)
+      skiq_receive(card, handle, rx_block, len)
+   skiq_stop_rx_streaming_multi_immediate()
+   skiq_exit()
+
+Receive: two phase coherent channels, up to 50MHz IBW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example captures samples at 61.44Msps with a bandwidth of 50MHz,
+at a center frequency of 850MHz with a sample alignment of ±1 sample. 
+
+:code:`test_apps/rx_samples_on_trigger -c 0 -d /tmp/iq_output -f 750000000 -r 50000000 --handle=A1,A2 -b 50000000 --trigger-src=synced`
+
+.. code-block:: none
+
+   skiq_init(card)
+   skiq_write_rx_sample_rate_and_bandwidth_multi(card, handles, nr_handles, rates, bandwidths)
+   skiq_write_chan_mode(chan_mode_dual)
+   skiq_write_rx_LO_freq(card, handle #1 or handle #2)
+   skiq_start_rx_streaming_multi_synced()
+   while(receiving)
+      skiq_receive(card, handle, rx_block, len)
+   skiq_stop_rx_streaming_multi_synced()
+   skiq_exit()
+
+.. note:: There is a difference in the signal path between J1 and J2 on the RFE of the NV100 that results in a frequency dependent  
+     fixed phase delay that can be calibrated out by the user.
+
+Libsidekiq 4.18.0 enables a software calibration option that removes sample alignment jitter between RxA1 and RxA2.
+Contact customer support for instructions and an example application that demonstrates the calibration routine.
+
+Receive: two independently tunable channels, same sample rate, up to 50MHz IBW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The following example captures samples for two channels at 61.44Msps with a 
+bandwidth of 50MHz, tuned to 750MHz and 850MHz respectively.
+
+:code:`test_apps/rx_samples_minimal -c 0 -d /tmp/iq_output -f 750000000,850000000 -r 61440000,61440000 -b 50000000,50000000 --handle=A1,B1`
+
+The same can be achieved using the following sequence of API functions:
+
+.. code-block:: none
+
+   skiq_init(card)
+   skiq_write_rx_sample_rate_and_bandwidth_multi(card, handles, nr_handles, rates, bandwidths)
+   skiq_write_rx_LO_freq(card, handle #1)
+   skiq_write_rx_LO_freq(card, handle #2)
+   skiq_start_rx_streaming_multi_immediate()
+    while(receiving)
+      skiq_receive(card, handle, rx_block, len)
+   skiq_stop_rx_streaming_multi_immediate()
+   skiq_exit()
+
+
+

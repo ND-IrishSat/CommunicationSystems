@@ -1,0 +1,33 @@
+.. include:: replacements.rst
+
+.. _installation_procedure:
+
+**********************
+Installation Procedure
+**********************
+
+The installation procedure installs both the SDK and the image directory
+to the install directory specified. The image directory contains:
+drivers, initialization scripts, and a link to prebuilt applications
+stored in the SDK. The SDK directory contents are depicted in the
+:ref:`table2` and :ref:`table3` tables.
+
+In addition to the image and SDK directories, updates are made to the
+Linux installation to automatically load necessary device driver for the
+Sidekiq card, support real-time priority threads by a Sidekiq user, and
+support the Sidekiq USB interface.
+
+To initialize Sidekiq, a systemd-service or initscript (based upon the Linux
+distribution in use) is installed and enabled.
+
+To support realtime priority threads by a Sidekiq user, a
+configuration file to allow realtime priorities is placed in
+``/etc/security/limits.d/99-sidekiq_limits.conf``.
+
+To support a Sidekiq's USB interface, available on mPCIe and M.2-3042, a udev
+rules file is installed at ``/etc/udev/rules.d/99-sidekiq.rules``.
+
+As of |libsidekiq| v4.15.0, DKMS support is available for all Sidekiq
+kernel modules; see the :ref:`dkms` section for more information on what DKMS
+provides and how it may be used.
+
