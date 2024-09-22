@@ -20,3 +20,6 @@ Rylan - General liscense
 
 Sidekiq: ports 1 and 2 are received between 50 MHz and 6 GHz
         Port 3 receive or transmit 50 MHz and 6 GHz
+
+Copy to irishsat    
+    $ scp -r ~/path/CommunicationSystems/ irishsat:~/Documents/Github/
