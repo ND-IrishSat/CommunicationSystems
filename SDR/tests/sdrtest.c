@@ -10,4 +10,5 @@ skiq_start_tx/rx_streaming()
 skiq_start_tx/rx_streaming()
 skiq_receive()
 skiq_transmit()
+hello()
 */
