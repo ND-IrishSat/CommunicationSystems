@@ -26,7 +26,3 @@ Copy to irishsat
 
 
 
-
-Questions:
-- What is a card? Some kind of identifier/index?
-- 
