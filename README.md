@@ -24,5 +24,8 @@ Sidekiq: ports 1 and 2 are received between 50 MHz and 6 GHz
 Copy to irishsat    
     $ scp -r ~/path/CommunicationSystems/ irishsat:~/Documents/Github/
 
-
+To compile test apps in the test folder on irishsat desktop run:
+        $ make BUILD_CONFIG=arm_cortex-a9.gcc7.2.1_gnueabihf
+        Add clean after to clean builds
+        This will build the test files in the bin folder
 
