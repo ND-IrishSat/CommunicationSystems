@@ -23,3 +23,10 @@ Sidekiq: ports 1 and 2 are received between 50 MHz and 6 GHz
 
 Copy to irishsat    
     $ scp -r ~/path/CommunicationSystems/ irishsat:~/Documents/Github/
+
+
+
+
+Questions:
+- What is a card? Some kind of identifier/index?
+- 
