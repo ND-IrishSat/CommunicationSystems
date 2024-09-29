@@ -1,6 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftshift, fftfreq
+
+ax2 = None
+live_real = []
+live_imaj = []
+live_indices = []
+
 def read_iq_data(filename):
     # Open the file in binary mode
     with open(filename, 'rb') as f:
@@ -12,12 +18,13 @@ def read_iq_data(filename):
         raise ValueError("File contains an odd number of 16-bit integers, which doesn't match I/Q pair format.")
 
     # Split the data into Q (even indices) and I (odd indices)
+    #[start:stop:step]
     q_samples = raw_data[::2]  # Q samples (first in each pair)
     i_samples = raw_data[1::2]  # I samples (second in each pair)
 
     # Combine I and Q into a complex array: complex_value = I + jQ
     iq_data = i_samples + 1j * q_samples
-
+    print(iq_data)
     return iq_data
 
 def plot_iq_data_and_frequency(iq_data, sampling_rate):
@@ -74,3 +81,41 @@ iq_data = read_iq_data(filename)
 
 # Plot the time domain (I/Q) and frequency domain
 plot_iq_data_and_frequency(iq_data, sampling_rate)
+
+fig = plt.figure(figsize=(12, 8))
+graph = fig.add_subplot(221, projection='3d')
+
+real_parts = np.real(iq_data)
+imaginary_parts = np.imag(iq_data)
+indices = np.arange(len(iq_data))
+
+live_real = real_parts[0] # real_parts
+live_imaj = imaginary_parts[0] # imaginary_parts
+live_indices = indices[0] # indices
+
+# Second subplot: Real, Imaginary, and Index (3D Scatter Plot)
+graph = plt.scatter(live_indices, live_real, live_imaj, color='red')
+plt.pause(1)
+indices = np.arange(len(iq_data))  # Indices along the x-axis
+
+#graph.set_title('I and Q vs Index')
+# graph.set_xlabel('Index')
+# graph.set_ylabel('Real Part (I)')
+# graph.set_zlabel('Imaginary Part (Q)')
+# graph.grid(True)
+
+
+index = 0
+while(True):
+    live_real = real_parts[:index] # real_parts
+    live_imaj = imaginary_parts[:index] # imaginary_parts
+    live_indices = indices[:index] # indices
+    graph.remove()
+    graph = plt.scatter(live_indices, live_real, live_imaj, color='red')
+    # graph.xlim(live_indices[0], live_indices[index])
+    # graph.ylim(live_real[0], live_real[index])
+    # graph.zlim(live_imaj[0], live_imaj[index])
+    index += 10000
+    if (index >= len(indices)):
+        index = len(indices) - 1
+    plt.pause(0.001)
