@@ -4,7 +4,7 @@ Created during the fall of 2024, this is an extension to our SDR repo. This is a
 
 # Parameters
 - test frequencies
-    - 70cm | 420 MHz
+    - 70cm | 418274940 Hz | 420 MHz
 - Actual frequencies
     - Rx:
     - Tx:
