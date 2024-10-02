@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftshift, fftfreq
+from scipy import signal
 
 ax2 = None
 live_real = []
@@ -24,7 +25,7 @@ def read_iq_data(filename):
 
     # Combine I and Q into a complex array: complex_value = I + jQ
     iq_data = i_samples + 1j * q_samples
-    print(iq_data)
+    print("IQ Data: (" + str(len(iq_data)) + "): " + str(iq_data))
     return iq_data
 
 def plot_iq_data_and_frequency(iq_data, sampling_rate):
@@ -73,11 +74,13 @@ def plot_iq_data_and_frequency(iq_data, sampling_rate):
 
 # Usage example
 filename = 'output.a1'  # Replace with the actual filename
-sampling_rate = 4000000000  # Replace with the actual sampling rate in Hz
+sampling_rate = 1000000000  # Replace with the actual sampling rate in Hz
 
 
 # Read the I/Q data from the file
 iq_data = read_iq_data(filename)
+sos = signal.butter(10, 1000, 'hp', fs=sampling_rate, output='sos')  # Cutoff frequency at 1 kHz
+filtered_iq_data = signal.sosfilt(sos, iq_data)
 
 # Plot the time domain (I/Q) and frequency domain
-plot_iq_data_and_frequency(iq_data, sampling_rate)
+plot_iq_data_and_frequency(filtered_iq_data, sampling_rate)

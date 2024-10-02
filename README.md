@@ -29,3 +29,5 @@ To compile test apps in the test folder on irishsat desktop run:
         Add clean after to clean builds
         This will build the test files in the bin folder
 
+root@sidekiqz2:/tmp# ./rx_samples -d output --words 5000000 --rate 1000000000 --frequency 418274940
+
