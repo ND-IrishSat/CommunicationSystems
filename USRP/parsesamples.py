@@ -10,22 +10,7 @@ live_indices = []
 
 def read_iq_data(filename):
     # Open the file in binary mode
-    with open(filename, 'rb') as f:
-        # Read the binary data into a numpy array (16-bit signed integers)
-        raw_data = np.fromfile(f, dtype=np.int16)
-
-    # Ensure the data has an even number of elements
-    if len(raw_data) % 2 != 0:
-        raise ValueError("File contains an odd number of 16-bit integers, which doesn't match I/Q pair format.")
-
-    # Split the data into Q (even indices) and I (odd indices)
-    #[start:stop:step]
-    q_samples = raw_data[::2]  # Q samples (first in each pair)
-    i_samples = raw_data[1::2]  # I samples (second in each pair)
-
-    # Combine I and Q into a complex array: complex_value = I + jQ
-    iq_data = i_samples + 1j * q_samples
-    print("IQ Data: (" + str(len(iq_data)) + "): " + str(iq_data))
+    iq_data = np.loadtxt(filename)
     return iq_data
 
 def plot_iq_data_and_frequency(iq_data, sampling_rate):
