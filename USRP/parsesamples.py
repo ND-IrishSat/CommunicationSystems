@@ -10,7 +10,7 @@ live_indices = []
 
 def read_iq_data(filename):
     # Open the file in binary mode
-    iq_data = np.loadtxt(filename)
+    iq_data = np.genfromtxt(filename, dtype=None, delimiter=',')
     return iq_data
 
 def plot_iq_data_and_frequency(iq_data, sampling_rate):
@@ -58,7 +58,7 @@ def plot_iq_data_and_frequency(iq_data, sampling_rate):
     plt.show()
 
 # Usage example
-filename = 'output.a1'  # Replace with the actual filename
+filename = 'samples_output.txt'  # Replace with the actual filename
 sampling_rate = 1000000000  # Replace with the actual sampling rate in Hz
 
 
@@ -68,4 +68,4 @@ sos = signal.butter(10, 1000, 'hp', fs=sampling_rate, output='sos')  # Cutoff fr
 filtered_iq_data = signal.sosfilt(sos, iq_data)
 
 # Plot the time domain (I/Q) and frequency domain
-plot_iq_data_and_frequency(filtered_iq_data, sampling_rate)
+plot_iq_data_and_frequency(iq_data, sampling_rate)
