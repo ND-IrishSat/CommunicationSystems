@@ -6,12 +6,13 @@ from scipy.fft import fft, fftshift, fftfreq
 from scipy import signal
 
 usrp = uhd.usrp.MultiUSRP() #can put num_recv_frames = 1000 to recieve at a higher rate
-num_samps = 10000
+num_samps = 100000
 freq = 4218274940
 sample_rate = 1e6
 gain = 20
 iq_data = usrp.recv_num_samps(num_samps, freq, sample_rate, [0], gain) # units: N, Hz, list of channel IDs, dB
-print("Samples: " + iq_data)
+np.savetxt("samples_output.txt", iq_data, delimiter=',')
+
 
 def plot_iq_data_and_frequency(iq_data, sampling_rate):
     # Extract real and imaginary parts
@@ -58,13 +59,13 @@ def plot_iq_data_and_frequency(iq_data, sampling_rate):
     plt.show()
 
 # Usage example
-sampling_rate = 1e6  # Replace with the actual sampling rate in Hz
+#sampling_rate = 1e6  # Replace with the actual sampling rate in Hz
 
 
 # Read the I/Q data from the file
-sos = signal.butter(10, 1000, 'hp', fs=sampling_rate, output='sos')  # Cutoff frequency at 1 kHz
+sos = signal.butter(10, 1000, 'hp', fs=sample_rate, output='sos')  # Cutoff frequency at 1 kHz
 filtered_iq_data = signal.sosfilt(sos, iq_data)
 
 # Plot the time domain (I/Q) and frequency domain
-plot_iq_data_and_frequency(filtered_iq_data, sampling_rate)
+plot_iq_data_and_frequency(filtered_iq_data, sample_rate)
 
