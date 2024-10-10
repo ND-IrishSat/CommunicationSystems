@@ -6,14 +6,15 @@ from scipy.fft import fft, fftshift, fftfreq
 from scipy import signal
 
 usrp = uhd.usrp.MultiUSRP() #can put num_recv_frames = 1000 to recieve at a higher rate
-num_samps = 10000
+num_samps = 50000
 freq = 4218274940
 sample_rate = 1e6
 gain = 20
 iq_data = usrp.recv_num_samps(num_samps, freq, sample_rate, [0], gain) # units: N, Hz, list of channel IDs, dB
-print("Samples: " + iq_data)
+np.savetxt("samples_output.txt", iq_data, delimiter=',')
 
-def plot_iq_data_and_frequency(iq_data, sampling_rate):
+
+def plot_iq_data_and_frequency(iq_data, sample_rate):
     # Extract real and imaginary parts
     real_parts = np.real(iq_data)
     imaginary_parts = np.imag(iq_data)
@@ -42,13 +43,17 @@ def plot_iq_data_and_frequency(iq_data, sampling_rate):
     # Compute the FFT of the complex I/Q data
     N = len(iq_data)  # Number of samples
     yf = fft(iq_data)  # Compute the FFT
-    xf = fftfreq(N, 1 / sampling_rate)  # Generate frequency bins
+    xf = fftfreq(N, 1 / sample_rate)  # Generate frequency bins
     xf = fftshift(xf)  # Shift zero frequency to the center
     yf = fftshift(yf)  # Shift the FFT output accordingly
 
+    fft_samples = iq_data**2
+    psd = np.fft.fftshift(np.abs(np.fft.fft(fft_samples)))
+    f = np.linspace(-freq/2.0, freq/2.0, len(psd))
+
     # Third subplot: Frequency Domain (Magnitude Spectrum)
     ax3 = fig.add_subplot(223)
-    ax3.plot(xf, np.abs(yf), color='green')  # Plot both negative and positive frequencies
+    ax3.plot(f, psd, color='green')  # Plot both negative and positive frequencies
     ax3.set_title('Frequency Domain (Magnitude Spectrum)')
     ax3.set_xlabel('Frequency (Hz)')
     ax3.set_ylabel('Magnitude')
@@ -58,13 +63,12 @@ def plot_iq_data_and_frequency(iq_data, sampling_rate):
     plt.show()
 
 # Usage example
-sampling_rate = 1e6  # Replace with the actual sampling rate in Hz
 
 
 # Read the I/Q data from the file
-sos = signal.butter(10, 1000, 'hp', fs=sampling_rate, output='sos')  # Cutoff frequency at 1 kHz
+sos = signal.butter(10, 1000, 'hp', fs=sample_rate, output='sos')  # Cutoff frequency at 1 kHz
 filtered_iq_data = signal.sosfilt(sos, iq_data)
 
 # Plot the time domain (I/Q) and frequency domain
-plot_iq_data_and_frequency(filtered_iq_data, sampling_rate)
+plot_iq_data_and_frequency(filtered_iq_data, sample_rate)
 
