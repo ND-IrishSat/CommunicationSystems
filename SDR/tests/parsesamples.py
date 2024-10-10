@@ -1,12 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.fft import fft, fftshift, fftfreq
-from scipy import signal
 
 ax2 = None
 live_real = []
 live_imaj = []
 live_indices = []
+
+
+def fft(x):
+    N = len(x)
+    if N == 1:
+        return x
+    twiddle_factors = np.exp(-2j * np.pi * np.arange(N//2) / N)
+    x_even = fft(x[::2]) # yay recursion!
+    x_odd = fft(x[1::2])
+    return np.concatenate([x_even + twiddle_factors * x_odd,
+                           x_even - twiddle_factors * x_odd])
 
 def read_iq_data(filename):
     # Open the file in binary mode
@@ -28,7 +37,7 @@ def read_iq_data(filename):
     print("IQ Data: (" + str(len(iq_data)) + "): " + str(iq_data))
     return iq_data
 
-def plot_iq_data_and_frequency(iq_data, sampling_rate):
+def plot_iq_data_and_frequency(iq_data, sample_rate):
     # Extract real and imaginary parts
     real_parts = np.real(iq_data)
     imaginary_parts = np.imag(iq_data)
@@ -56,17 +65,19 @@ def plot_iq_data_and_frequency(iq_data, sampling_rate):
 
     # Compute the FFT of the complex I/Q data
     N = len(iq_data)  # Number of samples
-    yf = fft(iq_data)  # Compute the FFT
-    xf = fftfreq(N, 1 / sampling_rate)  # Generate frequency bins
-    xf = fftshift(xf)  # Shift zero frequency to the center
-    yf = fftshift(yf)  # Shift the FFT output accordingly
+    t = np.arange(N)
+    S = np.fft.fft(iq_data)
+    S_mag = np.abs(S)
+    S_phase = np.angle(S)
 
     # Third subplot: Frequency Domain (Magnitude Spectrum)
     ax3 = fig.add_subplot(223)
-    ax3.plot(xf, np.abs(yf), color='green')  # Plot both negative and positive frequencies
+    ax3.plot(t,S_mag,'.-')
+    ax3.plot(t,S_phase,'.-')
+    # ax3.plot(f, X_mag, color='green')  # Plot both negative and positive frequencies
     ax3.set_title('Frequency Domain (Magnitude Spectrum)')
-    ax3.set_xlabel('Frequency (Hz)')
-    ax3.set_ylabel('Magnitude')
+    ax3.set_xlabel('Frequency [MHz]')
+    ax3.set_ylabel('Magnitude [dB]')
     ax3.grid(True)
 
     plt.tight_layout()
@@ -75,12 +86,11 @@ def plot_iq_data_and_frequency(iq_data, sampling_rate):
 # Usage example
 filename = 'output.a1'  # Replace with the actual filename
 sampling_rate = 1000000000  # Replace with the actual sampling rate in Hz
+freq = 4218274940
 
 
 # Read the I/Q data from the file
 iq_data = read_iq_data(filename)
-sos = signal.butter(10, 1000, 'hp', fs=sampling_rate, output='sos')  # Cutoff frequency at 1 kHz
-filtered_iq_data = signal.sosfilt(sos, iq_data)
 
 # Plot the time domain (I/Q) and frequency domain
-plot_iq_data_and_frequency(filtered_iq_data, sampling_rate)
+plot_iq_data_and_frequency(iq_data, sampling_rate)
