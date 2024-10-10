@@ -62,8 +62,6 @@ def plot_iq_data_and_frequency(iq_data, sample_rate):
     plt.tight_layout()
     plt.show()
 
-# Usage example
-
 
 # Read the I/Q data from the file
 sos = signal.butter(10, 1000, 'hp', fs=sample_rate, output='sos')  # Cutoff frequency at 1 kHz
