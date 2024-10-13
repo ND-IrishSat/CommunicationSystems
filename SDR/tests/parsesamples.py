@@ -4,18 +4,7 @@ import matplotlib.pyplot as plt
 ax2 = None
 live_real = []
 live_imaj = []
-live_indices = []
-
-
-def fft(x):
-    N = len(x)
-    if N == 1:
-        return x
-    twiddle_factors = np.exp(-2j * np.pi * np.arange(N//2) / N)
-    x_even = fft(x[::2]) # yay recursion!
-    x_odd = fft(x[1::2])
-    return np.concatenate([x_even + twiddle_factors * x_odd,
-                           x_even - twiddle_factors * x_odd])
+live_indices = [] 
 
 def read_iq_data(filename):
     # Open the file in binary mode
@@ -64,28 +53,34 @@ def plot_iq_data_and_frequency(iq_data, sample_rate):
     ax2.grid(True)
 
     # Compute the FFT of the complex I/Q data
+    Fs=sample_rate
     N = len(iq_data)  # Number of samples
-    t = np.arange(N)
-    S = np.fft.fft(iq_data)
-    S_mag = np.abs(S)
-    S_phase = np.angle(S)
+    X = np.hamming(N) * np.fft.fftshift(np.fft.fft(iq_data))
+    X_mag = 10*np.log10(np.abs(X)**2)
+    f = np.arange(Fs/-2.0, Fs/2.0, Fs/N)/1e6 # plt in MHz
 
     # Third subplot: Frequency Domain (Magnitude Spectrum)
     ax3 = fig.add_subplot(223)
-    ax3.plot(t,S_mag,'.-')
-    ax3.plot(t,S_phase,'.-')
-    # ax3.plot(f, X_mag, color='green')  # Plot both negative and positive frequencies
+    plt.plot(f, X_mag)
+    plt.plot(f[np.argmax(X_mag)], np.max(X_mag), 'rx') # show max
     ax3.set_title('Frequency Domain (Magnitude Spectrum)')
     ax3.set_xlabel('Frequency [MHz]')
     ax3.set_ylabel('Magnitude [dB]')
-    ax3.grid(True)
+    ax3.grid()
+
+    # ax4 = fig.add_subplot(224)
+    # ax4.plot(f, S_phase,'.-') # show max
+    # ax4.set_title('Frequency Domain (Magnitude Spectrum)')
+    # ax4.set_xlabel('Frequency [MHz]')
+    # ax4.set_ylabel('Magnitude [dB]')
+    # ax4.grid()
 
     plt.tight_layout()
     plt.show()
 
 # Usage example
 filename = 'output.a1'  # Replace with the actual filename
-sampling_rate = 1000000000  # Replace with the actual sampling rate in Hz
+sampling_rate = 10000000  # Replace with the actual sampling rate in Hz
 freq = 4218274940
 
 
