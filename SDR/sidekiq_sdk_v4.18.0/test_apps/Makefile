@@ -86,6 +86,7 @@ TESTCSRCS+= src/user_reg_test.c
 TESTCSRCS+= src/version_test.c
 TESTCSRCS+= src/xcv_benchmark.c
 TESTCSRCS+= src/multicard_dynamic_enable.c
+TESTCSRCS+= src/skiq_helloworld.c
 
 TESTAPPS= $(patsubst src/%.c,bin/%,$(filter src/%.c,$(TESTCSRCS)))
 TESTAPPS+= $(patsubst %.c,%,$(filter %.c,$(filter-out src/%.c,$(TESTCSRCS))))
