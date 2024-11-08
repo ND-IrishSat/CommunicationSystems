@@ -1,0 +1,66 @@
+Chisum Talk 11/8/2024
+
+- Are we building the antenna? Are just sticking it to the satellite?
+- What does integration with the rest of the Cubesat look like?
+
+
+
+- 8cm diameter lense
+- 1.25 cm wavelenth for 24GHz
+- how big each patch and spacing
+    - 1/2 lambda spacing
+    - 6.4 * 2 = 12.8, so 12 feeds
+    - 1D line of 12 antennas
+- stuck with SDR as IF generator and make a conersion to 24GHz 
+- SDR: analog devices has not devloped a cheap 18GHz or more chip yet
+- radiated power of transmitter X radiactivity of _____ = _____
+    directiveity
+- cubesat link budget? Rehan Baktur?? antennas and propogation magazine
+        - SNR how much at rceeiver?
+        - shannon capacity
+        - bps / hz = log2(1 + SNR) * bandwidth
+        - SNR = receive power / receive noise
+        - path loss at wavelenth = 125db?
+        - increase range = increase power or gain
+        - higher gain is directiveity
+- start with link budget
+    - Gain of a 
+    - G = 4 pi * A / (lambda)^2
+        - bigger antenna has more laser like
+
+F/D = 0.5, since increasing this makes wider angler, so max 0.5
+
+- what is allowed power wise at certain frequencies
+- Look at other missions, cannot violate transmit power level
+- ground station power, spectral masks, angular spectral mask, keep these in check to avoid government
+    - this jams their receivers
+    - could drown out the signals they are looking for
+
+- End goal: Why so much better than PAA?
+    - same gain of antenna is proportional to phased array area
+    - with lense it limits the number of elements
+    - to power a small PAA is a lot of power, 100 elements with 10s of GHz, a beam former is about 100mW per channel on rceeive
+        - 10% eficient
+    - Power and heat are value propositions
+    - sacrifice continuous scan with more discrete beams
+    - high data rates need high SNR, high SNR needs high gain antennas, high gain is higher frequecies with higher bandwidths
+- Why are we the first to do this?
+    - Chisum working on this for 10 years
+    - 1. We could not make lens antennas in 1948, now we have 3d printers, advanced manufacturing
+    - 2. Computers are much faster at runner optimization algs
+    - 3. Fourier transforms: phasedd array allows all cosines at the same time, but you never want this
+    - phased array are great, but they are way overcapable of what we need
+        - phased array can make ND logo, beam cannot, but who needs an ND logo?
+- find ground width?
+- Why need beam stearing instead of jsut having ADCS move?
+    - Depends on efficiency of ADCS
+    - micro second speeds switch beam around
+        - quickly switch between pointing at GS and scanning for X data
+        - multi look capabilities
+- Baseline PAA power levels
+    - Assume each channel 150mW on transmit and 100mW on receive, these are widely accepted, find a paper
+            - phased array __ lens paper presented in Boston
+            
+
+
+
