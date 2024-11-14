@@ -18,7 +18,7 @@ define ALLOWED_PLATFORMS
 endef
 
 BUILD_CONFIG?= undefined
-PLATFORM?= undefined
+PLATFORM?= z2-armhf # was undefined, but by default we want SidekiqZ2
 
 # CFLAGS common to all build configurations
 CFLAGS+= -fstrict-aliasing -fPIC -Wall -O3

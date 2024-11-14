@@ -56,6 +56,5 @@ freq = 418274940
 
 # Read the I/Q data from the file
 iq_data = read_iq_data(filename)
-iq_data *= np.cos(2*np.pi*freq)
 # Plot the time domain (I/Q) and frequency domain
 plot_iq_data_and_frequency(iq_data, freq, sampling_rate)
