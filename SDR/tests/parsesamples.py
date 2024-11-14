@@ -54,9 +54,9 @@ def plot_iq_data_and_frequency(iq_data, center_freq=4218274940, sample_rate=1000
     plt.show()
 
 # Usage example
-filename = 'output.a1'  # Replace with the actual filename
-sampling_rate = 1000000  # Replace with the actual sampling rate in Hz
-freq = 4218274940
+filename = 'SDR/tests/out.a1'  # Replace with the actual filename
+sampling_rate = 10000000  # Replace with the actual sampling rate in Hz
+freq = 418274940
 
 
 # Read the I/Q data from the file

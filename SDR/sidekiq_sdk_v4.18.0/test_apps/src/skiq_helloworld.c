@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include <stdint.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,6 +53,8 @@ int main(int argc, char *argv[]){
 		if (transmit_status != 0){
 			break;
 		}
+		// double sec = 0.001;
+		// usleep( sec * 1000000);
 	}
 	
 
@@ -71,9 +74,9 @@ int main(int argc, char *argv[]){
 
 int32_t init_tx_buffer() {
 	char words[13] = "Hello World!";
-	double frequency = 2000000;
-	double sample_rate = 10000000;
-    int block_size_in_words = 65536;  // Block size in words (samples)
+	double frequency = 2000000;  // 2 MHz
+	double sample_rate = 10000000; // 10 MHz
+    int block_size_in_words = 13*4096;  // Block size in words (samples)
     int num_blocks = 1;
     int32_t status = 0;
 
@@ -96,13 +99,20 @@ int32_t init_tx_buffer() {
 
     // Generate the cosine wave samples
     for (int i = 0; i < block_size_in_words; i++) {
-        double t = i / sample_rate;  // Calculate time for each sample
-		double pi = 3.14159265358979323846;
-        double cos_wave = cos(2 * pi * frequency * t);  // Cosine wave sample
+        // double t = i / sample_rate;  // Calculate time for each sample
+		// double pi = 3.14159265358979323846;
+        // double cos_wave = cos(2 * pi * frequency * t);  // Cosine wave sample
 
-        // Store the sample in the block (assuming int32_t format for IQ samples)
-        // Here, I and Q components are interleaved as [I, Q, I, Q, ...]
-        p_tx_blocks[0]->data[i * 2] = (int32_t)(cos_wave * INT32_MAX);   // I component
+        // // Store the sample in the block (assuming int32_t format for IQ samples)
+        // // Here, I and Q components are interleaved as [I, Q, I, Q, ...]
+        // p_tx_blocks[0]->data[i * 2] = (int32_t)(cos_wave * INT32_MAX);   // I component
+        // p_tx_blocks[0]->data[i * 2 + 1] = 0;                             // Q component as zero
+		//p_tx_blocks[0]->data[i * 2] = (int32_t) words[(i / 4096)];   // I component
+		if (i % 2 == 0) {
+			p_tx_blocks[0]->data[i * 2] = INT32_MAX;   // I component
+		} else {
+			p_tx_blocks[0]->data[i * 2] = INT32_MIN; 
+		}
         p_tx_blocks[0]->data[i * 2 + 1] = 0;                             // Q component as zero
     }
 
