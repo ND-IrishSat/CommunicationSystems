@@ -6,9 +6,9 @@ from scipy.fft import fft, fftshift, fftfreq
 from scipy import signal
 
 usrp = uhd.usrp.MultiUSRP() #can put num_recv_frames = 1000 to recieve at a higher rate
-num_samps = 50000
-freq = 4218274940
-sample_rate = 1e6
+num_samps = 10000
+freq = 418274940
+sample_rate = 1e7
 gain = 20
 
 iq_data = usrp.recv_num_samps(num_samps, freq, sample_rate, [0], gain) # units: N, Hz, list of channel IDs, dB
