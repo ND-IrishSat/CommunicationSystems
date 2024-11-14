@@ -18,7 +18,7 @@ define ALLOWED_PLATFORMS
 endef
 
 BUILD_CONFIG?= undefined
-PLATFORM?= z2-armhf # was undefined, but by default we want SidekiqZ2
+PLATFORM=z2-armhf # was undefined, but by default we want SidekiqZ2
 
 # CFLAGS common to all build configurations
 CFLAGS+= -fstrict-aliasing -fPIC -Wall -O3
@@ -35,6 +35,7 @@ endif
 
 ifeq ($(PLATFORM),z2-armhf)
     # The 'z2-armhf' PLATFORM targets the Sidekiq Z2 (with hard-float extensions enabled)
+    $(info z2-armhf selected:)
     BUILD_CONFIG=arm_cortex-a9.gcc7.2.1_gnueabihf
 endif
 
