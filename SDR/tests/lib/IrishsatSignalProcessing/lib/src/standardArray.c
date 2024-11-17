@@ -687,16 +687,3 @@ void complexArrayToCharArray(Complex_Array_Tuple array) {
     printf("%s", input);
     printf("\nLength: %d\n", length);
 }
-
-Complex_Array_Tuple charArrayToComplexArray(char *str){
-    double *real = (double*)malloc(256 * sizeof(double));
-    double *imag = (double*)malloc(256 * sizeof(double));
-
-    for (int i = 0; i < strlen(str); i++)
-    {
-        /* code */
-        printf("Hi");
-    }
-    
-
-}

@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "sidekiq_api.h": "c"
+        "sidekiq_api.h": "c",
+        "irishsat_comms_lib.h": "c",
+        "complex.h": "c",
+        "__locale": "c"
     }
 }
