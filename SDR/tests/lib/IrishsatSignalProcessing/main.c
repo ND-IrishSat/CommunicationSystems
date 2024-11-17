@@ -23,7 +23,7 @@ int main(){
         .exportArrays=false,
         .generateRandomData=false,
         .showOutputArrays=true,
-        .verboseTimers=false
+        .verboseTimers=true
     };
 
     const NoiseParameters noise_params = {
@@ -54,7 +54,7 @@ int main(){
     printf("\n\n");
     free(binaryData);
 
-    
+
     // Encode Data
     total = clock();
     start = clock();

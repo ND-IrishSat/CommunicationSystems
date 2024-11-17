@@ -173,13 +173,17 @@ num_samples = len(testpacket)
 awgn_complex_samples = (np.random.randn(num_samples) + 1j*np.random.randn(num_samples)) / np.sqrt(2)
 noise_power = 10
 awgn_complex_samples /= np.sqrt(noise_power)
-#awgn_samples = np.random.normal(mean, std_dev, num_samples) #this is original noise func
+# awgn_samples = np.random.normal(mean, std_dev, num_samples) #this is original noise func
 phase_noise_strength = 0.1
 phase_noise_samples = np.exp(1j * (np.random.randn(num_samples)*phase_noise_strength)) # adds random imaginary phase noise
 testpacket = np.add(testpacket, awgn_complex_samples)
 testpacket = np.multiply(testpacket, phase_noise_samples)
 #ShowConstellationPlot(testpacket, title="Python Noise")
 #################################
+
+
+
+
 # Add fractional delay
 
 # Create and apply fractional delay filter
