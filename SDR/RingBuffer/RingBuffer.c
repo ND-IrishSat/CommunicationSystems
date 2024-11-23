@@ -19,67 +19,59 @@ bool isRingBufferFull(RingBuffer *ringBuff)
   return ( ((ringBuff->tail + 1) % (RING_BUFFER_SIZE + 1)) == ringBuff->head );
 }
 
-// Push a new data element to the back of the ring buffer
-// Returns a pointer to the new element on success
-// Returns a null pointer on failure
-ringBufferDataElement* pushToRingBuffer(RingBuffer *ringBuff, ringBufferDataElement newData)
+bool getRingBufferSize(RingBuffer *ringBuff)
+{
+  return ringBuff->size;
+}
+
+int pushToRingBuffer(RingBuffer *ringBuff, ringBufferDataElement newData)
 {
   // If ring buffer is full, dont push
-  if (isRingBufferFull(ringBuff)) {return NULL;}
+  if (isRingBufferFull(ringBuff)) {return 1;}
 
-  // Else, push to the ring buffer and increment the tail
+  // Else, push to the ring buffer and increment the tail and size to reflect new element
   ringBuff->bufferDataArray[ringBuff->tail] = newData;
   ringBuff->tail = (ringBuff->tail + 1) % (RING_BUFFER_SIZE + 1);
   ringBuff->size++;
-  return &ringBuff->bufferDataArray[ringBuff->tail];
+  return 0;
 }
 
 // Remove the top element from the ring buffer and advance the head
 // Does nothing if the buffer is empty
-void popFromRingBuffer(RingBuffer *ringBuff)
+int popFromRingBuffer(RingBuffer *ringBuff, ringBufferDataElement* outputElement)
 {
-  // If the ringBuffer is empty, return a NULL poointer
-  ringBufferDataElement poppedElement;
-  if (isRingBufferEmpty(ringBuff)) 
-  {
-    return;
-  }
+  // If the ringBuffer is empty, return error
+  if (isRingBufferEmpty(ringBuff)) {return 1;}
 
-  // Move the head pointer forward
+  // Move the head pointer forward and copy the data to the output element
+  *outputElement = ringBuff->bufferDataArray[ringBuff->head];
   ringBuff->head = (ringBuff->head + 1) % (RING_BUFFER_SIZE + 1);
   ringBuff->size--;
-
-  return;
+  return 0;
 }
 
-// Return the top element of the ring buffer without removing it
-// Returns a null pointer if buffer is empty
-ringBufferDataElement* peekRingBuffer(RingBuffer *ringBuff)
+// Copies the data of the top element of the ring buffer without removing it
+int peekRingBuffer(RingBuffer *ringBuff, ringBufferDataElement* outputElement)
 {
-  ringBufferDataElement* poppedElement = NULL;
-  if (isRingBufferEmpty(ringBuff)) 
-  {
-    return NULL;
-  }
+  // If the ringBuffer is empty, return error
+  if (isRingBufferEmpty(ringBuff)) {return 1;}
 
-  poppedElement = &ringBuff->bufferDataArray[ringBuff->head];
-  return poppedElement;
+  *outputElement = ringBuff->bufferDataArray[ringBuff->head];
+  return 0;
 }
 
-// Return the element of the ring buffer at a certiain index
+// Copies the data of the element of the ring buffer at a certain index
 // Returns a null pointer if index is out of bounds
-ringBufferDataElement* indexRingBuffer(RingBuffer *ringBuff, int bufferIndex)
+int indexRingBuffer(RingBuffer *ringBuff, ringBufferDataElement* outputElement, int bufferIndex)
 {
-  ringBufferDataElement *indexedElement = NULL;
+  // Check if index exceeds the capacity
+  if (bufferIndex >= RING_BUFFER_SIZE) {return 2;}
 
   // Check if index exceeds the size
-  if (bufferIndex >= ringBuff->size)
-  {
-    return NULL;
-  }
+  if (bufferIndex >= ringBuff->size) {return 1;}
 
-  // Adjust the index based on where the head is
+  // Adjust the index based on where the head is and access
   int calculatedIndex = (ringBuff->head + bufferIndex) % (RING_BUFFER_SIZE + 1);
-  indexedElement = &ringBuff->bufferDataArray[calculatedIndex];
-  return indexedElement;
+  *outputElement = ringBuff->bufferDataArray[calculatedIndex];
+  return 0;
 }

@@ -4,15 +4,15 @@
 int main()
 {
   RingBuffer testRingBuffer;
-  int testing = 0;
+  int returnCode = 0;
   ringBufferDataElement inputElement = {0};
-  ringBufferDataElement* outputElement = NULL;
+  ringBufferDataElement outputElement = {0};
 
   initializeRingBuffer(&testRingBuffer);
 
   /** Show that peek on an empty buffer returns null */
-  outputElement = peekRingBuffer(&testRingBuffer);
-  if (outputElement == NULL) 
+  returnCode = peekRingBuffer(&testRingBuffer, &outputElement);
+  if (returnCode == 1) 
     printf("Peek On Null Success!\n");
   else 
     printf("Peek On Null Failure!\n");
@@ -26,22 +26,22 @@ int main()
     inputElement.data[i].imaginary = i * 30;
   }
   pushToRingBuffer(&testRingBuffer, inputElement);
-  outputElement = peekRingBuffer(&testRingBuffer);
+  returnCode = peekRingBuffer(&testRingBuffer, &outputElement);
   for (int i = 0; i < RING_BUFFER_DATA_ARRAY_SIZE; i++)
   {
-    if (outputElement == NULL)
+    if (returnCode == 1)
     {
-      printf("ERROR: null pointer");
+      printf("ERROR: peek did not return data\n");
       continue;
     }
 
     // Set the value of each index to 10 times itself
     if (inputElement.data[i].real != i * 10)
-      printf("Pushed incorrect real data to ring buffer!");
+      printf("Pushed incorrect real data to ring buffer!\n");
     if (inputElement.data[i].imaginary != i * 30)
-      printf("Pushed incorrect imaginary data to ring buffer!");
+      printf("Pushed incorrect imaginary data to ring buffer!\n");
   }
-  popFromRingBuffer(&testRingBuffer);
+  popFromRingBuffer(&testRingBuffer, &outputElement);
 
   /** Push to fill up the buffer, checking the size */
   for (int buffIdx = 0; buffIdx < RING_BUFFER_SIZE; buffIdx++)
@@ -49,43 +49,51 @@ int main()
     // Fill data and push
     for (int i = 0; i < RING_BUFFER_DATA_ARRAY_SIZE; i++)
     {
-      inputElement.data[i].real = i * 2;
-      inputElement.data[i].imaginary = i * 7;
+      inputElement.data[i].real = buffIdx * i * 2;
+      inputElement.data[i].imaginary = buffIdx * i * 7;
     }
-    pushToRingBuffer(&testRingBuffer, inputElement);
+    returnCode = pushToRingBuffer(&testRingBuffer, inputElement);
 
     // Validate updated buffer size
     if (testRingBuffer.size != buffIdx + 1)
     {
-      printf("ERROR: Size did not update correctly on push number %d", buffIdx+1);
-      printf("          Size is: %d   | Size should be: %d", testRingBuffer.size, buffIdx+1);
+      printf("ERROR: Size did not update correctly on push number %d\n", buffIdx+1);
+      printf("          Size is: %d   | Size should be: %d\n", testRingBuffer.size, buffIdx+1);
     }
 
-    outputElement = indexRingBuffer(&testRingBuffer, buffIdx);
+    // Check if indexing functions properly
+    returnCode = indexRingBuffer(&testRingBuffer, &outputElement, buffIdx);
+    if (returnCode == 2)
+    {
+      printf("ERROR: index was out of bounds of the buffer\n");
+      continue;
+    }
+
+    if (returnCode == 1)
+    {
+      printf("ERROR: no element found at the given index\n");
+      continue;
+    }
+
     for (int i = 0; i < RING_BUFFER_DATA_ARRAY_SIZE; i++)
     {
-      if (outputElement == NULL)
-      {
-        printf("ERROR: null pointer");
-        continue;
-      }
-
-      Complex complexData = inputElement.data[i];
+      Complex complexData = outputElement.data[i];
       if (complexData.real != (buffIdx * i * 2))
       {
-        printf("Pushed incorrect real data");
+        printf("ERROR: Pushed incorrect real data\n");
       }
       if (complexData.imaginary != (buffIdx * i * 7))
       {
-        printf("Pushed incorrect imaginary data");
+        printf("ERROR: Pushed incorrect imaginary data\n");
       }
     }
   }
 
   // Clear out the ring buffer
   for (int i = 0; i < RING_BUFFER_SIZE; i++)
-    popFromRingBuffer(&testRingBuffer);
+    returnCode = popFromRingBuffer(&testRingBuffer, &outputElement);
+
   // Confirm that ring buffer is now empty
   if (!isRingBufferEmpty(&testRingBuffer))
-    printf("ERROR: Size is not 0 for empty buffer");
+    printf("ERROR: Size is not 0 for empty buffer\n");
 }

@@ -28,16 +28,43 @@ typedef struct RingBuffer{
   int size; // Number of elements in data array
 } RingBuffer;  
 
+// Allocates a stack based ring buffer to avoid heap fragmentation
 void initializeRingBuffer(RingBuffer *ringBuff);
 
+// Returns:
+//  True: if empty
+//  False: otherwise
 bool isRingBufferEmpty(RingBuffer *ringBuff);
 
+// Returns:
+//  True: if full
+//  False: otherwise
 bool isRingBufferFull(RingBuffer *ringBuff);
 
-ringBufferDataElement* pushToRingBuffer(RingBuffer *ringBuff, ringBufferDataElement newData);
+// Getting the current number of elements will be useful for knowing indexing bounds
+bool getRingBufferSize(RingBuffer *ringBuff);
 
-void popFromRingBuffer(RingBuffer *ringBuff);
+// Pushes an input element onto the end of the ring buffer.
+// Returns:
+//  0: push was successful
+//  1: push was unsuccessful, ring buffer is full
+int pushToRingBuffer(RingBuffer *ringBuff, ringBufferDataElement newData);
 
-ringBufferDataElement* peekRingBuffer(RingBuffer *ringBuff);
+// Removes the front element from the ring buffer and copies the data to the passed output element
+// Returns:
+//  0: pop was successful
+//  1: pop was unsuccessful, no element to pop
+int popFromRingBuffer(RingBuffer *ringBuff, ringBufferDataElement* outputElement);
 
-ringBufferDataElement* indexRingBuffer(RingBuffer *ringBuff, int bufferIndex);
+// Copies the data of the front element into the passed output element without popping it
+// Returns:
+//  0: peek was successful
+//  1: peek was unsuccessful, no element to peek
+int peekRingBuffer(RingBuffer *ringBuff, ringBufferDataElement* outputElement);
+
+// Copies the data of the indexed element into the passed output element without popping it
+// Returns:
+//  0: indexing was successful
+//  1: indexing was unsuccessful, no element at index
+//  2: indexing was unsuccessful, index out of bounds
+int indexRingBuffer(RingBuffer *ringBuff, ringBufferDataElement* outputElement, int bufferIndex);
