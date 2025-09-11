@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import Signals.lib.IQ_Imbalance_correction as IQ_Correct
+from Signals.func import *
+import random
 ax2 = None
 live_real = []
 live_imaj = []
@@ -48,15 +49,53 @@ def plot_iq_data_and_frequency(iq_data, center_freq=418274940, sample_rate=10000
     plt.tight_layout()
     plt.show()
 
-# Usage example
-filename = 'samples_output.txt'  # Replace with the actual filename
-sampling_rate = 10000000  # Replace with the actual sampling rate in Hz
-freq = 418274940
 
+freq = 418274940
+sample_rate = 1e7
+
+filename = './samples_output.txt'  # Replace with the actual filename
+
+processor = SignalProcessing(fs=freq, sps=8, pulse_shape_length=8, pulse_shape='rrc', scheme='BPSK', alpha=0.5, show_graphs=False, data_length=104, fo=61250)
 
 # Read the I/Q data from the file
 iq_data = read_iq_data(filename)
+
 # Plot the time domain (I/Q) and frequency domain
-plot_iq_data_and_frequency(iq_data, freq, sampling_rate)
-# IQ_Correct.ShowConstellationPlot(iq_data, same_magnitude=np.mean(np.abs(iq_data)), title="IQ Plot")
-IQ_Correct.ShowConstellationPlot(iq_data, same_magnitude=False, title="IQ Plot")
+# plot_iq_data_and_frequency(iq_data, freq, sample_rate)
+
+# iq_data = np.ravel(iq_data)
+out = processor.decode(iq_data)
+print("Tests")
+for i in range(0,100):
+    a = random.uniform(0.000001, 0.132) # 0.0000132
+    p = SignalProcessing(fs=freq, sps=8, pulse_shape_length=8, pulse_shape='rrc', scheme='BPSK', alpha=0.5, show_graphs=False, data_length=104, fo=61250, costas_alpha=a, costas_beta=0.0000932)
+    o = p.decode(iq_data)
+    string = ""
+    for i in range(0, 104, 8):
+        binary = ''.join(str(bit) for bit in o[i:i+8])
+        if (binary == ''):
+            binary = '•'
+        c = '•'
+        try:
+            c = chr(int(binary, 2))
+        except:
+            pass
+        string += c
+    print(f"Alpha: {a:.6f} ->| {string} |")
+print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -")
+
+print(f"Receive length = {len(out)}")
+print(out)
+string = ""
+for i in range(0, 104, 8):
+    binary = ''.join(str(bit) for bit in out[i:i+8])
+    if (binary == ''):
+        binary = '•'
+    c = '•'
+    try:
+        c = chr(int(binary, 2))
+    except:
+        pass
+    string += c
+        
+print(f"Received ->| {string} |\n")

@@ -22,8 +22,9 @@ GENERAL OUTLINE OF CODE:
 2. Preamble, Data, and Matched Filter Coefficient Generation
 3. Generation of Pulse Train // BPSK Modulation
 4. Pulse Shaping
-----TRANSMISSION and Noise----
+----START TRANSMISSION and Noise----
 5. Simulation of Channel
+----END TRANSMISSION and Noise----
 6. Clock Recovery
 7. Coarse Frequency Correction
 8. Fine Frequency Correction
@@ -42,13 +43,13 @@ from lib import CRC
 from lib.IQ_Imbalance_correction import ShowConstellationPlot, PlotWave, IQ_Imbalance_Correct
 
 # Declare Variables
-fs = 2.4e9             # carrier frequency 
+fs = 418274940            # carrier frequency 
 Ts = 1.0 / fs          # sampling period in seconds
 f0 = 0.0               # homodyne (0 HZ IF)
 M = 8                  # oversampling factor
 L = 8                  # pulse shaping filter length (Is this the ideal length?)
 pulse_shape = 'rrc'    # type of pulse shaping, also "rect"
-scheme = 'BPSK'        # Modulation scheme 'OOK', 'QPSK', or 'QAM'
+scheme = 'BPSK'        # Modulation scheme 'OOK' or 'QAM'
 alpha = 0.5            # roll-off factor of the RRC pulse-shaping filter
 
 """
@@ -76,8 +77,21 @@ https://www.geeksforgeeks.org/cyclic-redundancy-check-python/#
 
 """
 preamble = np.array([0,1,0,0,0,0,1,1,0,0,0,1,0,1,0,0,1,1,1,1,0,1,0,0,0,1,1,1,0,0,1,0,0,1,0,1,1,0,1,1,1,0,1,1,0,0,1,1,0,1,0,1,0,1,1,1,1,1,1,0]).astype(float) # optimal periodic binary code for N = 63 https://ntrs.nasa.gov/citations/19800017860
-data_size = 256
-data = np.random.randint(2, size=data_size).astype(float)
+s = "Hello World!"
+binary_array = []
+for char in s + '\x00':  # Add the null character explicitly
+    ascii_value = ord(char)  # Get the ASCII value of the character
+    binary_representation = format(ascii_value, '08b')  # Convert to 8-bit binary
+    binary_array.extend(map(int, binary_representation))  # Append binary digits as integers
+
+# Convert to a NumPy array
+data_size = (len(s) + 1) * 8
+print("Data size " + str(data_size))
+data = np.array(binary_array, dtype=float)
+
+# data_size = 256
+# data = np.random.randint(2, size=data_size).astype(float)
+
 CRC_key = np.array([1,0,0,1,1,0,0,0,0,1,1,1]) # Best CRC polynomials: https://users.ece.cmu.edu/~koopman/crc/
 data_encoded = CRC.encodeData(data, CRC_key)
 
@@ -104,14 +118,17 @@ https://pysdr.org/content/digital_modulation.html
 
 pulse_train = np.array([])
 for bit in bits:
+    
     pulse = np.zeros(sps)
     pulse[0] = bit*2-1 # set the first value to either a 1 or -1
     pulse_train = np.concatenate((pulse_train, pulse)) # add the 8 samples to the signal
-plt.stem(pulse_train, label="Pulse Train")
-plt.stem(bits, 'ro', label="Original Bits")
-plt.legend(loc="upper right")
-plt.title("Pulse Train")
-plt.show()
+# plt.stem(pulse_train, label="Pulse Train")
+# # plt.stem(bits, 'ro', label="Original Bits")
+# plt.legend(loc="upper right")
+# plt.title("Pulse Train")
+# plt.show()
+
+ShowConstellationPlot(pulse_train, mag=1, title="After Pulse Train")
 
 """
 Pulse Shaping (Raised Root Cosine)
@@ -128,9 +145,11 @@ https://wirelesspi.com/pulse-shaping-filter/
 
 symbols_I = pulse_shaping.pulse_shaping(pulse_train, sps, fs, pulse_shape, alpha, L)
 testpacket = symbols_I
-plt.stem(symbols_I, 'ko')
-plt.title("After pulse shaping")
-plt.show()
+# plt.stem(symbols_I, 'ko')
+# plt.title("After pulse shaping")
+# plt.show()
+
+ShowConstellationPlot(testpacket, mag=1, title="After Pulse Shaping")
 
 #######################
 # Transmission: Where transmission would occur in a real system
@@ -162,49 +181,48 @@ https://wirelesspi.com/what-is-carrier-frequency-offset-cfo-and-how-it-distorts-
 https://wirelesspi.com/what-is-carrier-phase-offset-and-how-it-affects-the-symbol-detection/
 
 """
-
+print(len(testpacket))
 ###########################
 # Generate Noise
-
 # Parameters for AWGN
 mean = 0      # Mean of the Gaussian distribution (usually 0 for AWGN)
-std_dev = 1   # Standard deviation of the Gaussian distribution
+std_dev = 0.02  # Standard deviation of the Gaussian distribution
 num_samples = len(testpacket)
-awgn_complex_samples = (np.random.randn(num_samples) + 1j*np.random.randn(num_samples)) / np.sqrt(2)
-noise_power = 10
-awgn_complex_samples /= np.sqrt(noise_power)
-#awgn_samples = np.random.normal(mean, std_dev, num_samples) #this is original noise func
-phase_noise_strength = 0.1
-phase_noise_samples = np.exp(1j * (np.random.randn(num_samples)*phase_noise_strength)) # adds random imaginary phase noise
-testpacket = np.add(testpacket, awgn_complex_samples)
-testpacket = np.multiply(testpacket, phase_noise_samples)
+awgn_complex_samples = (np.random.normal(mean, std_dev, num_samples) + 1j*np.random.normal(mean, std_dev, num_samples)) / np.sqrt(2)
+
+phase_noise_strength = 0.2
+phase_noise_samples = np.exp(1j * (np.random.randn(num_samples)*phase_noise_strength)) # adds random real and imaginary phase noise
+#testpacket = np.add(testpacket, awgn_complex_samples)
+#testpacket = np.multiply(testpacket, phase_noise_samples)
 #ShowConstellationPlot(testpacket, title="Python Noise")
 #################################
-# Add fractional delay
-
+# Add fractional delays
 # Create and apply fractional delay filter
-delay = 0.4 # fractional delay, in samples
+delay = 0.2 # fractional delay, in samples
 N = 21 # number of taps
 n = np.arange(-N//2, N//2) # ...-3,-2,-1,0,1,2,3...
 h = np.sinc(n - delay) # calc filter taps
 h *= np.hamming(N) # window the filter to make sure it decays to 0 on both sides
 h /= np.sum(h) # normalize to get unity gain, we don't want to change the amplitude/power
-testpacket = np.convolve(testpacket, h) # apply filter
+#testpacket = np.convolve(testpacket, h) # apply filter
 ###################################
 # Add frequency offset - NOTE: Frequency offset of > 1% will result in inability of crosscorrelation operation to detect frame start
 
 # apply a freq offset
-fs = 2.45e9 # arbitrary UHF frequency
-fo = 61250 # Simulated frequency offset
+fo = 100000 # Simulated frequency offset
 Ts = 1/fs # calc sample period
 t = np.arange(0, Ts*(len(testpacket)), Ts) # create time vector
-testpacket = testpacket * np.exp(1j*2*np.pi*fo* t) # perform freq shift
-plt.stem(symbols_I, label="Original Pulse Shaped Waveform")
-plt.stem(np.real(testpacket), 'ro', label="Non-ideal Waveform Real")
-plt.stem(np.imag(testpacket), 'mo', label="Non-ideal Waveform Imaginary")
-plt.title("After fractional delay and frequency offset")
-plt.legend(loc="upper left")
-plt.show()
+#testpacket = testpacket * np.exp(1j*2*np.pi*fo* t) # perform freq shift
+# plt.stem(symbols_I, label="Original Pulse Shaped Waveform")
+# plt.stem(np.real(testpacket), 'ro', label="Non-ideal Waveform Real")
+# plt.stem(np.imag(testpacket), 'mo', label="Non-ideal Waveform Imaginary")
+# plt.title("After fractional delay and frequency offset")
+# plt.legend(loc="upper left")
+# plt.show()
+
+ShowConstellationPlot(testpacket, mag=1, title="Noise")
+################################### END TRANSMISSION ###################################
+
 """
 Muller and Mueller Clock Recovery
 
@@ -263,11 +281,13 @@ out = out[2:i_out] # remove the first two, and anything after i_out (that was ne
 testpacket = out # only include this line if you want to connect this code snippet with the Costas Loop later on
 
 #plt.stem(signal.upfirdn([1],pulse_train,1, sps), 'ko', label="Original Pulse Train")
-plt.stem(np.real(testpacket), 'ro', label="Real Part of Clock Recovered Waveform")
-plt.stem(np.imag(testpacket), 'mo', label="Imaginary Part of Clock Recovered Waveform")
-plt.title("After clock recovery")
-plt.legend(loc="upper left")
-plt.show()
+# plt.stem(np.real(testpacket), 'ro', label="Real Part of Clock Recovered Waveform")
+# plt.stem(np.imag(testpacket), 'mo', label="Imaginary Part of Clock Recovered Waveform")
+# plt.title("After clock recovery")
+# plt.legend(loc="upper left")
+# plt.show()
+
+ShowConstellationPlot(testpacket, mag=1, title="After Clock Recovery")
 
 """
 Coarse Frequency Detection and Correction
@@ -293,12 +313,13 @@ testpacket = testpacket * np.exp(-1j*2*np.pi*max_freq*t/2.0) # multiply by negat
 
 # Plot
 #plt.stem(signal.upfirdn([1],pulse_train,1, sps), 'ko', label="Original Pulse Train")
-plt.stem(np.real(testpacket), label="Real Part of Recovered Waveform")
-plt.stem(np.imag(testpacket), 'ro', label="Imaginary Part of Recovered Waveform")
-plt.legend(loc="upper left")
-plt.title("After coarse frequency correction")
-plt.show()
+# plt.stem(np.real(testpacket), label="Real Part of Recovered Waveform")
+# plt.stem(np.imag(testpacket), 'ro', label="Imaginary Part of Recovered Waveform")
+# plt.legend(loc="upper left")
+# plt.title("After coarse frequency correction")
+# plt.show()
 
+ShowConstellationPlot(testpacket, mag=1, title="After IQ Coarse Freq Detection + Correction")
 """
 Costas Loop Fine Freq Correction
 
@@ -341,26 +362,28 @@ for i in range(N):
         phase += 2*np.pi
 
 # Plot freq over time to see how long it takes to hit the right offset
-plt.plot(freq_log,'.-')
-plt.title("Estimated frequency offset of Costas Loop vs Sample index")
-plt.show()
+# plt.plot(freq_log,'.-')
+# plt.title("Estimated frequency offset of Costas Loop vs Sample index")
+# plt.show()
 
 testpacket = out
-plt.stem(signal.upfirdn([1],pulse_train,1, sps), 'ko', label="Original Pulse Train")
-plt.stem(np.real(testpacket), label="Real Part of Recovered Waveform")
-plt.stem(np.imag(testpacket), 'ro', label="Imaginary Part of Recovered Waveform")
-plt.legend(loc="upper left")
-plt.title("After fine frequency correction")
-plt.show()
+# plt.stem(signal.upfirdn([1],pulse_train,1, sps), 'ko', label="Original Pulse Train")
+# plt.stem(np.real(testpacket), label="Real Part of Recovered Waveform")
+# plt.stem(np.imag(testpacket), 'ro', label="Imaginary Part of Recovered Waveform")
+# plt.legend(loc="upper left")
+# plt.title("After fine frequency correction")
+# plt.show()
 
 # Testing frequency correction
 fft_samples = testpacket**2
 psd = np.fft.fftshift(np.abs(np.fft.fft(fft_samples)))
 f = np.linspace(-fs/2.0, fs/2.0, len(psd))
 
-plt.plot(f, psd)
-plt.title("Frequency offset after correction")
-plt.show()
+# plt.plot(f, psd)
+# plt.title("Frequency offset after correction")
+# plt.show()
+
+ShowConstellationPlot(testpacket, mag=1, title="After Fine Freq Correction")
 
 """
 IQ Imbalance Correction ------
@@ -403,12 +426,12 @@ for symbol in testpacket:
     out = np.append(out, symbol)
 
 crosscorr = signal.fftconvolve(out,matched_filter_coef)
-plt.stem(np.real(testpacket), label="Recovered Waveform")
-plt.stem(preamble, 'r', label="Preamble Sequence")
-plt.stem(np.real(crosscorr), 'g', label="Crosscorrelation")
-plt.title("Frame Synchronization: Crosscorrelation")
-plt.legend(loc="upper right")
-plt.show()
+# plt.stem(np.real(testpacket), label="Recovered Waveform")
+# plt.stem(preamble, 'r', label="Preamble Sequence")
+# plt.stem(np.real(crosscorr), 'g', label="Crosscorrelation")
+# plt.title("Frame Synchronization: Crosscorrelation")
+# plt.legend(loc="upper right")
+# plt.show()
 
 # peak_indices, _ = signal.find_peaks(crosscorr, height =  peak_threshold, distance = int(0.8*total_samples))
 # this finds ALL packets contained in a given buffer
@@ -419,14 +442,14 @@ idx = np.array(crosscorr).argmax()
 recoveredPayload = testpacket[idx-len(preamble)+1:idx+len(data_encoded)+1] # Reconstruct original packet minus preamble
 recoveredData = recoveredPayload[len(preamble):]
 # Plot
-plt.stem(np.real(recoveredPayload), label="Recovered Payload Real")
-plt.stem(np.imag(recoveredPayload), 'ro', label="Recovered Payload Imaginary")
-plt.stem(signal.upfirdn([1],pulse_train,1, sps), 'ko', label="Original Pulse Train")
-plt.title("Data recovery")
-plt.legend(loc="upper right")
-plt.show()
+# plt.stem(np.real(recoveredPayload), label="Recovered Payload Real")
+# plt.stem(np.imag(recoveredPayload), 'ro', label="Recovered Payload Imaginary")
+# plt.stem(signal.upfirdn([1],pulse_train,1, sps), 'ko', label="Original Pulse Train")
+# plt.title("Data recovery")
+# plt.legend(loc="upper right")
+# plt.show()
 
-
+ShowConstellationPlot(recoveredData, mag=1, title="After Frame Sync")
 """
 Demodulation // Error Checking
 
@@ -471,12 +494,13 @@ for index in range(0,len(data)):
 print(f"Received: {num_correct} / {num} bits   |   {round(num_correct / num * 100)}%")
 
 # Plot
-plt.stem(np.real(demod_bits), label="Recovered Data")
-plt.stem(0.5*np.real(data), 'ro', label="Original Data")
-plt.title("Demodulated bit comparison")
-plt.legend(loc="upper right")
-plt.show()
+# plt.stem(np.real(demod_bits), label="Recovered Data")
+# plt.stem(0.5*np.real(data), 'ro', label="Original Data")
+# plt.title("Demodulated bit comparison")
+# plt.legend(loc="upper right")
+# plt.show()
 
+ShowConstellationPlot(demod_bits, mag=1, title="After Demodulation")
 ####################################
 # To do 
 

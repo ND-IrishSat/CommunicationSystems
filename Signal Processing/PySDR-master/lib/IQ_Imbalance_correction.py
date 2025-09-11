@@ -28,10 +28,7 @@ def ShowConstellationPlot(packet, mag=999, title="After IQ Imbalance Correction"
     magnitudes = []
     for data in packet:
         phase.append(np.angle(data))
-        if (mag == 999):
-            magnitudes.append(np.abs(data))
-        else:
-            magnitudes.append(1)
+        magnitudes.append(np.abs(data))
     for index in range(0,len(phase)):
         magnitude = magnitudes[index]
         angle = phase[index]

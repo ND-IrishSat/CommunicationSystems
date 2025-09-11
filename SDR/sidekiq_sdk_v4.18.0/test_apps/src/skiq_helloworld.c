@@ -33,10 +33,10 @@ int main(int argc, char *argv[]){
 	skiq_tx_hdl_t hdl = skiq_tx_hdl_A1;
 	uint64_t lo_freq = 418274940;
 
-	//initialize sidekiq - SUCCESS
+	//initialize sidekiq
 	int32_t init_status = skiq_init(type, level, &card, 1);
 
-	//set tx sample rate and bandwidth - not working yet: "card not activated"
+	//set tx sample rate and bandwidth
 	int32_t rate_status = skiq_write_tx_sample_rate_and_bandwidth(card, hdl, 10000000, 10000000);
 
 	//set tx lo frequency

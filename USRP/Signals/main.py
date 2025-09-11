@@ -375,10 +375,10 @@ Without IQ imbalance correcion, the phase noise
 distorts the data, this puts it back to relatively
 a circle. It is visualized better with QPSK schemes.
 """
-ShowConstellationPlot(testpacket, mag=1, title="Before IQ Imbalance Correction")
+ShowConstellationPlot(testpacket, same_magnitude=False, title="Before IQ Imbalance Correction")
 testpacket = IQ_Imbalance_Correct(testpacket, mean_period=(len(testpacket)//2)) # mean_period adjusts how many values it should take the mean of in each direction of an array for a given value.
 #PlotWave(testpacket)
-ShowConstellationPlot(testpacket, mag=1, title="After IQ Imbalance Correction")
+ShowConstellationPlot(testpacket, same_magnitude=False, title="After IQ Imbalance Correction")
 #------------------------------------------------
 
 """

@@ -21,14 +21,14 @@ def Mean(array, period):
                 break # speeds it up some
         means.append(sum / num)
     return means
-def ShowConstellationPlot(packet, mag=999, title="After IQ Imbalance Correction"):
+def ShowConstellationPlot(packet, same_magnitude=False, title="After IQ Imbalance Correction"):
     x = []
     y = []
     phase = []
     magnitudes = []
     for data in packet:
         phase.append(np.angle(data))
-        if (mag == 999):
+        if (same_magnitude == False):
             magnitudes.append(np.abs(data))
         else:
             magnitudes.append(1)
