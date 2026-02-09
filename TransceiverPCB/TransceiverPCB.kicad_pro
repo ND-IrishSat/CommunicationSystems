@@ -447,8 +447,12 @@
     }
   },
   "libraries": {
-    "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_footprint_libs": [
+      "LIB_IRISHSAT"
+    ],
+    "pinned_symbol_libs": [
+      "LIB_IRISHSAT"
+    ]
   },
   "meta": {
     "filename": "TransceiverPCB.kicad_pro",
