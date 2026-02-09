@@ -36,6 +36,35 @@
 
 ```
 
+### To Add a New Part
+
+> 1. Open a new github branch from main named `Import PART#`
+> 
+> 2. Download symbol, footprints, and 3d model (Ultra Librarian, Snap Magic, etc.)
+>
+> 3. Unzip the files
+>
+> 4. Put the new part folder in the `PARTS` folder
+>
+> 5. Copy all of the new footprints and paste them into the `LIB_IRISHSAT.pretty` folder
+>
+> 6. If KiCAD is open, in the footprint editor, press the referesh button
+>
+> 7. Open the KiCAD Symbol Editor
+>
+> 8. Search for `LIB_IRISHSAT`
+>
+> 9. Right click `LIB_IRISHSAT` and click `Import Symbol`
+>
+> 10. Go to your new part in the `PARTS` folder
+>
+> 11. Click on the `part.kicad_sym` or `part.lib` file to import it
+>
+> 12. Save
+>
+> 13. Create a `Pull Request` merging your new branch `Import PART#` into `main` and assign your team lead
+>
+
 ### Project File Structure
 
 ```
