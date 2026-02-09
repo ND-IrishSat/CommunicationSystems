@@ -1,4 +1,4 @@
-27287197774185129
+27292532360186228
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71917,6 +71917,27 @@ Integrated Circuit
 0
 33
 33
+LIB_IRISHSAT
+QFN56_7X7_RPI
+
+SC09147 
+0
+57
+57
+LIB_IRISHSAT
+QFN56_7X7_RPI-L
+
+SC09147 
+0
+57
+57
+LIB_IRISHSAT
+QFN56_7X7_RPI-M
+
+SC09147 
+0
+57
+57
 LIB_IRISHSAT
 QFP50P900X900X160-48N
 48-Lead Low Profile Quad Flat Package [LQFP]*
