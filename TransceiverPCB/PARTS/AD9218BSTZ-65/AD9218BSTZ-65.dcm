@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AD9218BSTZ-65
+D 10-Bit, 40/65/80/105 MSPS 3 V Dual Analog-to-Digital Converter
+K
+F https://www.analog.com/AD9218/datasheet
+$ENDCMP
+#
+#End Doc Library
