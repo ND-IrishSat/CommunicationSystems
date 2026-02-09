@@ -1,4 +1,4 @@
-27292532360186228
+27294303048192432
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71910,6 +71910,13 @@ XC7A35T-1FTG256C
 0
 256
 256
+LIB_IRISHSAT
+GCT_USB4085-GF-A_REVB
+
+
+0
+20
+20
 LIB_IRISHSAT
 QFN50P500X500X80-33N-D
 CP-32-7 (LFCSP)
