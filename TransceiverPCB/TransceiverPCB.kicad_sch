@@ -15435,12 +15435,6 @@
 		(uuid "7007f0c8-7ce4-4c59-8739-06707705e232")
 	)
 	(junction
-		(at 33.02 561.34)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "701b0369-558f-4b10-bd05-df6eebbdb877")
-	)
-	(junction
 		(at 27.94 514.35)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -15649,6 +15643,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fa785c32-3579-46e2-91f5-ed803d7b023f")
+	)
+	(junction
+		(at 33.02 561.34)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ff67283a-1382-4a49-be84-d7903f342ba5")
 	)
 	(no_connect
 		(at 171.45 563.88)
@@ -16024,16 +16024,6 @@
 	)
 	(wire
 		(pts
-			(xy 33.02 561.34) (xy 39.37 561.34)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "21693d29-d2ac-47a7-8d0b-e0184c1b8f78")
-	)
-	(wire
-		(pts
 			(xy 506.73 137.16) (xy 506.73 147.32)
 		)
 		(stroke
@@ -16271,6 +16261,16 @@
 			(type default)
 		)
 		(uuid "4b86ea72-3326-4fab-ad6f-6ff3d12cf413")
+	)
+	(wire
+		(pts
+			(xy 33.02 561.34) (xy 39.37 561.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4bff393f-675a-4292-afea-751021ed6d3a")
 	)
 	(wire
 		(pts
@@ -26359,7 +26359,6 @@
 	(symbol
 		(lib_id "LIB_IRISHSAT:ESD5Z5V0")
 		(at 33.02 557.53 270)
-		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -26367,7 +26366,7 @@
 		(dnp no)
 		(uuid "9c97f4de-65c0-4033-a0c4-f5d5bc4562f4")
 		(property "Reference" "D1"
-			(at 30.48 556.2599 90)
+			(at 30.48 558.8001 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -26376,7 +26375,7 @@
 			)
 		)
 		(property "Value" "ESD5Z5V0"
-			(at 30.48 558.7999 90)
+			(at 30.48 556.2601 90)
 			(effects
 				(font
 					(size 1.27 1.27)
