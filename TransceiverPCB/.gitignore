@@ -18,3 +18,4 @@ fp-info-cache
 *.ses
 *.DS_store
 *.DS_Store
+TransceiverPCB-backups/*
