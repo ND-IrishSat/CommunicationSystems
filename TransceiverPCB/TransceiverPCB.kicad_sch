@@ -15204,6 +15204,16 @@
 		)
 		(uuid "77430d5e-fc3b-4f0d-8d41-190a503d4fad")
 	)
+	(text "hi my name is thomas heehee\n"
+		(exclude_from_sim no)
+		(at 363.982 241.808 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "8d149bd2-14f4-4489-b59e-1ab02ff117dd")
+	)
 	(text "Needs a balun"
 		(exclude_from_sim no)
 		(at 547.624 298.196 0)
