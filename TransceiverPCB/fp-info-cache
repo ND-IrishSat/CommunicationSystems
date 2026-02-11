@@ -1,4 +1,4 @@
-27313714823904111
+27319027185939560
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -71847,6 +71847,27 @@ DSC1001CI2-100.0000T
 0
 4
 4
+LIB_IRISHSAT
+CP-24-14_ADI
+
+ADL5387ACPZ-R7 
+0
+25
+25
+LIB_IRISHSAT
+CP-24-14_ADI-L
+
+ADL5387ACPZ-R7 
+0
+25
+25
+LIB_IRISHSAT
+CP-24-14_ADI-M
+
+ADL5387ACPZ-R7 
+0
+25
+25
 LIB_IRISHSAT
 CP_24_3_ADI
 
