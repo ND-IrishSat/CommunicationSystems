@@ -8446,7 +8446,7 @@
 				)
 			)
 		)
-		(property "Footprint" "DRV0006A-IPC_A"
+		(property "Footprint" "LIB_IRISHSAT:DRV0006A-IPC_A"
 			(at 0 0 0)
 			(effects
 				(font
@@ -8473,14 +8473,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "ki_locked" ""
-			(at 0 0 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(property "ki_keywords" "LP5912-1.0DRVR"
