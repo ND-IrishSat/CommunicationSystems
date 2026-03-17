@@ -3,19 +3,7 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 
-// ---------------- Overview of What This Program Does -----
-/* 
-1. Waits for binary packets over USB serial
-2. Detects packet start
-3. Reads sequence number
-4. Reads payload
-5. Verifies CRC
-6. Stores valid packets in a queue
-7. Processes them one-by-one 
-*/
-
 // ---------------- SPI (your starter code) ----------------
-// defines which GPIO pins are used for SPI communication
 #define SPI_PORT spi0
 #define PIN_MISO 16
 #define PIN_CS   17
@@ -23,26 +11,18 @@
 #define PIN_MOSI 19
 
 // ---------------- Packet + Queue ----------------
-// example packet layout [A5][5A][seq][len][payload][crc]
-// SOF = start-of-frame markers
-// SEQ = sequence number
-// LEN = payload length
-// PAYLOAD = actual data
-// CRC = error detection
 #define SOF0 0xA5
 #define SOF1 0x5A
 
 #define MAX_PAYLOAD 256
 #define QUEUE_CAP   32
 
-// one complete packet definition
 typedef struct {
     uint32_t seq;
     uint16_t len;
     uint8_t  payload[MAX_PAYLOAD];
 } Packet;
 
-// store packets in a circular buffer queue
 typedef struct {
     Packet buf[QUEUE_CAP];
     uint16_t head, tail, count;
@@ -52,16 +32,14 @@ static inline void pq_init(PacketQueue *q) {
     q->head = q->tail = q->count = 0;
 }
 
-// push a packet onto queue
 static inline bool pq_push(PacketQueue *q, const Packet *p) {
-    if (q->count == QUEUE_CAP) return false; // if the queue is full return false
+    if (q->count == QUEUE_CAP) return false;
     q->buf[q->head] = *p;
     q->head = (q->head + 1u) % QUEUE_CAP;
     q->count++;
     return true;
 }
 
-// removes the oldest packet
 static inline bool pq_pop(PacketQueue *q, Packet *out) {
     if (q->count == 0) return false;
     *out = q->buf[q->tail];
@@ -73,7 +51,6 @@ static inline bool pq_pop(PacketQueue *q, Packet *out) {
 // ---------------- CRC32 (same poly as most implementations) ----------------
 static uint32_t crc32_table[256];
 
-// error checking
 static void crc32_init(void) {
     for (uint32_t i = 0; i < 256; i++) {
         uint32_t c = i;
@@ -84,7 +61,6 @@ static void crc32_init(void) {
     }
 }
 
-// crc calculation
 static uint32_t crc32_calc(const uint8_t *data, size_t len) {
     uint32_t c = 0xFFFFFFFFu;
     for (size_t i = 0; i < len; i++) {
@@ -105,7 +81,6 @@ static uint32_t rd_le32(const uint8_t *p) {
 }
 
 // ---------------- Parser state machine ----------------
-// receive one byte at a time and build the state machine (allows the program to recover if bytes or lost or corrupted)
 typedef enum {
     WAIT_SOF0,
     WAIT_SOF1,
@@ -129,7 +104,6 @@ static inline void reset_parser(void) {
     idx = 0;
 }
 
-// processes one incoming byte at a time and updates the parser state
 static void feed_byte(uint8_t b) {
     switch (st) {
         case WAIT_SOF0:
