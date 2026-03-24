@@ -29636,16 +29636,6 @@
 		)
 		(uuid "a4b8047b-fce0-4818-bd19-7f53fa33b788")
 	)
-	(text "Suuuuuuure suuuuuuure"
-		(exclude_from_sim no)
-		(at 550.418 298.45 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "a85edda4-9551-4ff8-a692-f7b72a0ca0f6")
-	)
 	(text "DAC to Mod LPF (10 MHz 3db)\n"
 		(exclude_from_sim no)
 		(at 514.604 106.426 0)
@@ -29696,16 +29686,6 @@
 			)
 		)
 		(uuid "bfa0473e-2765-409b-a405-a3d338455d52")
-	)
-	(text "hi my name is thomas heehee\n"
-		(exclude_from_sim no)
-		(at 547.116 294.132 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "c4f4d8c4-3f46-4801-9330-627c1cb0273d")
 	)
 	(text "Either 3A or 5A limit USB"
 		(exclude_from_sim no)
