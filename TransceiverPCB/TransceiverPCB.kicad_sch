@@ -109146,7 +109146,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 494.03 405.13 180)
+		(at 494.03 405.13 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -109154,7 +109154,7 @@
 		(dnp no)
 		(uuid "d4d8ce07-ffc2-4aeb-91b7-ed1434b9011a")
 		(property "Reference" "R11"
-			(at 491.744 406.146 0)
+			(at 496.316 404.114 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -109163,7 +109163,7 @@
 			)
 		)
 		(property "Value" "500"
-			(at 491.744 404.114 0)
+			(at 496.316 406.146 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -109172,7 +109172,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 493.014 404.876 90)
+			(at 495.046 405.384 90)
 			(effects
 				(font
 					(size 1.27 1.27)
