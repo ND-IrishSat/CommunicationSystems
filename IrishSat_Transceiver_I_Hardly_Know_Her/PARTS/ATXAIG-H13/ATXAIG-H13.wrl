@@ -1,0 +1,4 @@
+#VRML V2.0 utf8
+# ATXAIG-H13 2.0 x 1.6 x 0.8 mm simplified body (generated)
+Transform { translation 0 0 0.196850 children [ Shape { appearance Appearance { material Material { diffuseColor 0.75 0.75 0.78 specularColor 0.5 0.5 0.5 shininess 0.4 } } geometry Box { size 0.748031 0.590551 0.236220 } } ] }
+Transform { translation 0 0 0.039370 children [ Shape { appearance Appearance { material Material { diffuseColor 0.85 0.8 0.65 } } geometry Box { size 0.787402 0.629921 0.078740 } } ] }
